@@ -192,8 +192,3 @@ async function verifyInvocation(invocation, options) {
   // maybe raising exceptions is the Better Path but I'm not sure.
   return true;
 }
-
-async function invoke(invocation, dispatcher, options) {
-  await verifyInvocation(invocation, options);
-  await dispatcher(invocation, options);
-}

@@ -95,7 +95,7 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
  * @param capChain an array of capability documents, starting with
  *        the root capability document and descending from there
  */
-function capChainAuthorizedFor(expandedInvocation, capChain, options) {
+function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
   var caveatverifier = options['getCaveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
     var caveats = expandedCapDoc[caveatUri] || [];
@@ -164,9 +164,9 @@ function capChainAuthorizedFor(expandedInvocation, capChain, options) {
     maybeUpdateCurrentlyAuthorized(cap);
   }
 
-  // Made it this far... must be fine.
-  // We return who's authorized to run this capability as-is.
-  return currentlyAuthorized;
+  // Made it this far... now to check that the invocation itself is signed
+  // by one of the currentlyAuthorized
+  await verifySignedByAuthorized(expandedInvocation);
 }
 
 
@@ -181,14 +181,10 @@ async function verifyInvocation(invocation, options) {
   var expandedInvocation = await jsonld.expand(invocation);
   // Expands each, and makes sure each has type of Capability
   var capChain = await getCapChain(expandedInvocation);
-  // Both verify the capability chain is legit,
-  // is fulfilled with caveats within current invocation and state,
-  // and retrieve who's currently authorized to invoke it
-  var currentlyAuthorized = await capChainAuthorizedFor(
+  // Verify the capability chain is legit,
+  // fulfilled with caveats within current invocation and state
+  await ensureInvocationAuthorized(
     expandedInvocation, capChain, options);
-  // Ensure the invocation is signed/proven by one of the authorized entities
-  await ensureInvocationSignedByAuthorized(
-    expandedInvocation, currentlyAuthorized);
 
   // Looks like we're solid
   // TODO: Returning a boolean doesn't really matter currently since we just

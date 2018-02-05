@@ -60,9 +60,30 @@ const signatureUri = 'https://w3id.org/security#signature'
 // Helper functions
 // ================
 
-function defaultGetCaveatVerifier() {
-  // TODO
+function makeCaveatVerifier(verifierMap) {
+  async function dispatchVerifier(caveat, expandedInvocation, options) {
+    // FIXME: We might need to load the caveat from a url
+    let caveatTypeArray = caveat['@type'] || [];
+    if(caveat['@type'].length !== 1) {
+      throw new LdOcapError('Caveat @type must have exactly one element');
+    }
+    let [caveatType] = caveat['@type'];
+    // retrieve the verifier for this type
+    if(!_.has(verifierMap, caveatType) {
+      // TODO: Probably we should specify which caveat / type caused this
+      //   error?
+      throw new LdOcapError('No verifier supplied for caveat type');
+    }
+    let caveatVerifier = verifierMap[caveatType];
+    // Run the caveat verifier, which will raise an exception if
+    // the verification fails
+    await caveatVerifier(caveat, expandedInvocation, options);
+  }
+  return dispatchVerifier;
 }
+
+// TODO: Add some default caveats here
+const defaultCaveatVerifier = makeCaveatVerifier({});
 
 /**
  * Ensures this capability chain is valid within the context of the
@@ -75,20 +96,10 @@ function defaultGetCaveatVerifier() {
  *        the root capability document and descending from there
  */
 function capChainAuthorizedFor(expandedInvocation, capChain, options) {
-  var getVerifier = options['getCaveatVerifier'] || defaultGetCaveatVerifier;
+  var caveatverifier = options['getCaveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
     var caveats = expandedCapDoc[caveatUri] || [];
     for (var caveat in caveats) {
-      // FIXME: We might need to load the caveat from a url
-      let caveatTypeArray = caveat['@type'] || [];
-      if(caveat['@type'].length !== 1) {
-        throw new LdOcapError('Caveat @type must have exactly one element');
-      }
-      let [caveatType] = caveat['@type'];
-      // retrieve the verifier for this type
-      let caveatVerifier = getVerifier(caveatType);
-      // Run the caveat verifier, which will raise an exception if
-      // the verification fails
       await caveatVerifier(caveat, expandedInvocation, options);
     }
   }

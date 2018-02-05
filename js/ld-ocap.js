@@ -92,12 +92,7 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
 /**
  * Ensures this capability chain is valid within the context of the
  * Invocation, including verifying all caveats.  Raises an exception
- * if unsuccessful; otherwise returns a list of all cryptographic
- * material which is authorized to invoke this capability chain.
- *
- * @param expandedInvocation expanded json-ld document for the invocation
- * @param capChain an array of capability documents, starting with
- *        the root capability document and descending from there
+ * if unsuccessful, otherwise returns true.
  */
 async function verifyInvocation(invocation, options) {
   const expandedInvocation = await jsonld.expand(invocation);

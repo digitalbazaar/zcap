@@ -85,6 +85,10 @@ async function makeCaveatVerifier(verifierMap) {
 // TODO: Add some default caveats here
 const defaultCaveatVerifier = makeCaveatVerifier({});
 
+
+// Core API
+// ========
+
 /**
  * Ensures this capability chain is valid within the context of the
  * Invocation, including verifying all caveats.  Raises an exception
@@ -95,8 +99,11 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
  * @param capChain an array of capability documents, starting with
  *        the root capability document and descending from there
  */
-async function ensureInvocationAuthorized(
-    expandedInvocation, capChain, options) {
+async function verifyInvocation(invocation, options) {
+  const expandedInvocation = await jsonld.expand(invocation);
+  // Expands each, and makes sure each has type of Capability
+  const capChain = await getCapChain(expandedInvocation);
+
   const caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
     const caveats = expandedCapDoc[caveatUri] || [];
@@ -168,24 +175,6 @@ async function ensureInvocationAuthorized(
   // Made it this far... now to check that the invocation itself is signed
   // by one of the currentlyAuthorized
   await verifySignedByAuthorized(expandedInvocation);
-}
-
-
-
-// Core API
-// ========
-/**
- * Verify the validity of this invocation.
- * Raises an exception if not the case.  Otherwise returns true.
- */
-async function verifyInvocation(invocation, options) {
-  const expandedInvocation = await jsonld.expand(invocation);
-  // Expands each, and makes sure each has type of Capability
-  const capChain = await getCapChain(expandedInvocation);
-  // Verify the capability chain is legit,
-  // fulfilled with caveats within current invocation and state
-  await ensureInvocationAuthorized(
-    expandedInvocation, capChain, options);
 
   // Looks like we're solid
   // TODO: Returning a boolean doesn't really matter currently since we just

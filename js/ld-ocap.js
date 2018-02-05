@@ -96,7 +96,7 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
  *        the root capability document and descending from there
  */
 function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
-  var caveatverifier = options['getCaveatVerifier'] || defaultCaveatVerifier;
+  var caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
     var caveats = expandedCapDoc[caveatUri] || [];
     for (var caveat in caveats) {

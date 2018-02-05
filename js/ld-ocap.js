@@ -104,15 +104,10 @@ function capChainAuthorizedFor(expandedInvocation, capChain, options) {
     }
   }
 
-  //// root capability stuff ////
-
-  // This is the caveat at the "top", from which further delegated caveats
-  // are descendended
-  var rootCap = _.head(capChain);
-
   // Who's currently authorized to invoke this capability.
   // Start with whatever the root document says...
-  var currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
+  let rootCap = _.head(capChain);
+  let currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
 
   if(currentlyAuthorized.length === 0) {
     throw new LdOcapError(

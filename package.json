@@ -1,0 +1,33 @@
+{
+  "name": "ldocap",
+  "version": "0.0.1",
+  "license": "BSD-3-Clause",
+  "description": "Linked Data Capabilities reference implementation.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digitalbazaar/ldocap.js.git"
+  },
+  "author": {
+    "name": "Digital Bazaar, Inc.",
+    "email": "support@digitalbazaar.com",
+    "url": "https://digitalbazaar.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/digitalbazaar/ldocap.js/issues/"
+  },
+  "homepage": "https://github.com/digitalbazaar/ldocap.js/",
+  "dependencies": {
+    "async": "^2.5.0",
+    "commander": "^2.11.0",
+    "jsonld": "^0.5.0",
+    "jsonld-signatures": "digitalbazaar/jsonld-signatures#authenticationCredential",
+    "node-forge": "^0.7.1",
+    "program": "^1.0.0",
+    "request": "^2.82.0",
+    "uuid": "^3.0.1",
+    "lodash": "^4.17.4"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}

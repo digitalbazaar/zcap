@@ -96,17 +96,17 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
  *        the root capability document and descending from there
  */
 function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
-  var caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
+  const caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
-    var caveats = expandedCapDoc[caveatUri] || [];
-    for (var caveat in caveats) {
+    const caveats = expandedCapDoc[caveatUri] || [];
+    for (const caveat in caveats) {
       await caveatVerifier(caveat, expandedInvocation, options);
     }
   }
 
   // Who's currently authorized to invoke this capability.
   // Start with whatever the root document says...
-  let rootCap = _.head(capChain);
+  const rootCap = _.head(capChain);
   let currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
 
   if(currentlyAuthorized.length === 0) {
@@ -123,11 +123,11 @@ function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
     // A hacky workaround so we can support the proof field even if
     // someone supplied signature instead.
     if(_.has(capDoc, proofUri)) {
-      let updateDict = {[signatureUri]: capDoc[proofUri]};
+      const updateDict = {[signatureUri]: capDoc[proofUri]};
       capDoc = _.assign(_.omit(capDoc, [proofUri]), updateDict);
     }
     
-    var numProofs = (capDoc[signatureUri] || []).length;
+    const numProofs = (capDoc[signatureUri] || []).length;
     if(numProofs === 0) {
       throw new LdOcapError(
         'Capability document must have one or more associated proofs');
@@ -138,8 +138,8 @@ function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
     // FIXME: We can check the proof(s) to see if a specific entity signed
     //   this in many (all?) cases rather than iterating through everything
     // like this
-    for(var authorized in currentlyAuthorized) {
-      var result = await jsig.promises.verify(authorized);
+    for(const authorized in currentlyAuthorized) {
+      const result = await jsig.promises.verify(authorized);
       if (result.verified) {
         // Ok, it was signed by someone who is currentlyAuthorized
         return true;
@@ -158,7 +158,7 @@ function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
   }
 
   // Verify each capability and associated caveats...
-  for(var cap in capChain) {
+  for(const cap in capChain) {
     await verifySignedByAuthorized(cap);
     await verifyCaveats(cap);
     maybeUpdateCurrentlyAuthorized(cap);
@@ -178,9 +178,9 @@ function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
  * Raises an exception if not the case.  Otherwise returns true.
  */
 async function verifyInvocation(invocation, options) {
-  var expandedInvocation = await jsonld.expand(invocation);
+  const expandedInvocation = await jsonld.expand(invocation);
   // Expands each, and makes sure each has type of Capability
-  var capChain = await getCapChain(expandedInvocation);
+  const capChain = await getCapChain(expandedInvocation);
   // Verify the capability chain is legit,
   // fulfilled with caveats within current invocation and state
   await ensureInvocationAuthorized(

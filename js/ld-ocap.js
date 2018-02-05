@@ -60,7 +60,7 @@ const signatureUri = 'https://w3id.org/security#signature'
 // Helper functions
 // ================
 
-function makeCaveatVerifier(verifierMap) {
+async function makeCaveatVerifier(verifierMap) {
   async function dispatchVerifier(caveat, expandedInvocation, options) {
     // FIXME: We might need to load the caveat from a url
     let caveatTypeArray = caveat['@type'] || [];
@@ -95,7 +95,8 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
  * @param capChain an array of capability documents, starting with
  *        the root capability document and descending from there
  */
-function ensureInvocationAuthorized(expandedInvocation, capChain, options) {
+async function ensureInvocationAuthorized(
+    expandedInvocation, capChain, options) {
   const caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
   async function verifyCaveats(expandedCapDoc) {
     const caveats = expandedCapDoc[caveatUri] || [];

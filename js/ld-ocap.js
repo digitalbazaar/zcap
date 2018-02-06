@@ -56,7 +56,6 @@ const capabilityAuthorizationUri = prefixedOcapUri(
 const proofUri = 'https://w3id.org/security#proof';
 const signatureUri = 'https://w3id.org/security#signature';
 
-
 // Helper functions
 // ================
 
@@ -85,6 +84,41 @@ async function makeCaveatVerifier(verifierMap) {
 // TODO: Add some default caveats here
 const defaultCaveatVerifier = makeCaveatVerifier({});
 
+// The function we use to make sure that any of the later capability
+// documents are proved by a currently authorized participant
+async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
+  // TODO: This is super kludgy... does the solution come from
+  //   changes to Linked Data Proofs though?
+  // A hacky workaround so we can support the proof field even if
+  // someone supplied signature instead.
+  if(_.has(capDoc, proofUri)) {
+    const updateDict = {[signatureUri]: capDoc[proofUri]};
+    capDoc = _.assign(_.omit(capDoc, [proofUri]), updateDict);
+  }
+
+  const numProofs = (capDoc[signatureUri] || []).length;
+  if(numProofs === 0) {
+    throw new LdOcapError(
+      'Capability document must have one or more associated proofs');
+  }
+
+  // Make sure that one of the currentlyAuthorized keys are able to verify
+  // this proof
+  // FIXME: We can check the proof(s) to see if a specific entity signed
+  //   this in many (all?) cases rather than iterating through everything
+  // like this
+  for(const authorized in currentlyAuthorized) {
+    const result = await jsig.promises.verify(authorized);
+    if (result.verified) {
+      // Ok, it was signed by someone who is currentlyAuthorized
+      return true;
+    }
+  }
+  // Welp, no success, raise an error
+  throw new LdOcapError(
+    'Capability document not signed by an authorized entity');
+}
+
 
 // Core API
 // ========
@@ -101,12 +135,6 @@ async function verifyInvocation(invocation, options) {
     const capChain = await getCapChain(expandedInvocation);
 
     const caveatVerifier = options['caveatVerifier'] || defaultCaveatVerifier;
-    async function verifyCaveats(expandedCapDoc) {
-      const caveats = expandedCapDoc[caveatUri] || [];
-      for (const caveat in caveats) {
-        await caveatVerifier(caveat, expandedInvocation, options);
-      }
-    }
 
     // Who's currently authorized to invoke this capability.
     // Start with whatever the root document says...
@@ -118,47 +146,18 @@ async function verifyInvocation(invocation, options) {
         'Root capability must grant authority to initial set of credentials');
     }
 
-    // The function we use to make sure that any of the later capability
-    // documents are proved by a currently authorized participant
-    async function verifySignedByAuthorized(capDoc) {
-      // TODO: This is super kludgy... does the solution come from
-      //   changes to Linked Data Proofs though?
-      // A hacky workaround so we can support the proof field even if
-      // someone supplied signature instead.
-      if(_.has(capDoc, proofUri)) {
-        const updateDict = {[signatureUri]: capDoc[proofUri]};
-        capDoc = _.assign(_.omit(capDoc, [proofUri]), updateDict);
-      }
-      
-      const numProofs = (capDoc[signatureUri] || []).length;
-      if(numProofs === 0) {
-        throw new LdOcapError(
-          'Capability document must have one or more associated proofs');
-      }
-
-      // Make sure that one of the currentlyAuthorized keys are able to verify
-      // this proof
-      // FIXME: We can check the proof(s) to see if a specific entity signed
-      //   this in many (all?) cases rather than iterating through everything
-      // like this
-      for(const authorized in currentlyAuthorized) {
-        const result = await jsig.promises.verify(authorized);
-        if (result.verified) {
-          // Ok, it was signed by someone who is currentlyAuthorized
-          return true;
-        }
-      }
-      // Welp, no success, raise an error
-      throw new LdOcapError(
-        'Capability document not signed by an authorized entity');
-    }
-
     // Verify each capability and associated caveats...
     for(const cap in capChain) {
-      await verifySignedByAuthorized(cap);
-      await verifyCaveats(cap);
+      await verifySignedByAuthorized(cap, currentlyAuthorized);
+
+      // Verify caveats
+      const caveats = cap[caveatUri] || [];
+      for (const caveat in caveats) {
+        await caveatVerifier(caveat, expandedInvocation, options);
+      }
+
+      // Maybe delegate
       if(_.has(cap, capabilityAuthorizationUri)) {
-        // time to delegate!
         currentlyAuthorized = cap[capabilityAuthorizationUri];
       }
     }

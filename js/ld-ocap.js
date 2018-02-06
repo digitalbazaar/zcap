@@ -63,11 +63,11 @@ const signatureUri = 'https://w3id.org/security#signature';
 async function makeCaveatVerifier(verifierMap) {
   async function dispatchVerifier(caveat, expandedInvocation, options) {
     // FIXME: We might need to load the caveat from a url
-    let caveatTypeArray = caveat['@type'] || [];
+    const caveatTypeArray = caveat['@type'] || [];
     if(caveat['@type'].length !== 1) {
       throw new LdOcapError('Caveat @type must have exactly one element');
     }
-    let [caveatType] = caveat['@type'];
+    const [caveatType] = caveatTypeArray;
     // retrieve the verifier for this type
     if(!_.has(verifierMap, caveatType)) {
       // TODO: Probably we should specify which caveat / type caused this

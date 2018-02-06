@@ -53,8 +53,8 @@ const caveatUri = prefixedOcapUri('caveat');
 const capabilityAuthorizationUri = prefixedOcapUri(
   'capabilityAuthorization');
 
-const proofUri = 'https://w3id.org/security#proof'
-const signatureUri = 'https://w3id.org/security#signature'
+const proofUri = 'https://w3id.org/security#proof';
+const signatureUri = 'https://w3id.org/security#signature';
 
 
 // Helper functions

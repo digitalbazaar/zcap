@@ -69,7 +69,7 @@ async function makeCaveatVerifier(verifierMap) {
     }
     let [caveatType] = caveat['@type'];
     // retrieve the verifier for this type
-    if(!_.has(verifierMap, caveatType) {
+    if(!_.has(verifierMap, caveatType)) {
       // TODO: Probably we should specify which caveat / type caused this
       //   error?
       throw new LdOcapError('No verifier supplied for caveat type');

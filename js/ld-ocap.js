@@ -154,18 +154,14 @@ async function verifyInvocation(invocation, options) {
         'Capability document not signed by an authorized entity');
     }
 
-    function maybeUpdateCurrentlyAuthorized(cap) {
-      if(_.has(cap, capabilityAuthorizationUri)) {
-        // time to delegate!
-        currentlyAuthorized = cap[capabilityAuthorizationUri];
-      }
-    }
-
     // Verify each capability and associated caveats...
     for(const cap in capChain) {
       await verifySignedByAuthorized(cap);
       await verifyCaveats(cap);
-      maybeUpdateCurrentlyAuthorized(cap);
+      if(_.has(cap, capabilityAuthorizationUri)) {
+        // time to delegate!
+        currentlyAuthorized = cap[capabilityAuthorizationUri];
+      }
     }
 
     // Made it this far... now to check that the invocation itself is signed

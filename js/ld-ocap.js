@@ -173,3 +173,7 @@ async function verifyInvocation(invocation, options) {
     return {verified: false, error: e};
   }
 }
+
+const api = {verifyInvocation};
+
+export default api;

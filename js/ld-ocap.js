@@ -100,7 +100,7 @@ async function verifyInvocation(invocation, options) {
     // Expands each, and makes sure each has type of Capability
     const capChain = await getCapChain(expandedInvocation);
 
-    const caveatverifier = options['caveatVerifier'] || defaultCaveatVerifier;
+    const caveatVerifier = options['caveatVerifier'] || defaultCaveatVerifier;
     async function verifyCaveats(expandedCapDoc) {
       const caveats = expandedCapDoc[caveatUri] || [];
       for (const caveat in caveats) {

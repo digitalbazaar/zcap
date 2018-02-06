@@ -118,7 +118,6 @@ async function verifyInvocation(invocation, options) {
         'Root capability must grant authority to an initial set of credentials');
     }
 
-    //// on to the rest of the capability docs ////
     // The function we use to make sure that any of the later capability
     // documents are proved by a currently authorized participant
     async function verifySignedByAuthorized(capDoc) {

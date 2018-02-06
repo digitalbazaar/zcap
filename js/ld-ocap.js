@@ -115,7 +115,7 @@ async function verifyInvocation(invocation, options) {
 
     if(currentlyAuthorized.length === 0) {
       throw new LdOcapError(
-        'Root capability must grant authority to an initial set of credentials');
+        'Root capability must grant authority to initial set of credentials');
     }
 
     // The function we use to make sure that any of the later capability

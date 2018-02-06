@@ -52,6 +52,10 @@ function prefixedOcapUri(suffix) {
 const caveatUri = prefixedOcapUri('caveat');
 const capabilityAuthorizationUri = prefixedOcapUri(
   'capabilityAuthorization');
+const capabilityUri = prefixedOcapUri(
+  'capability');
+const parentCapabilityUri = prefixedOcapUri(
+  'parentCapability');
 
 const proofUri = 'https://w3id.org/security#proof';
 const signatureUri = 'https://w3id.org/security#signature';
@@ -129,6 +133,68 @@ async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
     'Capability document not signed by an authorized entity');
 }
 
+// Get the capability chain as a list of fully expanded json-ld documents,
+// starting with the root capability document and working from there.
+async function getCapChain(expandedInvocation, options) {
+  // Make sure we don't end up somehow infinitely recursing
+  // This is a set of ids
+  const seen = new Set();
+  // Capbility chain... 
+  const capChain = [];
+  // Function to retrieve a capability
+  const getCap = options['getCapability'] || defaultGetCapability;
+
+  // Get a capability, possibly from a URI, and
+  let addCap = async function(capOrUri) {
+    let cap;
+    // maybe retrieve the capability
+    if(_.isString(capOrUri)) {
+      cap = jsonld.expand(await getCap(capOrUri), options);
+    } else {
+      // It should already be expanded at this point
+      cap = capOrUri;
+    }
+    capChain.push(cap);
+    if(_.has(cap, '@id')) {
+      if(seen.has(cap['@id'])) {
+        throw LdOcapError(
+          'Cyclical capability chain detected');
+      }
+      seen.add(cap['@id']);
+    }
+
+    const parentCapabilityLength = (cap[parentCapabilityUri] || []).length;
+    if (parentCapabilityLength === 0) {
+      // We're done here, this must be the root... this is a no-op
+      // TODO: Technically we don't need to put anything here but I don't
+      //   know what's best js style.  Code reviewers, speak up! :)
+      'no-op';
+    } else if(parentCapabilityLength === 1) {
+      // Time to recursively add this capability 
+      addCap(cap[parentCapabilityUri][0]);
+    } else {
+      throw new LdOcapError(
+        'parentCapability should be empty or have a single value');
+    }
+  };
+
+  // TODO: We have a lot of this "get a single value from an expanded document"
+  //   logic; refactor into a single procedure
+  if ((expandedInvocation[capabilityUri] || []).length !== 1) {
+    throw new LdOcapError(
+      'capability field must have exactly one value');
+  }
+  const [firstCapDoc] = expandedInvocation[capabilityUri];
+
+  await addCap(firstCapDoc);
+
+  // Now reverse it...
+  capChain.reverse();
+  // ...and return it!
+  return capChain;
+}
+
+
 
 // Core API
 // ========
@@ -140,9 +206,9 @@ async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
  */
 async function verifyInvocation(invocation, options) {
   try {
-    const expandedInvocation = await jsonld.expand(invocation);
+    const expandedInvocation = await jsonld.expand(invocation, options);
     // Expands each, and makes sure each has type of Capability
-    const capChain = await getCapChain(expandedInvocation);
+    const capChain = await getCapChain(expandedInvocation, options);
 
     const caveatVerifier = options['caveatVerifier'] || defaultCaveatVerifier;
 

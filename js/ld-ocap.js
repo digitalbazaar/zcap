@@ -56,6 +56,16 @@ const capabilityAuthorizationUri = prefixedOcapUri(
 const proofUri = 'https://w3id.org/security#proof';
 const signatureUri = 'https://w3id.org/security#signature';
 
+class LdOcapError extends Error {
+  constructor(message, name='ldocap.error', details={}) {
+    super(message);
+    this.name = name;
+    this.message = message;
+    this.details = details;
+  }
+}
+
+
 // Helper functions
 // ================
 

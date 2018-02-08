@@ -54,10 +54,13 @@ const capabilityAuthorizationUri = prefixedOcapUri(
   'capabilityAuthorization');
 const capabilityUri = prefixedOcapUri(
   'capability');
+const invokeCapabilityUri = prefixedOcapUri(
+  'invokeCapability');
 const parentCapabilityUri = prefixedOcapUri(
   'parentCapability');
 
 const proofUri = 'https://w3id.org/security#proof';
+const proofPurposeUri = 'https://w3id.org/security#proofPurpose';
 const signatureUri = 'https://w3id.org/security#signature';
 
 class LdOcapError extends Error {
@@ -135,7 +138,7 @@ async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
 
 // Get the capability chain as a list of fully expanded json-ld documents,
 // starting with the root capability document and working from there.
-async function getCapChain(expandedInvocation, options) {
+async function getCapChain(ocapProof, options) {
   // Make sure we don't end up somehow infinitely recursing
   // This is a set of ids
   const seen = new Set();
@@ -180,11 +183,11 @@ async function getCapChain(expandedInvocation, options) {
 
   // TODO: We have a lot of this "get a single value from an expanded document"
   //   logic; refactor into a single procedure
-  if ((expandedInvocation[capabilityUri] || []).length !== 1) {
+  if ((ocapProof[capabilityUri] || []).length !== 1) {
     throw new LdOcapError(
       'capability field must have exactly one value');
   }
-  const [firstCapDoc] = expandedInvocation[capabilityUri];
+  const [firstCapDoc] = ocapProof[capabilityUri];
 
   await addCap(firstCapDoc);
 
@@ -207,40 +210,56 @@ async function getCapChain(expandedInvocation, options) {
 async function verifyInvocation(invocation, options) {
   try {
     const expandedInvocation = await jsonld.expand(invocation, options);
-    // Expands each, and makes sure each has type of Capability
-    const capChain = await getCapChain(expandedInvocation, options);
 
-    const caveatVerifier = options['caveatVerifier'] || defaultCaveatVerifier;
-
-    // Who's currently authorized to invoke this capability.
-    // Start with whatever the root document says...
-    const rootCap = _.head(capChain);
-    let currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
-
-    if(currentlyAuthorized.length === 0) {
+    // First let's look for the ocap proof(s)
+    const ocapProofs = _.filter(
+      expandedInvocation[proofUri] || [],
+      function (item) {
+        (_.has(item, capabilityUri) &&
+         item[proofPurposeUri] === invokeCapabilityUri);});
+    // They'd better be there!
+    if(ocapProofs.length === 0) {
       throw new LdOcapError(
-        'Root capability must grant authority to initial set of credentials');
+        'Invocation document does not have a capability proof');
     }
 
-    // Verify each capability and associated caveats...
-    for(const cap in capChain) {
-      await verifySignedByAuthorized(cap, currentlyAuthorized);
+    for (var ocapProof in ocapProofs) {
+      // Expands each, and makes sure each has type of Capability
+      const capChain = await getCapChain(ocapProof, options);
 
-      // Verify caveats
-      const caveats = cap[caveatUri] || [];
-      for (const caveat in caveats) {
-        await caveatVerifier(caveat, expandedInvocation, options);
+      const caveatVerifier = (
+        options['caveatVerifier'] || defaultCaveatVerifier);
+
+      // Who's currently authorized to invoke this capability.
+      // Start with whatever the root document says...
+      const rootCap = _.head(capChain);
+      let currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
+
+      if(currentlyAuthorized.length === 0) {
+        throw new LdOcapError(
+          'Root capability must grant authority to initial set ' +
+          'of credentials');
       }
 
-      // Maybe delegate
-      if(_.has(cap, capabilityAuthorizationUri)) {
-        currentlyAuthorized = cap[capabilityAuthorizationUri];
+      // Verify each capability and associated caveats...
+      for(const cap in capChain) {
+        await verifySignedByAuthorized(cap, currentlyAuthorized);
+
+        // Verify caveats
+        const caveats = cap[caveatUri] || [];
+        for (const caveat in caveats) {
+          await caveatVerifier(caveat, expandedInvocation, ocapProof, options);
+        }
+
+        // Maybe delegate
+        if(_.has(cap, capabilityAuthorizationUri)) {
+          currentlyAuthorized = cap[capabilityAuthorizationUri];
+        }
       }
+      // Made it this far... now to check that the invocation itself is signed
+      // by one of the currentlyAuthorized
+      await verifySignedByAuthorized(expandedInvocation);
     }
-
-    // Made it this far... now to check that the invocation itself is signed
-    // by one of the currentlyAuthorized
-    await verifySignedByAuthorized(expandedInvocation);
 
     // Looks like we're solid
     return {verified: true};

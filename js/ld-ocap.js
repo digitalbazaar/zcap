@@ -168,12 +168,10 @@ async function getCapChain(ocapProof, options) {
     const parentCapabilityLength = (cap[parentCapabilityUri] || []).length;
     if (parentCapabilityLength === 0) {
       // We're done here, this must be the root... this is a no-op
-      // TODO: Technically we don't need to put anything here but I don't
-      //   know what's best js style.  Code reviewers, speak up! :)
-      'no-op';
+      return;
     } else if(parentCapabilityLength === 1) {
       // Time to recursively add this capability 
-      addCap(cap[parentCapabilityUri][0]);
+      return addCap(cap[parentCapabilityUri][0]);
     } else {
       throw new LdOcapError(
         'parentCapability should be empty or have a single value');

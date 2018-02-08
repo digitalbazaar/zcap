@@ -103,8 +103,9 @@ const defaultCaveatVerifier = makeCaveatVerifier({});
 // The function we use to make sure that any of the later capability
 // documents are proved by a currently authorized participant
 async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
-  // TODO: This is super kludgy... does the solution come from
-  //   changes to Linked Data Proofs though?
+  // FIXME: This is super kludgy... does the solution come from
+  //   changes to Linked Data Proofs though?  Linked Data Signatures
+  //   should be the one providing this functionality
   // A hacky workaround so we can support the proof field even if
   // someone supplied signature instead.
   if(_.has(capDoc, proofUri)) {

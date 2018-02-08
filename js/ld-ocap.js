@@ -265,7 +265,8 @@ async function verifyInvocation(invocation, options) {
       }
       // Made it this far... now to check that the invocation itself is signed
       // by one of the currentlyAuthorized
-      await verifySignedByAuthorized(expandedInvocation);
+      // FIXME: How do we check the specific proof?
+      await verifySignedByAuthorized(expandedInvocation, currentlyAuthorized);
     }
 
     // Looks like we're solid

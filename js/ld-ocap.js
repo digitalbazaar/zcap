@@ -124,8 +124,13 @@ async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
   // FIXME: We can check the proof(s) to see if a specific entity signed
   //   this in many (all?) cases rather than iterating through everything
   // like this
-  for(const authorized in currentlyAuthorized) {
-    const result = await jsig.promises.verify(authorized);
+  for(const authorized of currentlyAuthorized) {
+    // FIXME: We'd only call verify once, we check that it was verified
+    //   and we check the key results to make sure our key is in there
+    const result = await jsig.promises.verify(
+      capDoc,
+      // FIXME:
+      {publicKeySomething: authorized});
     if (result.verified) {
       // Ok, it was signed by someone who is currentlyAuthorized
       return true;
@@ -145,10 +150,12 @@ async function getCapChain(ocapProof, options) {
   // Capbility chain... 
   const capChain = [];
   // Function to retrieve a capability
+  // FIXME: Default should throw an exception, because users should set
+  // this up themselves
   const getCap = options['getCapability'] || defaultGetCapability;
 
   // Get a capability, possibly from a URI, and
-  let addCap = async function(capOrUri) {
+  const addCap = async function(capOrUri) {
     let cap;
     // maybe retrieve the capability
     if(_.isString(capOrUri)) {
@@ -220,7 +227,7 @@ async function verifyInvocation(invocation, options) {
         'Invocation document does not have a capability proof');
     }
 
-    for (var ocapProof in ocapProofs) {
+    for (const ocapProof of ocapProofs) {
       // Expands each, and makes sure each has type of Capability
       const capChain = await getCapChain(ocapProof, options);
 
@@ -241,12 +248,13 @@ async function verifyInvocation(invocation, options) {
       }
 
       // Verify each capability and associated caveats...
-      for(const cap in capChain) {
+      for(const cap of capChain) {
         await verifySignedByAuthorized(cap, currentlyAuthorized);
 
         // Verify caveats
         const caveats = cap[caveatUri] || [];
-        for (const caveat in caveats) {
+        for (const caveat of caveats) {
+          // TODO: Maybe destructure named arguments
           await caveatVerifier(caveat, expandedInvocation, ocapProof, options);
         }
 

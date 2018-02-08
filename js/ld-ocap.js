@@ -50,8 +50,8 @@ function prefixedOcapUri(suffix) {
 
 // Vocabulary URIs
 const caveatUri = prefixedOcapUri('caveat');
-const capabilityAuthorizationUri = prefixedOcapUri(
-  'capabilityAuthorization');
+const invokerUri = prefixedOcapUri(
+  'invoker');
 const capabilityUri = prefixedOcapUri(
   'capability');
 const invokeCapabilityUri = prefixedOcapUri(
@@ -231,8 +231,10 @@ async function verifyInvocation(invocation, options) {
 
       // Who's currently authorized to invoke this capability.
       // Start with whatever the root document says...
+      // TODO: grantCapability invocationTarget
+      // TODO: And maybe even overrideable...
       const rootCap = _.head(capChain);
-      let currentlyAuthorized = rootCap[capabilityAuthorizationUri] || [];
+      let currentlyAuthorized = rootCap[invokerUri] || [];
 
       if(currentlyAuthorized.length === 0) {
         throw new LdOcapError(
@@ -251,8 +253,8 @@ async function verifyInvocation(invocation, options) {
         }
 
         // Maybe delegate
-        if(_.has(cap, capabilityAuthorizationUri)) {
-          currentlyAuthorized = cap[capabilityAuthorizationUri];
+        if(_.has(cap, invokerUri)) {
+          currentlyAuthorized = cap[invokerUri];
         }
       }
       // Made it this far... now to check that the invocation itself is signed

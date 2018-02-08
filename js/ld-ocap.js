@@ -157,7 +157,7 @@ async function getCapChain(ocapProof, options) {
       // It should already be expanded at this point
       cap = capOrUri;
     }
-    capChain.push(cap);
+    capChain.unshift(cap);
     if(_.has(cap, '@id')) {
       if(seen.has(cap['@id'])) {
         throw LdOcapError(
@@ -187,11 +187,10 @@ async function getCapChain(ocapProof, options) {
   }
   const [firstCapDoc] = ocapProof[capabilityUri];
 
+  // Start recursively adding capchain documents, starting with this
+  // leaf
   await addCap(firstCapDoc);
 
-  // Now reverse it...
-  capChain.reverse();
-  // ...and return it!
   return capChain;
 }
 

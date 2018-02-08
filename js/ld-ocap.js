@@ -77,7 +77,7 @@ class LdOcapError extends Error {
 // ================
 
 async function makeCaveatVerifier(verifierMap) {
-  async function dispatchVerifier(caveat, expandedInvocation, options) {
+  return async function (caveat, expandedInvocation, options) {
     // FIXME: We might need to load the caveat from a url
     const caveatTypeArray = caveat['@type'] || [];
     if(caveat['@type'].length !== 1) {
@@ -95,7 +95,6 @@ async function makeCaveatVerifier(verifierMap) {
     // the verification fails
     await caveatVerifier(caveat, expandedInvocation, options);
   }
-  return dispatchVerifier;
 }
 
 // TODO: Add some default caveats here

@@ -236,8 +236,9 @@ async function verifyInvocation(invocation, options) {
 
       // Who's currently authorized to invoke this capability.
       // Start with whatever the root document says...
-      // TODO: grantCapability invocationTarget
-      // TODO: And maybe even overrideable...
+      // FIXME: This should use grantCapability invocationTarget,
+      //   not the currentlyAuthorized.  That's a serious bug!
+      // FIXME: And probably this should even be overrideable
       const rootCap = _.head(capChain);
       let currentlyAuthorized = rootCap[invokerUri] || [];
 

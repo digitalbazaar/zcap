@@ -77,7 +77,8 @@ class LdOcapError extends Error {
 // ================
 
 async function makeCaveatVerifier(verifierMap) {
-  return async function (caveat, expandedInvocation, options) {
+  return async function (
+    caveat, expandedInvocation, {jsonLdOptions={}, state={}}) {
     // FIXME: We might need to load the caveat from a url
     const caveatTypeArray = caveat['@type'] || [];
     if(caveat['@type'].length !== 1) {
@@ -93,8 +94,9 @@ async function makeCaveatVerifier(verifierMap) {
     let caveatVerifier = verifierMap[caveatType];
     // Run the caveat verifier, which will raise an exception if
     // the verification fails
-    await caveatVerifier(caveat, expandedInvocation, options);
-  }
+    await caveatVerifier(
+      caveat, expandedInvocation, {jsonLdOptions, state});
+  };
 }
 
 // TODO: Add some default caveats here
@@ -143,23 +145,20 @@ async function verifySignedByAuthorized(capDoc, currentlyAuthorized) {
 
 // Get the capability chain as a list of fully expanded json-ld documents,
 // starting with the root capability document and working from there.
-async function getCapChain(ocapProof, options) {
+async function getCapChain(
+  ocapProof, {getCapability=defaultGetCapability, jsonLdOptions={}}) {
   // Make sure we don't end up somehow infinitely recursing
   // This is a set of ids
   const seen = new Set();
   // Capbility chain... 
   const capChain = [];
-  // Function to retrieve a capability
-  // FIXME: Default should throw an exception, because users should set
-  // this up themselves
-  const getCap = options['getCapability'] || defaultGetCapability;
 
   // Get a capability, possibly from a URI, and
   const addCap = async function(capOrUri) {
     let cap;
     // maybe retrieve the capability
     if(_.isString(capOrUri)) {
-      cap = jsonld.expand(await getCap(capOrUri), options);
+      cap = jsonld.expand(await getCapability(capOrUri), jsonLdOptions);
     } else {
       // It should already be expanded at this point
       cap = capOrUri;
@@ -201,7 +200,12 @@ async function getCapChain(ocapProof, options) {
   return capChain;
 }
 
-
+async function defaultGetCapability(ocapOrUri) {
+  // no-op kludge so linter doesn't complain about unused variables
+  ocapOrUri;
+  throw new LdOcapError(
+    'getCapability argument not set');
+}
 
 // Core API
 // ========
@@ -211,9 +215,14 @@ async function getCapChain(ocapProof, options) {
  * Invocation, including verifying all caveats.  Raises an exception
  * if unsuccessful, otherwise returns true.
  */
-async function verifyInvocation(invocation, options) {
+async function verifyInvocation(
+  invocation,
+  {
+    getCapability=defaultGetCapability, caveatVerifier=defaultCaveatVerifier,
+    jsonLdOptions={}, state={}
+  }) {
   try {
-    const expandedInvocation = await jsonld.expand(invocation, options);
+    const expandedInvocation = await jsonld.expand(invocation, jsonLdOptions);
 
     // First let's look for the ocap proof(s)
     const ocapProofs = _.filter(
@@ -229,10 +238,8 @@ async function verifyInvocation(invocation, options) {
 
     for (const ocapProof of ocapProofs) {
       // Expands each, and makes sure each has type of Capability
-      const capChain = await getCapChain(ocapProof, options);
-
-      const caveatVerifier = (
-        options['caveatVerifier'] || defaultCaveatVerifier);
+      const capChain = await getCapChain(
+        ocapProof, {jsonLdOptions, getCapability});
 
       // Who's currently authorized to invoke this capability.
       // Start with whatever the root document says...
@@ -250,13 +257,17 @@ async function verifyInvocation(invocation, options) {
 
       // Verify each capability and associated caveats...
       for(const cap of capChain) {
-        await verifySignedByAuthorized(cap, currentlyAuthorized);
+        await verifySignedByAuthorized(
+          cap, currentlyAuthorized,
+          {jsonLdOptions, state});
 
         // Verify caveats
         const caveats = cap[caveatUri] || [];
         for (const caveat of caveats) {
           // TODO: Maybe destructure named arguments
-          await caveatVerifier(caveat, expandedInvocation, ocapProof, options);
+          await caveatVerifier(
+            caveat, expandedInvocation, ocapProof,
+            {jsonLdOptions, state});
         }
 
         // Maybe delegate

@@ -290,4 +290,4 @@ async function verifyInvocation(
 
 const api = {verifyInvocation};
 
-export default api;
+module.exports = api;

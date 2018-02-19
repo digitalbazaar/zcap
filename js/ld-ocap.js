@@ -288,6 +288,6 @@ async function verifyInvocation(
   }
 }
 
-const api = {verifyInvocation};
+const api = {verifyInvocation, makeCaveatVerifier};
 
 module.exports = api;

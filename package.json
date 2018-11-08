@@ -1,11 +1,11 @@
 {
-  "name": "ldocap",
+  "name": "ocapld",
   "version": "0.0.1",
   "license": "BSD-3-Clause",
   "description": "Linked Data Capabilities reference implementation.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitalbazaar/ldocap.js.git"
+    "url": "https://github.com/digitalbazaar/ocapld.js"
   },
   "author": {
     "name": "Digital Bazaar, Inc.",
@@ -13,22 +13,17 @@
     "url": "https://digitalbazaar.com/"
   },
   "bugs": {
-    "url": "https://github.com/digitalbazaar/ldocap.js/issues/"
+    "url": "https://github.com/digitalbazaar/ocapld.js/issues/"
   },
-  "homepage": "https://github.com/digitalbazaar/ldocap.js/",
+  "homepage": "https://github.com/digitalbazaar/ocapld.js/",
   "dependencies": {
-    "async": "^2.5.0",
-    "commander": "^2.11.0",
-    "jsonld": "^0.5.0",
-    "jsonld-signatures": "digitalbazaar/jsonld-signatures#authenticationCredential",
-    "node-forge": "^0.7.1",
-    "program": "^1.0.0",
-    "request": "^2.82.0",
-    "uuid": "^3.0.1",
-    "lodash": "^4.17.4"
+    "jsonld": "^1.1.0"
+  },
+  "peerDependencies": {
+    "jsonld-signatures": "^2.3.1"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8.0.0"
   },
-  "main": "js/ld-ocap.js"
+  "main": "lib"
 }

@@ -1,29 +1,80 @@
 {
   "name": "ocapld",
   "version": "0.0.1",
-  "license": "BSD-3-Clause",
   "description": "Linked Data Capabilities reference implementation.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/digitalbazaar/ocapld.js"
-  },
+  "homepage": "https://github.com/digitalbazaar/ocapld.js/",
   "author": {
     "name": "Digital Bazaar, Inc.",
     "email": "support@digitalbazaar.com",
     "url": "https://digitalbazaar.com/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digitalbazaar/ocapld.js"
+  },
   "bugs": {
     "url": "https://github.com/digitalbazaar/ocapld.js/issues/"
   },
-  "homepage": "https://github.com/digitalbazaar/ocapld.js/",
-  "dependencies": {
-    "jsonld": "^1.1.0"
+  "license": "BSD-3-Clause",
+  "main": "lib/index.js",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-node6-es6": "^11.2.5",
+    "browserify": "^16.1.0",
+    "chai": "^4.1.2",
+    "commander": "^2.14.1",
+    "core-js": "^2.5.3",
+    "cross-env": "^5.1.3",
+    "jscs": "^3.0.0",
+    "jsonld-signatures": "github:cwebber/jsonld-signatures#just-proof-purpose",
+    "jshint": "^2.9.1",
+    "karma": "^2.0.0",
+    "karma-babel-preprocessor": "^7.0.0",
+    "karma-browserify": "^5.2.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-edge-launcher": "^0.4.2",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-safari-launcher": "^1.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-tap-reporter": "0.0.6",
+    "karma-webpack": "^2.0.9",
+    "mocha": "^5.0.0",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^11.4.1",
+    "regenerator-runtime": "^0.11.1",
+    "webpack": "^3.11.0",
+    "webpack-merge": "^4.1.1"
   },
   "peerDependencies": {
-    "jsonld-signatures": "^2.3.1"
+    "jsonld-signatures": "github:cwebber/jsonld-signatures#just-proof-purpose"
+  },
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "npm run build-webpack",
+    "build-webpack": "webpack",
+    "test": "npm run test-node && npm run test-karma",
+    "test-node": "cross-env NODE_ENV=test mocha --delay -t 30000 -A -R ${REPORTER:-spec} tests/test.js",
+    "test-karma": "karma start",
+    "coverage": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text-summary npm run test-node",
+    "coverage-report": "nyc report"
+  },
+  "nyc": {
+    "exclude": [
+      "tests"
+    ]
+  },
+  "browser": {
+    "lib/index.js": "./lib/index.js",
+    "crypto": false,
+    "bs58": false,
+    "chloride": false
   },
   "engines": {
     "node": ">=8.0.0"
-  },
-  "main": "lib"
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "@context": ["https://example.org/ocap/v1", "https://autopower.example/"],
+  "id": "https://social.example/alyssa/caps#79795d78",
+  "parentCapability": "https://whatacar.example/a-fancy-car/proc/7a397d7b",
+  "invoker": "https://chatty.example#ben",
+  "caveat": [
+    {
+      "type": "ValidWhileTrue",
+      "uri": "https://social.example/alyssa/ben-can-still-drive"
+    }
+  ]
+}

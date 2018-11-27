@@ -1,0 +1,5 @@
+{
+  "@context": ["https://example.org/ocap/v1", "https://autopower.example/"],
+  "id": "urn:uuid:ad86cb2c-e9db-434a-beae-71b82120a8a4",
+  "action": "Drive"
+}

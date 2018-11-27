@@ -1,0 +1,12 @@
+{
+  "@context": ["https://example.org/ocap/v1", "https://autopower.example/"],
+  "id": "https://chatty.example/ben/caps#2cdea8c1",
+  "parentCapability": "https://social.example/alyssa/caps#79795d78",
+  "invoker": "https://lem.example/#key-bf36",
+  "caveat": [
+    {
+      "type": "DriveNoMoreThan",
+      "kilometers": 123859
+    }
+  ]
+}

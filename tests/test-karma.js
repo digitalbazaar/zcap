@@ -24,10 +24,11 @@ require('core-js/fn/object/assign');
 require('core-js/fn/promise');
 require('regenerator-runtime/runtime');
 
-const assert = require('chai').assert;
 const common = require('./test-common');
+const expect = require('chai').expect;
 const jsigs = require('../node_modules/jsonld-signatures');
 const jsonld = require('../node_modules/jsonld/dist/jsonld.js');
+const ocapld = require('../lib');
 
 const forge = require('../node_modules/node-forge');
 window.forge = forge;
@@ -35,9 +36,10 @@ window.forge = forge;
 jsigs.promises({api: jsigs.promises});
 
 const options = {
-  assert: assert,
-  jsigs: jsigs,
-  jsonld: jsonld,
+  expect,
+  jsigs,
+  jsonld,
+  ocapld,
   nodejs: false
 };
 

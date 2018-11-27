@@ -63,9 +63,14 @@ module.exports = function(config) {
               // exclude node_modules by default
               exclude: /(node_modules)/
             }, {
+              // include jsonld
+              include: /(node_modules\/jsonld)/
+            }, {
               // include rdf-canonize
-              include: /(node_modules\/jsonld)/,
               include: /(node_modules\/rdf-canonize)/
+            }, {
+              // include jsonld-signatures
+              include: /(node_modules\/jsonld-signatures)/
             }],
             use: {
               loader: 'babel-loader',

@@ -1,0 +1,6 @@
+{
+  "@context": "https://w3id.org/security/v2",
+  "id": "https://whatacar.example/a-fancy-car/proc/7a397d7b",
+  "parentCapability": "https://example.org/alice/caps#1",
+  "invoker": "https://social.example#alyssa"
+}

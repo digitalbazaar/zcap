@@ -34,8 +34,8 @@ module.exports = function(options) {
       describe('installation of library', () => {
         it('should successfully install the ocapld.js library', done => {
           ocapld.install(jsigs);
-          expect(jsigs.proofPurposes.capabilityInvocation).to.exist;
-          expect(jsigs.proofPurposes.capabilityDelegation).to.exist;
+          expect(jsigs.proofPurposes.use('capabilityInvocation')).to.exist;
+          expect(jsigs.proofPurposes.use('capabilityDelegation')).to.exist;
           done();
         });
       })
@@ -50,16 +50,18 @@ module.exports = function(options) {
           let err;
           let signedDocument;
           try {
+            const {privateKeyBase58} = alice.get('capabilityInvocation', 0);
             signedDocument = await jsigs.sign(capabilities.root, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityInvocation', 0).id,
-              privateKeyBase58: alice.get('capabilityInvocation', 0).privateKeyBase58,
-              proofPurposeOptions: {
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
                 capability: capabilities.root.id
               },
-              proofPurpose: 'capabilityInvocation',
             });
           } catch(e) {
+            console.log(e);
             err = e;
           }
           expect(signedDocument).to.exist;
@@ -67,15 +69,16 @@ module.exports = function(options) {
         });
 
         it('should fail signing with capabilityInvocation proofPurpose and' +
-          ' missing proofPurposeOptions', async () => {
+          ' missing purposeOptions', async () => {
           let err;
           let signedDocument;
           try {
+            const {privateKeyBase58} = alice.get('capabilityInvocation', 0);
             signedDocument = await jsigs.sign(capabilities.root, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityInvocation', 0).id,
-              privateKeyBase58: alice.get('capabilityInvocation', 0).privateKeyBase58,
-              proofPurpose: 'capabilityInvocation',
+              privateKeyBase58,
+              purpose: 'capabilityInvocation'
             });
           } catch(e) {
             err = e;
@@ -86,16 +89,16 @@ module.exports = function(options) {
             ' of the capability to be invoked.');
         });
 
-        it('should successfully sign with capabilityDelegation proofPurpose',
-          async () => {
+        it('should successfully sign with capabilityDelegation proofPurpose', async () => {
           let err;
           let signedDocument;
           try {
+            const {privateKeyBase58} = alice.get('capabilityDelegation', 0);
             signedDocument = await jsigs.sign(capabilities.root, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityDelegation', 0).id,
-              privateKeyBase58: alice.get('capabilityDelegation', 0).privateKeyBase58,
-              proofPurpose: 'capabilityDelegation',
+              privateKeyBase58,
+              purpose: 'capabilityDelegation'
             });
           } catch(e) {
             err = e;
@@ -113,11 +116,12 @@ module.exports = function(options) {
           let err;
           let signedDocument;
           try {
+            const {privateKeyBase58} = alice.get('capabilityDelegation', 0);
             signedDocument = await jsigs.sign(capabilities.root, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityDelegation', 0).id,
-              privateKeyBase58: alice.get('capabilityDelegation', 0).privateKeyBase58,
-              proofPurpose: 'capabilityDelegation',
+              privateKeyBase58,
+              purpose: 'capabilityDelegation'
             });
           } catch(e) {
             err = e;
@@ -132,14 +136,16 @@ module.exports = function(options) {
           let err;
           let res;
           try {
+            const {privateKeyBase58} = alice.get('capabilityInvocation', 0);
+            // Invoke the root capability using the invoker key
             const capInv = await jsigs.sign(capabilities.root, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityInvocation', 0).id,
-              privateKeyBase58: alice.get('capabilityInvocation', 0).privateKeyBase58,
-              proofPurposeOptions: {
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
                 capability: capabilities.root.id
-              },
-              proofPurpose: 'capabilityInvocation'
+              }
             });
             jsonld.documentLoader = addToLoader({
               documentLoader: jsonld.documentLoader,
@@ -148,12 +154,14 @@ module.exports = function(options) {
                 id: 'urn:foo'
               }
             });
+            // Verify a self invoked capability
             res = await jsigs.verify(capInv, {
               getPublicKey: jsigs.getPublicKey,
               getPublicKeyOwner: jsigs.getJsonLd,
               publicKey: alice.get('capabilityInvocation', 0).id,
               publicKeyOwner: alice.id(),
-              proofPurposeOptions: {
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
                 expectedTarget: capabilities.root.id
               }
             });
@@ -164,40 +172,49 @@ module.exports = function(options) {
           expect(err).to.not.exist;
           expect(res.verified).to.be.true;
         });
-        it('should successfully verify a capability chain of depth 2',
-          async () => {
+        it('should successfully verify a capability chain of depth 2', async () => {
           let err;
           let res;
           try {
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The invoker should be Bob's invocation key
             const capabilityDelegation = {
               '@context': 'https://w3id.org/security/v2',
               id: 'https://whatacar.example/a-fancy-car/proc/7a397d7b',
               parentCapability: capabilities.root.id,
               invoker: bob.get('capabilityInvocation', 0).id
             };
+            let {privateKeyBase58} = alice.get('capabilityDelegation', 0);
+            //  3. Sign the delegated capability with Alice's delegation key
+            //     that was specified as the delegator in the root capability
             const capDel = await jsigs.sign(capabilityDelegation, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('capabilityDelegation', 0).id,
-              privateKeyBase58: alice.get('capabilityDelegation', 0).privateKeyBase58,
-              proofPurpose: 'capabilityDelegation'
+              privateKeyBase58,
+              purpose: 'capabilityDelegation'
             });
             jsonld.documentLoader = addToLoader({
               documentLoader: jsonld.documentLoader,
               doc: capDel
             });
+            // Invoke the capability that was delegated
             const capabilityInvocation = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.org/bob/caps#1',
-              invoker: bob.get('capabilityInvocation', 0).id
+              id: 'https://example.org/bob/caps#1'
             };
+            ({privateKeyBase58} = bob.get('capabilityInvocation', 0));
+            //   1. Use Bob's invocation key that was assigned as invoker in the
+            //      delegate capability
+            //   2. The invoker should be Bob's invocation key
             const capInv = await jsigs.sign(capabilityInvocation, {
               algorithm: 'Ed25519Signature2018',
               creator: bob.get('capabilityInvocation', 0).id,
-              privateKeyBase58: bob.get('capabilityInvocation', 0).privateKeyBase58,
-              proofPurposeOptions: {
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
                 capability: 'https://whatacar.example/a-fancy-car/proc/7a397d7b'
-              },
-              proofPurpose: 'capabilityInvocation'
+              }
             });
             jsonld.documentLoader = addToLoader({
               documentLoader: jsonld.documentLoader,
@@ -208,7 +225,8 @@ module.exports = function(options) {
               getPublicKeyOwner: jsigs.getJsonLd,
               publicKey: bob.get('capabilityInvocation', 0).id,
               publicKeyOwner: bob.id(),
-              proofPurposeOptions: {
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
                 expectedTarget: capabilities.root.id
               }
             });

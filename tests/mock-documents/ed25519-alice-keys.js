@@ -19,7 +19,7 @@ module.exports = {
       "type": "Ed25519ignatureCapabilityDelegation2018",
       "publicKey": {
         "@context": "https://w3id.org/security/v2",
-        "id": "https://example.com/i/alice/keys/2",
+        "id": "https://example.com/i/alice/keys/1",
         "type": "Ed25519VerificationKey2018",
         "owner": "https://example.com/i/alice",
         "publicKeyBase58": "GycSSui454dpYRKiFdsQ5uaE8Gy3ac6dSMPcAoQsk8yq",

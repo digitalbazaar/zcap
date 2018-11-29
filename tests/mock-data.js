@@ -8,24 +8,24 @@ const owners = mock.owners = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation'];
 
-owners['alice'] = require('./mock-documents/ed25519-alice-keys');
-owners['bob'] = require('./mock-documents/ed25519-bob-keys');
-owners['carol'] = require('./mock-documents/ed25519-carol-keys');
-owners['diana'] = require('./mock-documents/ed25519-diana-keys');
+owners.alice = require('./mock-documents/ed25519-alice-keys');
+owners.bob = require('./mock-documents/ed25519-bob-keys');
+owners.carol = require('./mock-documents/ed25519-carol-keys');
+owners.diana = require('./mock-documents/ed25519-diana-keys');
 
 // Generate a flattened list of all keys
 let keyList = Object.keys(owners).map(name => KEY_TYPES
   .map(keyType => owners[name][keyType])
   .reduce((acc, curr) => acc.concat(curr), [])
-)
-keyList = [].concat.apply([], keyList)
+);
+keyList = [].concat.apply([], keyList);
 
-capabilities['root'] = {
-  "@context": "https://w3id.org/security/v2",
-  "id": "https://example.org/alice/caps#1",
-  "invoker": "https://example.com/i/alice/keys/1",
-  "delegator": "https://example.com/i/alice/keys/1"
-}
+capabilities.root = {
+  '@context': 'https://w3id.org/security/v2',
+  id: 'https://example.org/alice/caps#1',
+  invoker: 'https://example.com/i/alice/keys/1',
+  delegator: 'https://example.com/i/alice/keys/1'
+};
 
 mock.testLoader = oldLoader => async url => {
   // register root capability
@@ -74,7 +74,7 @@ mock.testLoader = oldLoader => async url => {
     const opts = {
       algorithm: 'URDNA2015',
       format: 'application/n-quads'
-    }
+    };
     const canonizedKey = await jsonld.canonize(key.publicKey, opts);
     rest.forEach(async duplicateKey => {
       const canonizedDuplicateKey = await jsonld.canonize(

@@ -38,7 +38,7 @@ module.exports = function(options) {
           expect(jsigs.proofPurposes.use('capabilityDelegation')).to.exist;
           done();
         });
-      })
+      });
     });
     context('Invoker as keys', () => {
       describe('signing with capabilityInvocation', () => {
@@ -113,22 +113,22 @@ module.exports = function(options) {
         });
         it('should successfully sign with capabilityDelegation proofPurpose',
           async () => {
-          let err;
-          let signedDocument;
-          try {
-            const {privateKeyBase58} = alice.get('capabilityDelegation', 0);
-            signedDocument = await jsigs.sign(capabilities.root, {
-              algorithm: 'Ed25519Signature2018',
-              creator: alice.get('capabilityDelegation', 0).id,
-              privateKeyBase58,
-              purpose: 'capabilityDelegation'
-            });
-          } catch(e) {
-            err = e;
-          }
-          expect(signedDocument).to.exist;
-          expect(err).to.be.undefined;
-        });
+            let err;
+            let signedDocument;
+            try {
+              const {privateKeyBase58} = alice.get('capabilityDelegation', 0);
+              signedDocument = await jsigs.sign(capabilities.root, {
+                algorithm: 'Ed25519Signature2018',
+                creator: alice.get('capabilityDelegation', 0).id,
+                privateKeyBase58,
+                purpose: 'capabilityDelegation'
+              });
+            } catch(e) {
+              err = e;
+            }
+            expect(signedDocument).to.exist;
+            expect(err).to.be.undefined;
+          });
       });
       describe('verifying capability chains', () => {
         it('should successfully verify a self invoked root' +
@@ -231,7 +231,7 @@ module.exports = function(options) {
               }
             });
           } catch(e) {
-            console.log(e)
+            console.log(e);
             err = e;
           }
           expect(res).to.exist;

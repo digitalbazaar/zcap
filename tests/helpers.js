@@ -2,17 +2,16 @@ const api = {};
 module.exports = api;
 
 api.addToLoader = ({documentLoader, doc}) => {
-  return (url, callback) => {
+  return async (url) => {
     if(url === doc.id) {
-      return callback(null, {
+      return {
         contextUrl: null,
         document: doc,
         documentUrl: doc.id
-      });
+      };
     }
-    return documentLoader(url, callback);
+    return documentLoader(url);
   };
-
 };
 
 api.Owner = class Owner {

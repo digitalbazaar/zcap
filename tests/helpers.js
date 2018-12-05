@@ -25,6 +25,6 @@ api.Owner = class Owner {
   }
 
   get(keyType, index) {
-    return this.doc[keyType][index].publicKey
+    return this.doc[keyType][index];
   }
 };

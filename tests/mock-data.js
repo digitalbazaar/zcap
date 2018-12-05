@@ -13,7 +13,14 @@ owners.bob = require('./mock-documents/ed25519-bob-keys');
 owners.carol = require('./mock-documents/ed25519-carol-keys');
 owners.diana = require('./mock-documents/ed25519-diana-keys');
 
-capabilities.root = {
+capabilities.root = {};
+capabilities.root.controller = {
+  '@context': 'https://w3id.org/security/v2',
+  id: 'https://example.org/alice/caps#0',
+  invoker: owners.alice.id,
+  delegator: owners.alice.id
+};
+capabilities.root.keys = {
   '@context': 'https://w3id.org/security/v2',
   id: 'https://example.org/alice/caps#1',
   invoker: 'https://example.com/i/alice/keys/1',
@@ -53,7 +60,8 @@ const docsForLoader = [
   owners.bob,
   owners.carol,
   owners.diana,
-  capabilities.root,
+  capabilities.root.keys,
+  capabilities.root.controller,
   ...keyList
 ];
 

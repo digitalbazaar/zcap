@@ -1,37 +1,49 @@
+const jsonld = require('jsonld');
 
 const mock = {};
 module.exports = mock;
 
 const capabilities = mock.capabilities = {};
-const ddocs = mock.ddocs = {};
+const didDocs = mock.didDocs = {};
+const privateDidDocs = mock.privateDidDocs = {};
 const owners = mock.owners = {};
 const _loaderData = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
+
+const v1Context = require('./mock-documents/veres-one-context');
+_loaderData['https://w3id.org/veres-one/v1'] = v1Context;
 
 owners.alice = require('./mock-documents/ed25519-alice-keys');
 owners.bob = require('./mock-documents/ed25519-bob-keys');
 owners.carol = require('./mock-documents/ed25519-carol-keys');
 owners.diana = require('./mock-documents/ed25519-diana-keys');
 
-ddocs.alpha = require('./mock-documents/did-doc-alpha');
-ddocs.beta = require('./mock-documents/did-doc-beta');
-ddocs.gamma = require('./mock-documents/did-doc-gamma');
-ddocs.delta = require('./mock-documents/did-doc-delta');
+privateDidDocs.alpha = require('./mock-documents/did-doc-alpha');
+privateDidDocs.beta = require('./mock-documents/did-doc-beta');
+privateDidDocs.gamma = require('./mock-documents/did-doc-gamma');
+privateDidDocs.delta = require('./mock-documents/did-doc-delta');
+didDocs.alpha = _stripPrivateKeys(privateDidDocs.alpha);
+didDocs.beta = _stripPrivateKeys(privateDidDocs.beta);
+didDocs.gamma = _stripPrivateKeys(privateDidDocs.gamma);
+didDocs.delta = _stripPrivateKeys(privateDidDocs.delta);
 
 capabilities.root = {};
-capabilities.root.controller = {
-  '@context': 'https://w3id.org/security/v2',
-  id: 'https://example.org/alice/caps#0',
-  invoker: owners.alice.id,
-  delegator: owners.alice.id
-};
-capabilities.root.keys = {
+// keys as invoker and delegator
+capabilities.root.alpha = {
   '@context': 'https://w3id.org/security/v2',
   id: 'https://example.org/alice/caps#1',
   invoker: 'https://example.com/i/alice/keys/1',
   delegator: 'https://example.com/i/alice/keys/1'
 };
+// controllers as invoker and delegator
+capabilities.root.beta = {
+  '@context': 'https://w3id.org/security/v2',
+  id: 'https://example.org/alice/caps#0',
+  invoker: owners.alice.id,
+  delegator: owners.alice.id
+};
+
 
 // Generate a flattened list of all keys
 let ownersKeyList = Object.keys(owners).map(name => KEY_TYPES
@@ -42,8 +54,8 @@ ownersKeyList = [].concat.apply([], ownersKeyList)
   .filter(key => !!key && typeof key.publicKey !== 'string')
   .map((doc) => doc.publicKey ? doc.publicKey : doc);
 
-let ddocKeyList = Object.keys(ddocs).map(name => KEY_TYPES
-  .map(keyType => ddocs[name][keyType])
+let ddocKeyList = Object.keys(privateDidDocs).map(name => KEY_TYPES
+  .map(keyType => privateDidDocs[name][keyType])
   .reduce((acc, curr) => acc.concat(curr), [])
 );
 ddocKeyList = [].concat.apply([], ddocKeyList)
@@ -62,8 +74,26 @@ mock.addToLoader = ({doc}) => {
 };
 
 mock.testLoader = oldLoader => async url => {
-  // register root capability
   if(url in _loaderData) {
+    if(url.startsWith('did:v1')) {
+      const hashFragment = url.split('#')[1];
+      if(hashFragment) {
+        const map = await jsonld.createNodeMap(_loaderData[url]);
+        const subGraph = map[url];
+        if(!subGraph) {
+          throw new Error(
+            `Failed to get subgraph within a DID Document, uri: "${url}"`
+          );
+        }
+        const document =
+          await jsonld.compact(subGraph, _loaderData[url]['@context']);
+        return {
+          contextUrl: null,
+          document,
+          documentUrl: url
+        };
+      }
+    }
     return {
       contextUrl: null,
       document: _loaderData[url],
@@ -73,13 +103,26 @@ mock.testLoader = oldLoader => async url => {
   return oldLoader(url);
 };
 
+function _stripPrivateKeys(privateDidDocument) {
+  // clone the doc
+  const didDocument = JSON.parse(JSON.stringify(privateDidDocument));
+  delete didDocument.authentication[0].publicKey[0].privateKeyBase58;
+  delete didDocument.capabilityDelegation[0].publicKey[0].privateKeyBase58;
+  delete didDocument.capabilityInvocation[0].publicKey[0].privateKeyBase58;
+  return didDocument;
+}
+
 const docsForLoader = [
   owners.alice,
   owners.bob,
   owners.carol,
   owners.diana,
-  capabilities.root.keys,
-  capabilities.root.controller,
+  didDocs.alpha,
+  didDocs.beta,
+  didDocs.gamma,
+  didDocs.delta,
+  capabilities.root.alpha,
+  capabilities.root.beta,
   ...keyList
 ];
 

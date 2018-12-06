@@ -8,7 +8,14 @@
  */
 
 'use strict';
-const {owners, testLoader, capabilities, addToLoader} = require('./mock-data');
+const {
+  owners,
+  didDocs,
+  privateDidDocs,
+  testLoader,
+  capabilities,
+  addToLoader,
+} = require('./mock-data');
 const {Owner} = require('./helpers');
 
 module.exports = function(options) {
@@ -25,6 +32,10 @@ module.exports = function(options) {
   const bob = new Owner(owners.bob);
   const carol = new Owner(owners.carol);
   const diana = new Owner(owners.diana);
+  const alpha = new Owner(privateDidDocs.alpha);
+  const beta = new Owner(privateDidDocs.beta);
+  const gamma = new Owner(privateDidDocs.gamma);
+  const delta = new Owner(privateDidDocs.delta);
 
   // run tests
   describe('ocapld.js', () => {
@@ -47,13 +58,13 @@ module.exports = function(options) {
           let signedDocument;
           try {
             const {privateKeyBase58} = alice.get('publicKey', 0);
-            signedDocument = await jsigs.sign(capabilities.root.keys, {
+            signedDocument = await jsigs.sign(capabilities.root.alpha, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: capabilities.root.keys.id
+                capability: capabilities.root.alpha.id
               },
             });
           } catch(e) {
@@ -68,7 +79,7 @@ module.exports = function(options) {
           let signedDocument;
           try {
             const {privateKeyBase58} = alice.get('publicKey', 0);
-            signedDocument = await jsigs.sign(capabilities.root.keys, {
+            signedDocument = await jsigs.sign(capabilities.root.alpha, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
@@ -87,7 +98,7 @@ module.exports = function(options) {
           let signedDocument;
           try {
             const {privateKeyBase58} = alice.get('publicKey', 0);
-            signedDocument = await jsigs.sign(capabilities.root.keys, {
+            signedDocument = await jsigs.sign(capabilities.root.alpha, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
@@ -110,7 +121,7 @@ module.exports = function(options) {
             let signedDocument;
             try {
               const {privateKeyBase58} = alice.get('publicKey', 0);
-              signedDocument = await jsigs.sign(capabilities.root.keys, {
+              signedDocument = await jsigs.sign(capabilities.root.alpha, {
                 algorithm: 'Ed25519Signature2018',
                 creator: alice.get('publicKey', 0).id,
                 privateKeyBase58,
@@ -136,13 +147,13 @@ module.exports = function(options) {
           try {
             const {privateKeyBase58} = alice.get('publicKey', 0);
             // Invoke the root capability using the invoker key
-            const capInv = await jsigs.sign(capabilities.root.keys, {
+            const capInv = await jsigs.sign(capabilities.root.alpha, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: capabilities.root.keys.id
+                capability: capabilities.root.alpha.id
               }
             });
             addToLoader({doc: {...capInv, id: 'urn:foo'}});
@@ -150,7 +161,7 @@ module.exports = function(options) {
             res = await jsigs.verify(capInv, {
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                expectedTarget: capabilities.root.keys.id
+                expectedTarget: capabilities.root.alpha.id
               }
             });
           } catch(e) {
@@ -170,7 +181,7 @@ module.exports = function(options) {
             const capabilityDelegation = {
               '@context': 'https://w3id.org/security/v2',
               id: 'https://whatacar.example/a-fancy-car/proc/7a397d7b',
-              parentCapability: capabilities.root.keys.id,
+              parentCapability: capabilities.root.alpha.id,
               invoker: bob.get('capabilityInvocation', 0).publicKey.id
             };
             let {privateKeyBase58} = alice.get('publicKey', 0);
@@ -205,7 +216,7 @@ module.exports = function(options) {
             res = await jsigs.verify(capInv, {
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                expectedTarget: capabilities.root.keys.id
+                expectedTarget: capabilities.root.alpha.id
               }
             });
           } catch(e) {
@@ -227,13 +238,13 @@ module.exports = function(options) {
           try {
             const {privateKeyBase58} = alice.get('publicKey', 0);
             // Invoke the root capability using the invoker key
-            const capInv = await jsigs.sign(capabilities.root.controller, {
+            const capInv = await jsigs.sign(capabilities.root.beta, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: capabilities.root.controller.id
+                capability: capabilities.root.beta.id
               }
             });
             addToLoader({doc: {...capInv, id: 'urn:foo:1'}});
@@ -241,7 +252,42 @@ module.exports = function(options) {
             res = await jsigs.verify(capInv, {
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                expectedTarget: capabilities.root.controller.id
+                expectedTarget: capabilities.root.beta.id
+              }
+            });
+          } catch(e) {
+            err = e;
+          }
+          expect(res).to.exist;
+          expect(err).to.not.exist;
+          expect(res.verified).to.be.true;
+        });
+        it('should successfully verify a self invoked root' +
+          ' capability with missing invoker and delegator', async () => {
+          let err;
+          let res;
+          try {
+            const {privateKeyBase58, id} =
+              alpha.get('capabilityInvocation', 0).publicKey[0];
+            // Invoke the root capability using the invoker key
+            const doc = {
+              id: 'urn:alpha:caps:1',
+              '@context': 'https://w3id.org/security/v2'
+            };
+            const capInv = await jsigs.sign(doc, {
+              algorithm: 'Ed25519Signature2018',
+              creator: id,
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                capability: didDocs.alpha.id
+              }
+            });
+            // Verify a self invoked capability
+            res = await jsigs.verify(capInv, {
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                expectedTarget: didDocs.alpha.id
               }
             });
           } catch(e) {
@@ -260,8 +306,8 @@ module.exports = function(options) {
             //   2. The invoker should be Bob's invocation key
             const capabilityDelegation = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://whatacar.example/a-fancy-car/proc/7a397d7b/1',
-              parentCapability: capabilities.root.controller.id,
+              id: 'https://example.com/caps/bob/1',
+              parentCapability: capabilities.root.beta.id,
               invoker: bob.id()
             };
             let {privateKeyBase58} = alice.get('publicKey', 0);
@@ -277,7 +323,7 @@ module.exports = function(options) {
             // Invoke the capability that was delegated
             const capabilityInvocation = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.org/bob/caps#0'
+              id: 'https://example.com/caps/bob/2'
             };
             ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
             //   4. Use Bob's invocation key that was assigned as invoker in the
@@ -290,14 +336,14 @@ module.exports = function(options) {
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: 'https://whatacar.example/a-fancy-car/proc/7a397d7b/1'
+                capability: 'https://example.com/caps/bob/1'
               }
             });
             addToLoader({doc: capInv});
             res = await jsigs.verify(capInv, {
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                expectedTarget: capabilities.root.controller.id
+                expectedTarget: capabilities.root.beta.id
               }
             });
           } catch(e) {

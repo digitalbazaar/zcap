@@ -34,6 +34,7 @@ module.exports = {
       "type": "Ed25519SignatureCapabilityAuthorization2018",
       "publicKey": [
         {
+          '@context': 'https://w3id.org/security/v2',
           "id": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa#ocap-invoke-key-1",
           "type": "Ed25519VerificationKey2018",
           "owner": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",

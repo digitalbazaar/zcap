@@ -148,10 +148,6 @@ module.exports = function(options) {
             addToLoader({doc: {...capInv, id: 'urn:foo'}});
             // Verify a self invoked capability
             res = await jsigs.verify(capInv, {
-              getPublicKey: jsigs.getPublicKey,
-              getPublicKeyOwner: jsigs.getJsonLd,
-              publicKey: alice.get('publicKey', 0).id,
-              publicKeyOwner: alice.id(),
               purpose: 'capabilityInvocation',
               purposeParameters: {
                 expectedTarget: capabilities.root.keys.id
@@ -207,10 +203,6 @@ module.exports = function(options) {
             });
             addToLoader({doc: capInv});
             res = await jsigs.verify(capInv, {
-              getPublicKey: jsigs.getPublicKey,
-              getPublicKeyOwner: jsigs.getJsonLd,
-              publicKey: bob.get('capabilityInvocation', 0).publicKey.id,
-              publicKeyOwner: bob.id(),
               purpose: 'capabilityInvocation',
               purposeParameters: {
                 expectedTarget: capabilities.root.keys.id
@@ -247,10 +239,6 @@ module.exports = function(options) {
             addToLoader({doc: {...capInv, id: 'urn:foo:1'}});
             // Verify a self invoked capability
             res = await jsigs.verify(capInv, {
-              getPublicKey: jsigs.getPublicKey,
-              getPublicKeyOwner: jsigs.getJsonLd,
-              publicKey: alice.get('publicKey', 0).id,
-              publicKeyOwner: alice.id(),
               purpose: 'capabilityInvocation',
               purposeParameters: {
                 expectedTarget: capabilities.root.controller.id
@@ -307,10 +295,6 @@ module.exports = function(options) {
             });
             addToLoader({doc: capInv});
             res = await jsigs.verify(capInv, {
-              getPublicKey: jsigs.getPublicKey,
-              getPublicKeyOwner: jsigs.getJsonLd,
-              publicKey: bob.get('capabilityInvocation', 0).publicKey.id,
-              publicKeyOwner: bob.id(),
               purpose: 'capabilityInvocation',
               purposeParameters: {
                 expectedTarget: capabilities.root.controller.id

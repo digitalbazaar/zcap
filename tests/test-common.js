@@ -93,7 +93,8 @@ module.exports = function(options) {
           expect(err.message).to.equal('Please specify "capability"; the URI' +
             ' of the capability to be invoked.');
         });
-        it('should successfully sign with capabilityDelegation proofPurpose', async () => {
+        it('should successfully sign with capabilityDelegation proofPurpose',
+          async () => {
           let err;
           let signedDocument;
           try {
@@ -171,7 +172,8 @@ module.exports = function(options) {
           expect(err).to.not.exist;
           expect(res.verified).to.be.true;
         });
-        it('should successfully verify a capability chain of depth 2', async () => {
+        it('should successfully verify a capability chain of depth 2',
+          async () => {
           let err;
           let res;
           try {
@@ -297,13 +299,14 @@ module.exports = function(options) {
           expect(err).to.not.exist;
           expect(res.verified).to.be.true;
         });
-        it('should successfully verify a capability chain of depth 2', async () => {
+        it('should successfully verify a capability chain of depth 2',
+          async () => {
           let err;
           let res;
           try {
             // Create a delegated capability
             //   1. Parent capability should point to the root capability
-            //   2. The invoker should be Bob's invocation key
+            //   2. The invoker should be the id Bob's controller doc
             const capabilityDelegation = {
               '@context': 'https://w3id.org/security/v2',
               id: 'https://example.com/caps/bob/1',
@@ -326,10 +329,10 @@ module.exports = function(options) {
               id: 'https://example.com/caps/bob/2'
             };
             ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
-            //   4. Use Bob's invocation key that was assigned as invoker in the
-            //      delegate capability
+            //   4. Use Bob's invocation key that can be found in Bob's
+            //      controller document of keys
             //   5. The invoker should be the id Bob's document that contains
-            //      ket material
+            //      key material
             const capInv = await jsigs.sign(capabilityInvocation, {
               algorithm: 'Ed25519Signature2018',
               creator: bob.get('capabilityInvocation', 0).publicKey.id,
@@ -352,6 +355,135 @@ module.exports = function(options) {
           expect(res).to.exist;
           expect(err).to.not.exist;
           expect(res.verified).to.be.true;
+        });
+        it('should successfully verify a capability chain of depth 2 and a ' +
+          'valid caveat on one capability',
+          async () => {
+          let err;
+          let res;
+          try {
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The invoker should be the id Bob's controller doc
+            //   3. Add a caveat that states the capability should expire an
+            //      hour from now
+            const expires = new Date();
+            expires.setHours(expires.getHours() + 1);
+            const capabilityDelegation = {
+              '@context': 'https://w3id.org/security/v2',
+              id: 'https://example.com/caps/bob/3',
+              parentCapability: capabilities.root.beta.id,
+              caveat: [{
+                type: 'https://example.org/ocap/v1#ExpireAt',
+                expires: expires.toISOString()
+              }],
+              invoker: bob.id()
+            };
+            let {privateKeyBase58} = alice.get('publicKey', 0);
+            //  4. Sign the delegated capability with Alice's delegation key
+            //     that was specified as the delegator in the root capability
+            const capDel = await jsigs.sign(capabilityDelegation, {
+              algorithm: 'Ed25519Signature2018',
+              creator: alice.get('publicKey', 0).id,
+              privateKeyBase58,
+              purpose: 'capabilityDelegation'
+            });
+            addToLoader({doc: capDel});
+            // Invoke the capability that was delegated
+            const capabilityInvocation = {
+              '@context': 'https://w3id.org/security/v2',
+              id: 'https://example.com/caps/bob/4'
+            };
+            ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
+            //   5. Use Bob's invocation key that can be found in Bob's
+            //      controller document of keys
+            //   6. The invoker should be the id Bob's document that contains
+            //      key material
+            const capInv = await jsigs.sign(capabilityInvocation, {
+              algorithm: 'Ed25519Signature2018',
+              creator: bob.get('capabilityInvocation', 0).publicKey.id,
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                capability: 'https://example.com/caps/bob/3'
+              }
+            });
+            addToLoader({doc: capInv});
+            res = await jsigs.verify(capInv, {
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                expectedTarget: capabilities.root.beta.id
+              }
+            });
+          } catch(e) {
+            err = e;
+          }
+          expect(res).to.exist;
+          expect(err).to.not.exist;
+          expect(res.verified).to.be.true;
+        });
+        it('should fail to verify a capability chain of depth 2 and a ' +
+          'valid caveat on one capability that states the ocap has expired',
+          async () => {
+          let err;
+          let res;
+          try {
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The invoker should be the id Bob's controller doc
+            //   3. Add a caveat that states the capability should expire now
+            const capabilityDelegation = {
+              '@context': 'https://w3id.org/security/v2',
+              id: 'https://example.com/caps/bob/5',
+              parentCapability: capabilities.root.beta.id,
+              caveat: [{
+                type: 'https://example.org/ocap/v1#ExpireAt',
+                expires: new Date().toISOString()
+              }],
+              invoker: bob.id()
+            };
+            let {privateKeyBase58} = alice.get('publicKey', 0);
+            //  4. Sign the delegated capability with Alice's delegation key
+            //     that was specified as the delegator in the root capability
+            const capDel = await jsigs.sign(capabilityDelegation, {
+              algorithm: 'Ed25519Signature2018',
+              creator: alice.get('publicKey', 0).id,
+              privateKeyBase58,
+              purpose: 'capabilityDelegation'
+            });
+            addToLoader({doc: capDel});
+            // Invoke the capability that was delegated
+            const capabilityInvocation = {
+              '@context': 'https://w3id.org/security/v2',
+              id: 'https://example.com/caps/bob/6'
+            };
+            ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
+            //   5. Use Bob's invocation key that can be found in Bob's
+            //      controller document of keys
+            //   6. The invoker should be the id Bob's document that contains
+            //      key material
+            const capInv = await jsigs.sign(capabilityInvocation, {
+              algorithm: 'Ed25519Signature2018',
+              creator: bob.get('capabilityInvocation', 0).publicKey.id,
+              privateKeyBase58,
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                capability: 'https://example.com/caps/bob/5'
+              }
+            });
+            addToLoader({doc: capInv});
+            res = await jsigs.verify(capInv, {
+              purpose: 'capabilityInvocation',
+              purposeParameters: {
+                expectedTarget: capabilities.root.beta.id
+              }
+            });
+          } catch(e) {
+            err = e;
+          }
+          expect(res).to.exist;
+          expect(err).to.not.exist;
+          expect(res.verified).to.be.false;
         });
       });
     });

@@ -23,6 +23,7 @@ privateDidDocs.alpha = require('./mock-documents/did-doc-alpha');
 privateDidDocs.beta = require('./mock-documents/did-doc-beta');
 privateDidDocs.gamma = require('./mock-documents/did-doc-gamma');
 privateDidDocs.delta = require('./mock-documents/did-doc-delta');
+
 didDocs.alpha = _stripPrivateKeys(privateDidDocs.alpha);
 didDocs.beta = _stripPrivateKeys(privateDidDocs.beta);
 didDocs.gamma = _stripPrivateKeys(privateDidDocs.gamma);

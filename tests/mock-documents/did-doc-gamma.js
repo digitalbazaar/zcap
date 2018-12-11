@@ -1,5 +1,5 @@
 module.exports = {
-  "@context": "https://w3id.org/veres-one/v1",
+  "@context": ["https://w3id.org/did/v0.11", "https://w3id.org/veres-one/v1"],
   "id": "did:v1:test:nym:9kjA8yct16UzvpTgynCECTuPEoozn8s36FxRxUJv6xhC",
   "authentication": [
     {

@@ -255,7 +255,7 @@ module.exports = function(options) {
                 capability: capabilities.root.beta.id
               }
             });
-            addToLoader({doc: {...capInv, id: 'urn:foo:1'}});
+            addToLoader({doc: {...capInv, id: uuid()}});
             // Verify a self invoked capability
             res = await jsigs.verify(capInv, {
               purpose: 'capabilityInvocation',
@@ -279,8 +279,8 @@ module.exports = function(options) {
               alpha.get('capabilityInvocation', 0).publicKey[0];
             // Invoke the root capability using the invoker key
             const doc = {
-              id: 'urn:alpha:caps:1',
-              '@context': 'https://w3id.org/security/v2'
+              '@context': 'https://w3id.org/security/v2',
+              id: uuid()
             };
             const capInv = await jsigs.sign(doc, {
               algorithm: 'Ed25519Signature2018',
@@ -315,7 +315,7 @@ module.exports = function(options) {
               //   2. The invoker should be the id Bob's controller doc
               const newCapability = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'https://example.com/caps/bob/1',
+                id: uuid(),
                 parentCapability: capabilities.root.beta.id,
                 invoker: bob.id()
               };
@@ -349,7 +349,7 @@ module.exports = function(options) {
                 privateKeyBase58,
                 purpose: 'capabilityInvocation',
                 purposeParameters: {
-                  capability: 'https://example.com/caps/bob/1'
+                  capability: delegatedCapability.id
                 }
               });
               addToLoader({doc: capInv});
@@ -380,7 +380,7 @@ module.exports = function(options) {
             expires.setHours(expires.getHours() + 1);
             const newCapability = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.com/caps/bob/3',
+              id: uuid(),
               parentCapability: capabilities.root.beta.id,
               caveat: [{
                 type: 'https://example.org/ocap/v1#ExpireAt',
@@ -391,7 +391,7 @@ module.exports = function(options) {
             let {privateKeyBase58} = alice.get('publicKey', 0);
             //  4. Sign the delegated capability with Alice's delegation key
             //     that was specified as the delegator in the root capability
-            const delegatedCapability = await jsigs.sign(newCapability, {
+            const bobCap = await jsigs.sign(newCapability, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
@@ -400,7 +400,7 @@ module.exports = function(options) {
                 capabilityChain: [newCapability.parentCapability]
               }
             });
-            addToLoader({doc: delegatedCapability});
+            addToLoader({doc: bobCap});
             // Invoke the capability that was delegated
             const invocation = {
               '@context': 'https://w3id.org/security/v2',
@@ -417,7 +417,7 @@ module.exports = function(options) {
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: 'https://example.com/caps/bob/3'
+                capability: bobCap.id
               }
             });
             addToLoader({doc: capInv});
@@ -445,7 +445,7 @@ module.exports = function(options) {
             //   3. Add a caveat that states the capability should expire now
             const newCapability = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.com/caps/bob/5',
+              id: uuid(),
               parentCapability: capabilities.root.beta.id,
               caveat: [{
                 type: 'https://example.org/ocap/v1#ExpireAt',
@@ -456,7 +456,7 @@ module.exports = function(options) {
             let {privateKeyBase58} = alice.get('publicKey', 0);
             //  4. Sign the delegated capability with Alice's delegation key
             //     that was specified as the delegator in the root capability
-            const delegatedCapability = await jsigs.sign(newCapability, {
+            const bobCap = await jsigs.sign(newCapability, {
               algorithm: 'Ed25519Signature2018',
               creator: alice.get('publicKey', 0).id,
               privateKeyBase58,
@@ -465,7 +465,7 @@ module.exports = function(options) {
                 capabilityChain: [newCapability.parentCapability]
               }
             });
-            addToLoader({doc: delegatedCapability});
+            addToLoader({doc: bobCap});
             // Invoke the capability that was delegated
             const invocation = {
               '@context': 'https://w3id.org/security/v2',
@@ -482,7 +482,7 @@ module.exports = function(options) {
               privateKeyBase58,
               purpose: 'capabilityInvocation',
               purposeParameters: {
-                capability: 'https://example.com/caps/bob/5'
+                capability: bobCap.id
               }
             });
             addToLoader({doc: capInv});
@@ -509,7 +509,7 @@ module.exports = function(options) {
               //   2. The invoker should be the id Bob's controller doc
               const bobCap = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'https://example.com/caps/bob/depth-3',
+                id: uuid(),
                 parentCapability: capabilities.root.beta.id,
                 invoker: bob.id()
               };
@@ -532,7 +532,7 @@ module.exports = function(options) {
               //   2. The invoker should be the id Carol's controller doc
               const carolCap = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'https://example.com/caps/carol/depth-3',
+                id: uuid(),
                 parentCapability: bobCap.id,
                 invoker: carol.id()
               };
@@ -569,7 +569,7 @@ module.exports = function(options) {
                 privateKeyBase58,
                 purpose: 'capabilityInvocation',
                 purposeParameters: {
-                  capability: 'https://example.com/caps/carol/depth-3'
+                  capability: carolCap.id
                 }
               });
               addToLoader({doc: capInv});

@@ -11,6 +11,9 @@ const _loaderData = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
 
+const didContext = require('./mock-documents/did-context');
+_loaderData['https://w3id.org/did/v0.11'] = didContext;
+
 const v1Context = require('./mock-documents/veres-one-context');
 _loaderData['https://w3id.org/veres-one/v1'] = v1Context;
 
@@ -44,7 +47,6 @@ capabilities.root.beta = {
   invoker: owners.alice.id,
   delegator: owners.alice.id
 };
-
 
 // Generate a flattened list of all keys
 let ownersKeyList = Object.keys(owners).map(name => KEY_TYPES

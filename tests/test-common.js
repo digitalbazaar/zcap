@@ -11,7 +11,7 @@ const {
   capabilities,
   addToLoader,
 } = require('./mock-data');
-const {Owner} = require('./helpers');
+const {Owner, uuid} = require('./helpers');
 
 module.exports = function(options) {
 
@@ -201,16 +201,16 @@ module.exports = function(options) {
               });
               addToLoader({doc: delegatedCapability});
               // Invoke the capability that was delegated
-              const capabilityInvocation = {
+              const invocation = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'https://example.org/bob/caps#1'
+                id: uuid()
               };
               ({privateKeyBase58} = bob.get(
                 'capabilityInvocation', 0).publicKey);
               //   4. Use Bob's invocation key that was assigned as invoker in
               //      the delegated capability
               //   5. The invoker should be Bob's invocation key
-              const capInv = await jsigs.sign(capabilityInvocation, {
+              const capInv = await jsigs.sign(invocation, {
                 algorithm: 'Ed25519Signature2018',
                 creator: bob.get('capabilityInvocation', 0).publicKey.id,
                 privateKeyBase58,
@@ -333,9 +333,9 @@ module.exports = function(options) {
               });
               addToLoader({doc: delegatedCapability});
               // Invoke the capability that was delegated
-              const capabilityInvocation = {
+              const invocation = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'https://example.com/caps/bob/2'
+                id: uuid()
               };
               ({privateKeyBase58} = bob.get(
                 'capabilityInvocation', 0).publicKey);
@@ -343,7 +343,7 @@ module.exports = function(options) {
               //      controller document of keys
               //   5. The invoker should be the id Bob's document that contains
               //      key material
-              const capInv = await jsigs.sign(capabilityInvocation, {
+              const capInv = await jsigs.sign(invocation, {
                 algorithm: 'Ed25519Signature2018',
                 creator: bob.get('capabilityInvocation', 0).publicKey.id,
                 privateKeyBase58,
@@ -402,16 +402,16 @@ module.exports = function(options) {
             });
             addToLoader({doc: delegatedCapability});
             // Invoke the capability that was delegated
-            const capabilityInvocation = {
+            const invocation = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.com/caps/bob/4'
+              id: uuid()
             };
             ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
             //   5. Use Bob's invocation key that can be found in Bob's
             //      controller document of keys
             //   6. The invoker should be the id Bob's document that contains
             //      key material
-            const capInv = await jsigs.sign(capabilityInvocation, {
+            const capInv = await jsigs.sign(invocation, {
               algorithm: 'Ed25519Signature2018',
               creator: bob.get('capabilityInvocation', 0).publicKey.id,
               privateKeyBase58,
@@ -467,16 +467,16 @@ module.exports = function(options) {
             });
             addToLoader({doc: delegatedCapability});
             // Invoke the capability that was delegated
-            const capabilityInvocation = {
+            const invocation = {
               '@context': 'https://w3id.org/security/v2',
-              id: 'https://example.com/caps/bob/6'
+              id: uuid()
             };
             ({privateKeyBase58} = bob.get('capabilityInvocation', 0).publicKey);
             //   5. Use Bob's invocation key that can be found in Bob's
             //      controller document of keys
             //   6. The invoker should be the id Bob's document that contains
             //      key material
-            const capInv = await jsigs.sign(capabilityInvocation, {
+            const capInv = await jsigs.sign(invocation, {
               algorithm: 'Ed25519Signature2018',
               creator: bob.get('capabilityInvocation', 0).publicKey.id,
               privateKeyBase58,
@@ -553,9 +553,9 @@ module.exports = function(options) {
               addToLoader({doc: signedCarolCap});
 
               // Invoke Carol's capability
-              const capabilityInvocation = {
+              const invocation = {
                 '@context': 'https://w3id.org/security/v2',
-                id: 'ex:param'
+                id: uuid()
               };
               const carolKey = carol.get('capabilityInvocation', 0).publicKey;
               ({privateKeyBase58} = carolKey);
@@ -563,7 +563,7 @@ module.exports = function(options) {
               //      controller document of keys
               //   5. The invoker should be the id Carol's document that
               //      contains key material
-              const capInv = await jsigs.sign(capabilityInvocation, {
+              const capInv = await jsigs.sign(invocation, {
                 algorithm: 'Ed25519Signature2018',
                 creator: carolKey.id,
                 privateKeyBase58,

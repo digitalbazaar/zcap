@@ -11,16 +11,6 @@ module.exports = {
       "privateKeyBase58": "3Mmk4UzTRJTEtxaKk61LxtgUxAa2Dg36jF6VogPtRiKvfpsQWKPCLesKSV182RMmvMJKk6QErH3wgdHp8itkSSiF"
     }
   ],
-  "capabilityInvocation": [
-    {
-      "type": "Ed25519SignatureCapabilityInvocation2018",
-      "publicKey": "https://example.com/i/alice/keys/1"
-    }
-  ],
-  "capabilityDelegation": [
-    {
-      "type": "Ed25519ignatureCapabilityDelegation2018",
-      "publicKey": "https://example.com/i/alice/keys/1"
-    }
-  ]
+  "capabilityInvocation": ["https://example.com/i/alice/keys/1"],
+  "capabilityDelegation": ["https://example.com/i/alice/keys/1"]
 };

@@ -1,23 +1,23 @@
 /**
  * Node.js test runner for ocapld.js.
  *
- * @author Dave Longley
- * @author David I. Lehn
- *
  * Copyright (c) 2011-2018 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 
 const common = require('./test-common');
 const expect = require('chai').expect;
-const jsonld = require('../node_modules/jsonld');
 const jsigs = require('../node_modules/jsonld-signatures');
 const ocapld = require('../lib');
 
+const mock = require('./mock-data');
+const helpers = require('./helpers');
+
 const options = {
   expect,
+  helpers,
   jsigs,
-  jsonld,
+  mock,
   ocapld,
   nodejs: true
 };

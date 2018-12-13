@@ -10,9 +10,6 @@
  * Bail with tests fail:
  *   BAIL=true
  *
- * @author Dave Longley
- * @author David I. Lehn
- *
  * Copyright (c) 2011-2018 Digital Bazaar, Inc. All rights reserved.
  */
 // FIXME: hack to ensure delay is set first
@@ -27,33 +24,20 @@ require('regenerator-runtime/runtime');
 const common = require('./test-common');
 const expect = require('chai').expect;
 const jsigs = require('../node_modules/jsonld-signatures');
-const jsonld = require('../node_modules/jsonld/dist/jsonld.js');
 const ocapld = require('../lib');
 
-const forge = require('../node_modules/node-forge');
-window.forge = forge;
-
-jsigs.promises({api: jsigs.promises});
+const mock = require('./mock-data');
+const helpers = require('./helpers');
 
 const options = {
   expect,
+  helpers,
   jsigs,
-  jsonld,
+  mock,
   ocapld,
   nodejs: false
 };
 
-common(options).then(() => {
-  //run();
-}).then(() => {
-  // FIXME: karma phantomjs does not expose this API
-  if(window.phantom && window.phantom.exit) {
-    phantom.exit(0);
-  }
-}).catch(err => {
+common(options).catch(err => {
   console.error(err);
-  // FIXME: karma phantomjs does not expose this API
-  if(window.phantom && window.phantom.exit) {
-    phantom.exit(1);
-  }
 });

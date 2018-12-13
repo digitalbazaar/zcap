@@ -1,4 +1,6 @@
 const jsonld = require('jsonld');
+const {SECURITY_CONTEXT_URL, strictDocumentLoader} =
+  require('jsonld-signatures');
 
 const mock = {};
 module.exports = mock;
@@ -11,11 +13,13 @@ const _loaderData = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
 
-const securityV1Context = require('./mock-documents/security-context-v1');
-_loaderData['https://w3id.org/security/v1'] = securityV1Context;
+mock.exampleDoc = require('./mock-documents/example-doc');
+mock.exampleDocWithInvocation = {};
 
-const securityV2Context = require('./mock-documents/security-context-v2');
-_loaderData['https://w3id.org/security/v2'] = securityV2Context;
+mock.exampleDocWithInvocation.alpha =
+  require('./mock-documents/example-doc-with-alpha-invocation');
+mock.exampleDocWithInvocation.beta =
+  require('./mock-documents/example-doc-with-beta-invocation');
 
 const didContext = require('./mock-documents/did-context');
 _loaderData['https://w3id.org/did/v0.11'] = didContext;
@@ -41,18 +45,24 @@ didDocs.delta = _stripPrivateKeys(privateDidDocs.delta);
 capabilities.root = {};
 // keys as invoker and delegator
 capabilities.root.alpha = {
-  '@context': 'https://w3id.org/security/v2',
+  '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#1',
   invoker: 'https://example.com/i/alice/keys/1',
   delegator: 'https://example.com/i/alice/keys/1'
 };
 // controllers as invoker and delegator
 capabilities.root.beta = {
-  '@context': 'https://w3id.org/security/v2',
+  '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
   invoker: owners.alice.id,
   delegator: owners.alice.id
 };
+
+capabilities.delegated = {};
+capabilities.delegated.alpha =
+  require('./mock-documents/delegated-ocap-root-alpha');
+capabilities.delegated.beta =
+  require('./mock-documents/delegated-ocap-root-beta');
 
 // Generate a flattened list of all keys
 let ownersKeyList = Object.keys(owners).map(name => KEY_TYPES
@@ -60,16 +70,14 @@ let ownersKeyList = Object.keys(owners).map(name => KEY_TYPES
   .reduce((acc, curr) => acc.concat(curr), [])
 );
 ownersKeyList = [].concat.apply([], ownersKeyList)
-  .filter(key => !!key && typeof key.publicKey !== 'string')
-  .map((doc) => doc.publicKey ? doc.publicKey : doc);
+  .filter(key => !!key && typeof key !== 'string');
 
 let ddocKeyList = Object.keys(privateDidDocs).map(name => KEY_TYPES
   .map(keyType => privateDidDocs[name][keyType])
   .reduce((acc, curr) => acc.concat(curr), [])
 );
 ddocKeyList = [].concat.apply([], ddocKeyList)
-  .filter(key => !!key && typeof key.publicKey !== 'string')
-  .map(doc => doc.publicKey ? doc.publicKey : doc)
+  .filter(key => !!key && typeof key !== 'string')
   .reduce((acc, curr) => acc.concat(curr), []);
 
 const keyList = ownersKeyList.concat(ddocKeyList);
@@ -79,22 +87,29 @@ mock.addToLoader = ({doc}) => {
     throw new Error(
       `ID of document has already been registered in the loader: ${doc.id}`);
   }
+  if(!('@context' in doc)) {
+    doc = {'@context': SECURITY_CONTEXT_URL, ...doc};
+  }
   _loaderData[doc.id] = doc;
 };
 
-mock.testLoader = oldLoader => async url => {
+mock.testLoader = async url => {
   if(url in _loaderData) {
     if(url.startsWith('did:v1')) {
       const hashFragment = url.split('#')[1];
       if(hashFragment) {
-        const map = await jsonld.createNodeMap(_loaderData[url]);
+        const map = await jsonld.createNodeMap(_loaderData[url], {
+          documentLoader: strictDocumentLoader
+        });
         const subGraph = map[url];
         if(!subGraph) {
           throw new Error(
             `Failed to get subgraph within a DID Document, uri: "${url}"`);
         }
-        const document =
-          await jsonld.compact(subGraph, _loaderData[url]['@context']);
+        const document = {
+          '@context': _loaderData[url]['@context'],
+          ...subGraph
+        };
         return {
           contextUrl: null,
           document,
@@ -108,15 +123,15 @@ mock.testLoader = oldLoader => async url => {
       documentUrl: url
     };
   }
-  return oldLoader(url);
+  throw new Error(`Document "${url}" not found.`);
 };
 
 function _stripPrivateKeys(privateDidDocument) {
   // clone the doc
   const didDocument = JSON.parse(JSON.stringify(privateDidDocument));
-  delete didDocument.authentication[0].publicKey[0].privateKeyBase58;
-  delete didDocument.capabilityDelegation[0].publicKey[0].privateKeyBase58;
-  delete didDocument.capabilityInvocation[0].publicKey[0].privateKeyBase58;
+  delete didDocument.authentication[0].privateKeyBase58;
+  delete didDocument.capabilityDelegation[0].privateKeyBase58;
+  delete didDocument.capabilityInvocation[0].privateKeyBase58;
   return didDocument;
 }
 

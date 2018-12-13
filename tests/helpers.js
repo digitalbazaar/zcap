@@ -1,9 +1,9 @@
 const api = {};
 module.exports = api;
 
-api.Owner = class Owner {
+api.Controller = class Controller {
   constructor(doc) {
-    // doc is the key owner document
+    // doc is the key controller document
     this.doc = doc;
   }
 

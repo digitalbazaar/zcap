@@ -62,7 +62,7 @@ module.exports = function(config) {
             include: [{
               // exclude node_modules by default
               exclude: /(node_modules)/
-            }, {
+            }/*, {
               // include jsonld
               include: /(node_modules\/jsonld)/
             }, {
@@ -71,13 +71,13 @@ module.exports = function(config) {
             }, {
               // include jsonld-signatures
               include: /(node_modules\/jsonld-signatures)/
-            }],
+            }*/],
             use: {
               loader: 'babel-loader',
               options: {
                 presets: ['env'],
                 plugins: [
-                  ['transform-object-rest-spread', {useBuiltIns: true }]
+                  ['transform-object-rest-spread', {useBuiltIns: true}]
                 ]
               }
             }
@@ -89,6 +89,13 @@ module.exports = function(config) {
         process: false,
         crypto: false,
         setImmediate: false
+      },
+      resolve: {
+        alias: {
+          jsonld: require.resolve('jsonld/dist/jsonld.js'),
+          'jsonld-signatures': require.resolve(
+            'jsonld-signatures/dist/jsonld-signatures.js')
+        }
       }
     },
 

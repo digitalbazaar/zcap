@@ -11,6 +11,12 @@ const _loaderData = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
 
+const securityV1Context = require('./mock-documents/security-context-v1');
+_loaderData['https://w3id.org/security/v1'] = securityV1Context;
+
+const securityV2Context = require('./mock-documents/security-context-v2');
+_loaderData['https://w3id.org/security/v2'] = securityV2Context;
+
 const didContext = require('./mock-documents/did-context');
 _loaderData['https://w3id.org/did/v0.11'] = didContext;
 
@@ -85,8 +91,7 @@ mock.testLoader = oldLoader => async url => {
         const subGraph = map[url];
         if(!subGraph) {
           throw new Error(
-            `Failed to get subgraph within a DID Document, uri: "${url}"`
-          );
+            `Failed to get subgraph within a DID Document, uri: "${url}"`);
         }
         const document =
           await jsonld.compact(subGraph, _loaderData[url]['@context']);

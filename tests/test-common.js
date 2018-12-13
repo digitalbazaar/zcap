@@ -17,8 +17,10 @@ module.exports = function(options) {
 
   const {expect, jsonld, jsigs, ocapld} = options;
 
-  // setup
-  jsonld.documentLoader = testLoader(jsonld.documentLoader);
+  // setup (do not load *any* external documents by default)
+  jsonld.documentLoader = testLoader(url => {
+    throw new Error(`Document not found: ${url}.`);
+  });
   jsigs.use('jsonld', jsonld);
 
   // helper

@@ -30,7 +30,7 @@
     "cross-env": "^5.1.3",
     "jscs": "^3.0.0",
     "jshint": "^2.9.1",
-    "jsonld-signatures": "github:digitalbazaar/jsonld-signatures#proof-purpose-test",
+    "jsonld-signatures": "github:digitalbazaar/jsonld-signatures#master",
     "karma": "^3.1.1",
     "karma-babel-preprocessor": "^7.0.0",
     "karma-browserify": "^5.2.0",
@@ -53,7 +53,7 @@
     "webpack-merge": "^4.1.1"
   },
   "peerDependencies": {
-    "jsonld-signatures": "github:digitalbazaar/jsonld-signatures#proof-purpose-test"
+    "jsonld-signatures": "github:digitalbazaar/jsonld-signatures#master"
   },
   "scripts": {
     "prepublish": "npm run build",

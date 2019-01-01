@@ -24,8 +24,7 @@ const {
 } = jsigs;
 
 const {
-  // FIXME: rename to `controllers`
-  owners,
+  controllers,
   didDocs,
   privateDidDocs,
   capabilities,
@@ -39,10 +38,10 @@ function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-const alice = new Controller(owners.alice);
-const bob = new Controller(owners.bob);
-const carol = new Controller(owners.carol);
-const diana = new Controller(owners.diana);
+const alice = new Controller(controllers.alice);
+const bob = new Controller(controllers.bob);
+const carol = new Controller(controllers.carol);
+const diana = new Controller(controllers.diana);
 const alpha = new Controller(privateDidDocs.alpha);
 const beta = new Controller(privateDidDocs.beta);
 const gamma = new Controller(privateDidDocs.gamma);

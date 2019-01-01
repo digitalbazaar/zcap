@@ -6,11 +6,11 @@ module.exports = {
   "proof": {
     "type": "Ed25519Signature2018",
     "created": "2018-02-13T21:26:08Z",
-    "creator": "https://example.com/i/alice/keys/1",
     "capabilityChain": [
       "https://example.org/alice/caps#1"
     ],
-    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..7gWpVs_N0phkQShsT9cdYLAaLi_83xWphYFjhj2aIjNtYdNn37R0d8ko9fCj-q6bY8o4qpAuTxYNPApVawtxBg",
-    "proofPurpose": "capabilityDelegation"
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..lfAFjrWE-4RxhL0gtzSMRX72NR9SRDgaMmkjPA4if0ERbw4R2bnts5sAs8OyhAlbFzBAKOqrFk57AYqwSR2vCw",
+    "proofPurpose": "capabilityDelegation",
+    "verificationMethod": "https://example.com/i/alice/keys/1"
   }
 };

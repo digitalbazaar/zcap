@@ -8,7 +8,7 @@ module.exports = mock;
 const capabilities = mock.capabilities = {};
 const didDocs = mock.didDocs = {};
 const privateDidDocs = mock.privateDidDocs = {};
-const owners = mock.owners = {};
+const controllers = mock.controllers = {};
 const _loaderData = {};
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
@@ -27,10 +27,10 @@ _loaderData['https://w3id.org/did/v0.11'] = didContext;
 const v1Context = require('./mock-documents/veres-one-context');
 _loaderData['https://w3id.org/veres-one/v1'] = v1Context;
 
-owners.alice = require('./mock-documents/ed25519-alice-keys');
-owners.bob = require('./mock-documents/ed25519-bob-keys');
-owners.carol = require('./mock-documents/ed25519-carol-keys');
-owners.diana = require('./mock-documents/ed25519-diana-keys');
+controllers.alice = require('./mock-documents/ed25519-alice-keys');
+controllers.bob = require('./mock-documents/ed25519-bob-keys');
+controllers.carol = require('./mock-documents/ed25519-carol-keys');
+controllers.diana = require('./mock-documents/ed25519-diana-keys');
 
 privateDidDocs.alpha = require('./mock-documents/did-doc-alpha');
 privateDidDocs.beta = require('./mock-documents/did-doc-beta');
@@ -54,8 +54,8 @@ capabilities.root.alpha = {
 capabilities.root.beta = {
   '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
-  invoker: owners.alice.id,
-  delegator: owners.alice.id
+  invoker: controllers.alice.id,
+  delegator: controllers.alice.id
 };
 
 capabilities.delegated = {};
@@ -65,11 +65,11 @@ capabilities.delegated.beta =
   require('./mock-documents/delegated-ocap-root-beta');
 
 // Generate a flattened list of all keys
-let ownersKeyList = Object.keys(owners).map(name => KEY_TYPES
-  .map(keyType => owners[name][keyType])
+let controllersKeyList = Object.keys(controllers).map(name => KEY_TYPES
+  .map(keyType => controllers[name][keyType])
   .reduce((acc, curr) => acc.concat(curr), [])
 );
-ownersKeyList = [].concat.apply([], ownersKeyList)
+controllersKeyList = [].concat.apply([], controllersKeyList)
   .filter(key => !!key && typeof key !== 'string');
 
 let ddocKeyList = Object.keys(privateDidDocs).map(name => KEY_TYPES
@@ -80,7 +80,7 @@ ddocKeyList = [].concat.apply([], ddocKeyList)
   .filter(key => !!key && typeof key !== 'string')
   .reduce((acc, curr) => acc.concat(curr), []);
 
-const keyList = ownersKeyList.concat(ddocKeyList);
+const keyList = controllersKeyList.concat(ddocKeyList);
 
 mock.addToLoader = ({doc}) => {
   if(doc.id in _loaderData) {
@@ -136,10 +136,10 @@ function _stripPrivateKeys(privateDidDocument) {
 }
 
 const docsForLoader = [
-  owners.alice,
-  owners.bob,
-  owners.carol,
-  owners.diana,
+  controllers.alice,
+  controllers.bob,
+  controllers.carol,
+  controllers.diana,
   didDocs.alpha,
   didDocs.beta,
   didDocs.gamma,

@@ -1,3 +1,19 @@
+*.sublime-project
+*.sublime-workspace
+*.sw[nop]
+*~
+.DS_Store
+.cproject
+.nyc_output
+.project
+.settings
+TAGS
+coverage
+dist
+node_modules
+npm-debug.log
+v8.log
+
 # Logs
 logs
 *.log
@@ -22,9 +38,6 @@ coverage
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
-
-# Bower dependency directory (https://bower.io/)
-bower_components
 
 # node-waf configuration
 .lock-wscript

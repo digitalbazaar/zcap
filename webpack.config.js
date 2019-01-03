@@ -91,12 +91,9 @@ outputs.forEach((info) => {
       process: false,
       setImmediate: false
     },
-    resolve: {
-      alias: {
-        jsonld: require.resolve('jsonld/dist/jsonld.js'),
-        'jsonld-signatures': require.resolve(
-          'jsonld-signatures/dist/jsonld-signatures.js')
-      }
+    externals: {
+      jsonld: 'jsonld',
+      'jsonld-signatures': 'jsonld-signatures'
     }
   };
 

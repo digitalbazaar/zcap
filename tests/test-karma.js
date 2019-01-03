@@ -23,7 +23,7 @@ require('regenerator-runtime/runtime');
 
 const common = require('./test-common');
 const expect = require('chai').expect;
-const jsigs = require('../node_modules/jsonld-signatures');
+const jsigs = require('jsonld-signatures');
 const ocapld = require('../lib');
 
 const mock = require('./mock-data');

@@ -1,5 +1,7 @@
 # ocapld ChangeLog
 
+## 1.0.0 - 2019-01-03
+
 ### Changed
 - Use webpack 'externals' for jsonld and jsonld-signatures.
 

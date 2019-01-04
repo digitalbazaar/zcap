@@ -1,5 +1,8 @@
 # ocapld ChangeLog
 
+### Fixed
+- Change jsonld-signatures to a regular dependency.
+
 ## 1.0.1 - 2019-01-03
 
 ### Fixed

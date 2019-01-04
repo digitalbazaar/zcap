@@ -23,6 +23,9 @@
     "lib/*.js",
     "lib/**/*.js"
   ],
+  "dependencies": {
+    "jsonld-signatures": "^3.0.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -37,7 +40,6 @@
     "cross-env": "^5.1.3",
     "jscs": "^3.0.0",
     "jshint": "^2.9.1",
-    "jsonld-signatures": "^3.0.0",
     "karma": "^3.1.1",
     "karma-babel-preprocessor": "^7.0.0",
     "karma-browserify": "^5.2.0",
@@ -58,9 +60,6 @@
     "regenerator-runtime": "^0.11.1",
     "webpack": "^3.11.0",
     "webpack-merge": "^4.1.1"
-  },
-  "peerDependencies": {
-    "jsonld-signatures": "^3.0.0"
   },
   "scripts": {
     "prepublish": "npm run build",

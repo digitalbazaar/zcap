@@ -17,6 +17,12 @@
   },
   "license": "BSD-3-Clause",
   "main": "lib/index.js",
+  "files": [
+    "dist/*.js",
+    "dist/*.js.map",
+    "lib/*.js",
+    "lib/**/*.js"
+  ],
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-loader": "^7.1.2",

@@ -1,5 +1,7 @@
 # ocapld ChangeLog
 
+## 1.0.1 - 2019-01-03
+
 ### Fixed
 - Distribute webpack built dist files.
 

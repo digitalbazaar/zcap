@@ -84,5 +84,15 @@
   },
   "engines": {
     "node": ">=8.0.0"
-  }
+  },
+  "keyworks": [
+    "JSON",
+    "JSON-LD",
+    "Linked Data",
+    "OCAP",
+    "OCAP-LD",
+    "Semantic Web",
+    "digital signatures",
+    "object capabilities"
+  ]
 }

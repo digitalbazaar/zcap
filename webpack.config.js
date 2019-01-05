@@ -19,8 +19,7 @@ const outputs = [
   // core ocapld library
   {
     entry: [
-      // 'babel-polyfill' is very large, list features explicitly
-      'regenerator-runtime/runtime',
+      // '@babel/polyfill' is very large, list features explicitly
       //'core-js/fn/array/includes',
       'core-js/fn/object/assign',
       'core-js/fn/promise',
@@ -71,9 +70,14 @@ outputs.forEach((info) => {
           use: {
             loader: 'babel-loader',
             options: {
-              presets: ['env'],
+              presets: ['@babel/preset-env'],
               plugins: [
-                ['transform-object-rest-spread', {useBuiltIns: true}]
+                [
+                  '@babel/plugin-proposal-object-rest-spread',
+                  {useBuiltIns: true}
+                ],
+                '@babel/plugin-transform-modules-commonjs',
+                '@babel/plugin-transform-runtime'
               ]
             }
           }
@@ -99,6 +103,7 @@ outputs.forEach((info) => {
 
   // plain unoptimized unminified bundle
   const bundle = webpackMerge(common, {
+    mode: 'development',
     output: {
       path: path.join(__dirname, 'dist'),
       filename: info.filenameBase + '.js',
@@ -115,6 +120,7 @@ outputs.forEach((info) => {
 
   // optimized and minified bundle
   const minify = webpackMerge(common, {
+    mode: 'production',
     output: {
       path: path.join(__dirname, 'dist'),
       filename: info.filenameBase + '.min.js',
@@ -123,6 +129,7 @@ outputs.forEach((info) => {
     },
     devtool: 'cheap-module-source-map',
     plugins: [
+      /*
       new webpack.optimize.UglifyJsPlugin({
         compress: {
           warnings: true
@@ -132,6 +139,7 @@ outputs.forEach((info) => {
         }
         //beautify: true
       })
+      */
     ]
   });
   if(info.library === null) {

@@ -19,6 +19,7 @@
 //require('core-js/fn/array/includes');
 require('core-js/fn/object/assign');
 require('core-js/fn/promise');
+// FIXME: shouldn't need this with babel transform-runtime.
 require('regenerator-runtime/runtime');
 
 const common = require('./test-common');

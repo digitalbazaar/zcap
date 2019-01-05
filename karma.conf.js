@@ -1,14 +1,8 @@
 /**
- * Karam configuration for jsonld-signatures.
+ * Karam configuration for ocapld.
  *
- * @author Dave Longley
- * @author David I. Lehn
- *
- * Copyright (c) 2011-2017 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2011-2019 Digital Bazaar, Inc. All rights reserved.
  */
-const path = require('path');
-const webpack = require('webpack');
-
 module.exports = function(config) {
   // bundler to test: webpack, browserify
   var bundler = process.env.BUNDLER || 'webpack';
@@ -54,6 +48,7 @@ module.exports = function(config) {
     },
 
     webpack: {
+      mode: 'production',
       devtool: 'inline-source-map',
       module: {
         rules: [
@@ -75,9 +70,14 @@ module.exports = function(config) {
             use: {
               loader: 'babel-loader',
               options: {
-                presets: ['env'],
+                presets: ['@babel/preset-env'],
                 plugins: [
-                  ['transform-object-rest-spread', {useBuiltIns: true}]
+                  [
+                    '@babel/plugin-proposal-object-rest-spread',
+                    {useBuiltIns: true}
+                  ],
+                  '@babel/plugin-transform-modules-commonjs',
+                  '@babel/plugin-transform-runtime'
                 ]
               }
             }
@@ -130,7 +130,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    //browsers: ['PhantomJS', 'Chrome', 'Firefox', 'Safari'],
+    //browsers: ['ChromeHeadless', 'Chrome', 'Firefox', 'Safari'],
     browsers: ['ChromeHeadless'],
 
     customLaunchers: {
@@ -142,12 +142,6 @@ module.exports = function(config) {
         base: 'IE',
         'x-ua-compatible': 'IE=EmulateIE8'
       }
-    },
-
-    phantomjsLauncher: {
-      // Have phantomjs exit if a ResourceError is encountered (useful if karma
-      // exits without killing phantom)
-      exitOnResourceError: true
     },
 
     // Continuous Integration mode

@@ -24,7 +24,7 @@
     "lib/**/*.js"
   ],
   "dependencies": {
-    "jsonld-signatures": "^3.0.0"
+    "jsonld-signatures": "^4.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

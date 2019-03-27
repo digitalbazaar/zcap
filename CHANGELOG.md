@@ -1,5 +1,10 @@
 # ocapld ChangeLog
 
+## 1.1.0 - TBD
+
+### Changed
+- Upgrade jsonld-signatures to version 4.
+
 ## 1.0.2 - 2019-01-03
 
 ### Fixed

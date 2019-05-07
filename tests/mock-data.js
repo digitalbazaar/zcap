@@ -50,12 +50,11 @@ capabilities.root.alpha = {
   invoker: 'https://example.com/i/alice/keys/1',
   delegator: 'https://example.com/i/alice/keys/1'
 };
-// controllers as invoker and delegator
+// using `controller` to cover both `delegator` and `invoker`
 capabilities.root.beta = {
   '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
-  invoker: controllers.alice.id,
-  delegator: controllers.alice.id
+  controller: controllers.alice.id
 };
 
 capabilities.delegated = {};

@@ -2,6 +2,7 @@
 
 ### Changed
 - Update webpack and babel.
+- Switch to eslint.
 
 ## 1.1.0 - 2019-03-27
 

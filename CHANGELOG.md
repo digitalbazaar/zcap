@@ -1,6 +1,6 @@
 # ocapld ChangeLog
 
-## 1.2.0 - 2019-05-xx
+## 1.2.0 - 2019-05-17
 
 ### Added
 - Support `controller` on capabilities as `delegator` and `invoker`.

@@ -1,5 +1,10 @@
 # ocapld ChangeLog
 
+## 1.2.0 - 2019-05-xx
+
+### Added
+- Support `controller` on capabilities as `delegator` and `invoker`.
+
 ### Changed
 - Update webpack and babel.
 - Switch to eslint.

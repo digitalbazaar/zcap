@@ -1,5 +1,10 @@
 # ocapld ChangeLog
 
+## 1.x.x - 2019-xx-xx
+
+### Fixed
+- Check `allowedAction` against expected `capabilityAction`.
+
 ## 1.2.0 - 2019-05-17
 
 ### Added

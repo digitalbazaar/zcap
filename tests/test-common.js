@@ -510,6 +510,7 @@ describe('ocapld.js', () => {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityInvocation({
             expectedTarget: capabilities.root.beta.id,
+            expectedAction: 'write',
             suite: new Ed25519Signature2018()
           }),
           documentLoader: testLoader

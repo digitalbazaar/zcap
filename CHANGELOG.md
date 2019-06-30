@@ -1,9 +1,13 @@
 # ocapld ChangeLog
 
-## 1.x.x - 2019-xx-xx
+## 1.2.1 - 2019-06-29
 
 ### Fixed
 - Check `allowedAction` against expected `capabilityAction`.
+- Fix expected action check.
+- Fix capability chain check.
+- Ensure root caps are dereferenced and have a valid target.
+- Handle case where `invocationTarget` is an object.
 
 ## 1.2.0 - 2019-05-17
 

@@ -1,6 +1,6 @@
 # ocapld ChangeLog
 
-## 1.3.0 - 2019-07-xx
+## 1.3.0 - 2019-07-17
 
 ### Added
 - Add `expectedRootCapability` to allow a root capability to

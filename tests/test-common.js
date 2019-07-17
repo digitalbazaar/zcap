@@ -270,6 +270,68 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should verify a root capability w/ separate target when ' +
+        'a matching `expectedRootCapability` is given', async () => {
+        const root = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          invocationTarget: uuid(),
+          invoker: bob.id()
+        };
+        addToLoader({doc: root});
+        const doc = clone(mock.exampleDoc);
+        const invocation = await jsigs.sign(doc, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: root.id
+          })
+        });
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            expectedTarget: root.invocationTarget,
+            expectedRootCapability: root.id,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
+      it('should NOT verify a root capability w/ separate target when ' +
+        'no `expectedRootCapability` is given', async () => {
+        const root = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          invocationTarget: uuid(),
+          invoker: bob.id()
+        };
+        addToLoader({doc: root});
+        const doc = clone(mock.exampleDoc);
+        const invocation = await jsigs.sign(doc, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: root.id
+          })
+        });
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            expectedTarget: root.invocationTarget,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        // TODO: assert more about result.error
+      });
+
       it('should verify a capability chain of depth 2', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability

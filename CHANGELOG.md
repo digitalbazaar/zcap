@@ -1,5 +1,16 @@
 # ocapld ChangeLog
 
+## 1.3.0 - 2019-07-xx
+
+### Added
+- Add `expectedRootCapability` to allow a root capability to
+  specify an `invocationTarget` different from its `id`. This
+  allows zcaps to be used to manage authority for resources
+  that cannot express their own zcap authority information
+  such as binary files or resources that use JSON or JSON-LD
+  but, for whatever reason, cannot express `controller`,
+  `invoker`, `delegator`, or key information.
+
 ## 1.2.1 - 2019-06-29
 
 ### Fixed

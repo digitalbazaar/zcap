@@ -1,6 +1,6 @@
 # ocapld ChangeLog
 
-## 1.3.1 - 2019-08-xx
+## 1.3.1 - 2019-08-11
 
 ### Fixed
 - Handle case where a capability lists list multiple

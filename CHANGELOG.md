@@ -1,5 +1,11 @@
 # ocapld ChangeLog
 
+## 1.3.1 - 2019-08-xx
+
+### Fixed
+- Handle case where a capability lists list multiple
+  controllers/invokers/delegators.
+
 ## 1.3.0 - 2019-07-17
 
 ### Added

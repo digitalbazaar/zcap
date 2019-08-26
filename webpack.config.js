@@ -96,7 +96,13 @@ outputs.forEach(info => {
     },
     externals: {
       jsonld: 'jsonld',
-      'jsonld-signatures': 'jsonld-signatures'
+      'jsonld-signatures': 'jsonld-signatures',
+      'bitcore-message': {
+        amd: 'bitcore-message',
+        commonjs: 'bitcore-message',
+        commonjs2: 'bitcore-message',
+        root: 'bitcoreMessage'
+      }
     }
   };
 

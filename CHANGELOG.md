@@ -1,5 +1,11 @@
 # ocapld ChangeLog
 
+## 1.4.0 - TBD
+
+### Changed
+- Use jsonld-signatures@4.4.0 Use with support for Node 12 native Ed25519
+  crypto.
+
 ## 1.3.1 - 2019-08-11
 
 ### Fixed

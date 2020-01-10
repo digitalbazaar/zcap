@@ -1,5 +1,12 @@
 # ocapld ChangeLog
 
+## 1.5.0 - 2020-01-xx
+
+### Added
+- Support multiple values for `expectedTarget` and `expectedRootCapability`
+  for use cases such as where capabilities are given for reading/writing
+  any item in a collection instead of only individual items.
+
 ## 1.4.0 - 2019-10-08
 
 ### Changed

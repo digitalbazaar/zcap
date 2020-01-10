@@ -1,6 +1,6 @@
 # ocapld ChangeLog
 
-## 1.5.0 - 2020-01-xx
+## 1.5.0 - 2020-01-09
 
 ### Added
 - Support multiple values for `expectedTarget` and `expectedRootCapability`

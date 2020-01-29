@@ -1,5 +1,11 @@
 # ocapld ChangeLog
 
+## 1.5.1 - 2020-01-29
+
+### Fixed
+- Address issues in `verifyCapabilityChain` helper that resulted in some
+  proofs not being properly verified.
+
 ## 1.5.0 - 2020-01-09
 
 ### Added

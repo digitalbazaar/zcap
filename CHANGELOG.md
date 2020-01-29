@@ -1,5 +1,13 @@
 # ocapld ChangeLog
 
+## 1.6.0 - 2020-01-29
+
+### Added
+- Add an optional `inspectCapabilityChain` parameter to `CapabilityDelegation`
+  and `CapabilityInvocation`. `inspectCapabilityChain` must be an async
+  function used to check the capability chain. It can, for instance,  be used
+  to find revocations related to any of the capabilities in the chain.
+
 ## 1.5.1 - 2020-01-29
 
 ### Fixed

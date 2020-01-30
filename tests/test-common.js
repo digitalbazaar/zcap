@@ -1268,10 +1268,14 @@ describe('ocapld.js', () => {
         });
         addToLoader({doc: carolDelCap});
 
-        const inspectCapabilityChain = async ({capabilityIds}) => {
-          should.exist(capabilityIds);
-          capabilityIds.should.be.an('array');
-          capabilityIds.should.have.length(2);
+        const inspectCapabilityChain = async ({
+          capabilityChain, invocationTarget
+        }) => {
+          should.exist(invocationTarget);
+          invocationTarget.should.be.a('string');
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
           // a real implementation would look for revocations here
           return {valid: true};
         };
@@ -1332,13 +1336,17 @@ describe('ocapld.js', () => {
         });
         addToLoader({doc: carolDelCap});
 
-        const inspectCapabilityChain = async ({capabilityIds}) => {
-          should.exist(capabilityIds);
-          capabilityIds.should.be.an('array');
-          capabilityIds.should.have.length(2);
+        const inspectCapabilityChain = async ({
+          capabilityChain, invocationTarget
+        }) => {
+          should.exist(invocationTarget);
+          invocationTarget.should.be.a('string');
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
           // a real implementation would look for revocations here
           return {
-            error: new Error(`The capability "${capabilityIds[0]}" ` +
+            error: new Error(`The capability "${capabilityChain[0].id}" ` +
               'has been revoked.'),
             valid: false,
           };
@@ -1613,10 +1621,14 @@ describe('ocapld.js', () => {
           })
         });
 
-        const inspectCapabilityChain = async ({capabilityIds}) => {
-          should.exist(capabilityIds);
-          capabilityIds.should.be.an('array');
-          capabilityIds.should.have.length(2);
+        const inspectCapabilityChain = async ({
+          capabilityChain, invocationTarget
+        }) => {
+          should.exist(invocationTarget);
+          invocationTarget.should.be.a('string');
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
           // a real implementation would look for revocations here
           return {valid: true};
         };
@@ -1690,12 +1702,21 @@ describe('ocapld.js', () => {
           })
         });
 
-        const inspectCapabilityChain = async ({capabilityIds}) => {
-          should.exist(capabilityIds);
-          capabilityIds.should.be.an('array');
-          capabilityIds.should.have.length(2);
+        const inspectCapabilityChain = async ({
+          capabilityChain, invocationTarget
+        }) => {
+          should.exist(invocationTarget);
+          invocationTarget.should.be.a('string');
+          should.exist(capabilityChain);
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
           // a real implementation would look for revocations here
-          return {valid: true};
+          return {
+            error: new Error(`The capability "${capabilityChain[0].id}" ` +
+              'has been revoked.'),
+            valid: false,
+          };
         };
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2018(),
@@ -1706,12 +1727,25 @@ describe('ocapld.js', () => {
           }),
           documentLoader: testLoader
         });
-
         expect(result).to.exist;
-        expect(result.verified).to.be.true;
+        expect(result.verified).to.be.false;
+        expect(result.error[0]).to.exist;
+        result.error[0].message.should.contain('revoked');
       });
     });
   });
 });
 
 };
+
+function _checkCapabilityChain({capabilityChain}) {
+  for(const [i, c] of capabilityChain.entries()) {
+    c.should.be.an('object');
+    c.should.have.property('id');
+    c.should.have.property('invoker');
+    // the last capability will not have a delegator field
+    if(i < capabilityChain.length - 1) {
+      c.should.have.property('delegator');
+    }
+  }
+}

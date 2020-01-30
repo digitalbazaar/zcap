@@ -1,5 +1,11 @@
 # ocapld ChangeLog
 
+## 1.6.1 - 2020-01-30
+
+### Fixed
+- Adjust the parameters to `inspectCapabilityChain` to support more general
+  use cases. See in-line documentation for parameter details.
+
 ## 1.6.0 - 2020-01-29
 
 ### Added

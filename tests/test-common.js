@@ -228,6 +228,39 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should fail to verify a capability chain of depth 2' +
+        'when the expectedRootCapability does not match', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker should be Bob's invocation key
+        const newCapability = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.alpha.id,
+          invoker: bob.get('capabilityInvocation', 0).id
+        };
+        //  3. Sign the delegated capability with Alice's delegation key
+        //     that was specified as the delegator in the root capability
+        const delegatedCapability = await jsigs.sign(newCapability, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [capabilities.root.alpha.id]
+          })
+        });
+        addToLoader({doc: delegatedCapability});
+        // verify the delegation chain
+        const result = await jsigs.verify(delegatedCapability, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityDelegation(
+            {expectedRootCapability: 'urn:uuid:fake'}),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+      });
+
       it('should verify invoking a capability chain of depth 2', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
@@ -389,6 +422,40 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
+      });
+
+      it('should NOT verify a root capability w/ separate target when ' +
+        '`expectedRootCapability` is not a URI', async () => {
+        const root = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          invocationTarget: uuid(),
+          invoker: bob.id()
+        };
+        addToLoader({doc: root});
+        const doc = clone(mock.exampleDoc);
+        const invocation = await jsigs.sign(doc, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: root.id
+          })
+        });
+        // truncate the urn from the start of the root id
+        // this will make it an invalid expectedRootCapability
+        const expectedRootCapability = [root.id.replace('urn:uuid:', '')];
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            expectedTarget: root.invocationTarget,
+            expectedRootCapability,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
       });
 
       it('should NOT verify a root capability w/ separate target when ' +

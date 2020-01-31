@@ -320,7 +320,7 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should fail verifying a root capability as delegated', async () => {
+      it('should fail to verify a root capability as delegated', async () => {
         // root has no invoker and no keys
         const doc = {
           '@context': SECURITY_CONTEXT_URL,
@@ -424,7 +424,7 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should NOT verify a root capability w/ separate target when ' +
+      it('should fail to verify a root capability w/ separate target when ' +
         '`expectedRootCapability` is not a URI', async () => {
         const root = {
           '@context': SECURITY_CONTEXT_URL,
@@ -458,7 +458,7 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.false;
       });
 
-      it('should NOT verify a root capability w/ separate target when ' +
+      it('should fail to verify a root capability w/ separate target when ' +
         'no `expectedRootCapability` is given', async () => {
         const root = {
           '@context': SECURITY_CONTEXT_URL,

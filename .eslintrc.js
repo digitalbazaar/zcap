@@ -1,3 +1,5 @@
+require('./typedefs');
+
 module.exports = {
   env: {
     browser: true,

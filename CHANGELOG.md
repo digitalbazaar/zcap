@@ -1,5 +1,10 @@
 # ocapld ChangeLog
 
+## 1.7.0 - 2020-02-07
+
+### Added
+- Implement validation for embedded capabilities in `capabilityChain`.
+
 ## 1.6.1 - 2020-01-30
 
 ### Fixed

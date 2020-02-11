@@ -1665,7 +1665,8 @@ describe('ocapld.js', () => {
             delegator: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root capability
+          //     Alice's ID was specified as the delegator in the root
+          //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
               key: new Ed25519KeyPair(alice.get('publicKey', 0))

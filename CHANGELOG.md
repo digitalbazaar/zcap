@@ -1,5 +1,11 @@
 # ocapld ChangeLog
 
+## 1.8.0 - 2020-02-xx
+
+### Changed
+
+- Use jsonld-signatures@5.
+
 ## 1.7.0 - 2020-02-07
 
 ### Added

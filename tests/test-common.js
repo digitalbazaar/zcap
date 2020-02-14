@@ -1614,8 +1614,8 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        expect(result.error[0]).to.exist;
-        result.error[0].message.should.contain('revoked');
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain('revoked');
       });
 
       it('should verify invoking a capability chain of depth 3', async () => {
@@ -1982,8 +1982,8 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        expect(result.error[0]).to.exist;
-        result.error[0].message.should.contain('revoked');
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain('revoked');
       });
     });
   });

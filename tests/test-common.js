@@ -2100,6 +2100,44 @@ describe('ocapld.js', () => {
         });
 
         describe('expiration date', () => {
+          it('CapabilityInvocation throws TypeError on currentDate = null',
+            async () => {
+            let result;
+            let err;
+            try {
+              result = new CapabilityInvocation({
+                expectedTarget:
+                  'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
+                suite: new Ed25519Signature2018(),
+                currentDate: null,
+              });
+            } catch(e) {
+              err = e;
+            }
+            should.exist(err);
+            should.not.exist(result);
+            err.should.be.instanceof(TypeError);
+            err.message.should.contain('must be a Date');
+          });
+          it('CapabilityDelegation throws TypeError on currentDate = null',
+            async () => {
+            let result;
+            let err;
+            try {
+              result = new CapabilityDelegation({
+                capabilityChain: [
+                  'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
+                ],
+                currentDate: null,
+              });
+            } catch(e) {
+              err = e;
+            }
+            should.exist(err);
+            should.not.exist(result);
+            err.should.be.instanceof(TypeError);
+            err.message.should.contain('must be a Date');
+          });
           it('should verify invoking a capability with `expires`',
             async () => {
             // Create a delegated capability

@@ -2720,6 +2720,93 @@ describe('ocapld.js', () => {
             should.exist(result.error);
           });
 
+          it('should fail invoking a capability with ' +
+            'root capability that expires on the Unix epoch', async () => {
+            // the entire chain has the same expiration date in the past
+
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The invoker and delegator should be Bob's ID
+            const rootCapability = Object.assign({}, capabilities.root.beta);
+
+            // set the expires to the Unix epoch
+            let expires = new Date(0);
+            expires = expires.toISOString();
+
+            rootCapability.id = 'urn:zcap:cbddee5a-09fb-44db-a921-70c36436c253';
+            rootCapability.expires = expires;
+            addToLoader({doc: rootCapability});
+
+            const bobCap = {
+              '@context': SECURITY_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: rootCapability.id,
+              invoker: bob.id(),
+              delegator: bob.id(),
+              expires,
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [rootCapability.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+            const carolCap = {
+              '@context': SECURITY_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invoker: carol.id(),
+              expires,
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [rootCapability.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
+            //   7. Use Carol's invocation key that can be found in Carol's
+            //      controller document of keys
+            //   8. The invoker should be Carol's ID
+            const doc = clone(mock.exampleDoc);
+            const invocation = await jsigs.sign(doc, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              }),
+              purpose: new CapabilityInvocation({
+                capability: carolCap.id
+              })
+            });
+            const result = await jsigs.verify(invocation, {
+              suite: new Ed25519Signature2018(),
+              purpose: new CapabilityInvocation({
+                expectedTarget: rootCapability.id,
+                suite: new Ed25519Signature2018()
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            should.exist(result.error);
+            result.error.errors.should.have.length(1);
+            const [error] = result.error.errors;
+            error.message.should.contain(
+              'root capability has expired');
+          });
+
           it('should fail invoking a capability with expired ' +
             'second delegated capability', async () => {
             // the root capability specifies a date in the future, but
@@ -2807,6 +2894,98 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+          });
+
+          it('should fail invoking a capability with second delegated ' +
+            'capability that expires on the Unix epoch', async () => {
+            // the root capability specifies a date in the future, but
+            // the delegation from bob to carol specifies a date that is in the
+            // past
+
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The invoker and delegator should be Bob's ID
+            const rootCapability = Object.assign({}, capabilities.root.beta);
+
+            let expires = new Date();
+            expires.setHours(expires.getHours() + 10);
+            expires = expires.toISOString();
+            rootCapability.id = 'urn:zcap:6286a906-619b-4f5b-a8ae-af9fb774b070';
+            rootCapability.expires = expires;
+            addToLoader({doc: rootCapability});
+
+            const bobCap = {
+              '@context': SECURITY_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: rootCapability.id,
+              invoker: bob.id(),
+              delegator: bob.id(),
+              expires,
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [rootCapability.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+
+            // set expires for this delegation to the Unix epoch
+            expires = new Date(0);
+            expires = expires.toISOString();
+            const carolCap = {
+              '@context': SECURITY_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invoker: carol.id(),
+              expires,
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [rootCapability.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
+            //   7. Use Carol's invocation key that can be found in Carol's
+            //      controller document of keys
+            //   8. The invoker should be Carol's ID
+            const doc = clone(mock.exampleDoc);
+            const invocation = await jsigs.sign(doc, {
+              suite: new Ed25519Signature2018({
+                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              }),
+              purpose: new CapabilityInvocation({
+                capability: carolCap.id
+              })
+            });
+            const result = await jsigs.verify(invocation, {
+              suite: new Ed25519Signature2018(),
+              purpose: new CapabilityInvocation({
+                expectedTarget: rootCapability.id,
+                suite: new Ed25519Signature2018()
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            should.exist(result.error);
+            result.error.errors.should.have.length(1);
+            const [error] = result.error.errors;
+            error.message.should.contain(
+              'capability in the delegation chain has expired');
           });
 
           it('should fail invoking a capability with ' +

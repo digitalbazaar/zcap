@@ -205,6 +205,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
+          invocationTarget: capabilities.root.alpha.id,
           invoker: bob.get('capabilityInvocation', 0).id
         };
         //  3. Sign the delegated capability with Alice's delegation key
@@ -237,6 +238,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
+          invocationTarget: capabilities.root.alpha.id,
           invoker: bob.get('capabilityInvocation', 0).id
         };
         //  3. Sign the delegated capability with Alice's delegation key
@@ -259,6 +261,9 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain('does not match actual root capability');
       });
 
       it('should verify invoking a capability chain of depth 2', async () => {
@@ -269,6 +274,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
+          invocationTarget: capabilities.root.alpha.id,
           invoker: bob.get('capabilityInvocation', 0).id
         };
         //  3. Sign the delegated capability with Alice's delegation key
@@ -558,6 +564,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -588,6 +595,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -633,6 +641,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -669,6 +678,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'does not match actual root capability');
       });
 
       it('should fail if target does not match root ID', async () => {
@@ -683,6 +696,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: mockRootCapability.id,
+          invocationTarget: mockRootCapability.id,
           invoker: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -718,6 +732,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'root capability must not specify a different invocation target.');
       });
 
       it('should verify a capability chain of depth 2 and a ' +
@@ -733,6 +751,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         new ExpirationCaveat({expires}).update(newCapability);
@@ -785,6 +804,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         new ExpirationCaveat({expires}).update(newCapability);
@@ -822,7 +842,7 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+        result.error.name.should.equal('VerificationError');
       });
 
       it('should verify a capability chain of depth 2 and an ' +
@@ -835,6 +855,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id(),
           allowedAction: 'write'
         };
@@ -885,6 +906,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id(),
           allowedAction: 'write'
         };
@@ -922,7 +944,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'action "undefined" does not match the expected capability action');
       });
 
       it('should fail to verify a capability chain of depth 2 when a ' +
@@ -936,6 +961,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id(),
           allowedAction: 'write'
         };
@@ -973,7 +999,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'action "invalid" is not allowed by the capability');
       });
 
       it('should verify a capability chain of depth 2 and a ' +
@@ -986,6 +1015,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1036,6 +1066,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1072,7 +1103,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'no proofs matched the required suite and purpose');
       });
 
       it('should fail to verify a capability chain of depth 2 when an ' +
@@ -1086,6 +1120,7 @@ describe('ocapld.js', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.id,
           invoker: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1123,7 +1158,10 @@ describe('ocapld.js', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'no proofs matched the required suite and purpose');
       });
 
       describe('chain depth of 3', () => {
@@ -1135,6 +1173,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1157,6 +1196,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1191,6 +1231,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1214,6 +1255,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: 'write',
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1237,6 +1279,10 @@ describe('ocapld.js', () => {
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
+          result.error.name.should.equal('VerificationError');
+          const [error] = result.error.errors;
+          error.message.should.contain(
+            'delegated capability must be equivalent or more restrictive');
         });
 
         it('should fail to verify a capability chain ' +
@@ -1249,6 +1295,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1272,6 +1319,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['read', 'write'],
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1295,6 +1343,10 @@ describe('ocapld.js', () => {
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
+          result.error.name.should.equal('VerificationError');
+          const [error] = result.error.errors;
+          error.message.should.contain(
+            'delegated capability must be equivalent or more restrictive');
         });
 
         it('should fail to verify a capability chain ' +
@@ -1307,6 +1359,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1330,6 +1383,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['foo', 'bar'],
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1353,6 +1407,10 @@ describe('ocapld.js', () => {
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
+          result.error.name.should.equal('VerificationError');
+          const [error] = result.error.errors;
+          error.message.should.contain(
+            'delegated capability must be equivalent or more restrictive');
         });
 
         it('should verify a capability chain when child allowedAction is ' +
@@ -1365,6 +1423,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1388,6 +1447,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['read'],
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1421,6 +1481,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1444,6 +1505,7 @@ describe('ocapld.js', () => {
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: 'read',
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1477,6 +1539,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1501,6 +1564,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1523,6 +1587,7 @@ describe('ocapld.js', () => {
           });
           expect(result).to.exist;
           expect(result.verified).to.be.false;
+          result.error.name.should.equal('VerificationError');
         });
 
         it('should fail to verify a capability chain ' +
@@ -1534,6 +1599,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1556,6 +1622,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1580,6 +1647,9 @@ describe('ocapld.js', () => {
           });
           expect(result).to.exist;
           expect(result.verified).to.be.false;
+          result.error.name.should.equal('VerificationError');
+          const [error] = result.error.errors;
+          error.message.should.equal('Invalid signature.');
         });
 
         it('should verify a capability chain ' +
@@ -1591,6 +1661,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1613,6 +1684,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1661,6 +1733,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1683,6 +1756,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1734,6 +1808,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1756,6 +1831,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1802,6 +1878,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: ['urn:other', bob.id()],
             delegator: ['urn:other', bob.id()]
           };
@@ -1824,6 +1901,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1870,6 +1948,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1891,6 +1970,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -1926,7 +2006,7 @@ describe('ocapld.js', () => {
           });
           expect(result).to.exist;
           expect(result.verified).to.be.false;
-          // TODO: assert more about result.error
+          result.error.name.should.equal('VerificationError');
         });
 
         it('should verify invoking a capability chain of depth 3 ' +
@@ -1938,6 +2018,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -1960,6 +2041,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -2020,6 +2102,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -2042,6 +2125,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id()
           };
           //  6. Sign the delegated capability with Bob's delegation key
@@ -2156,6 +2240,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2179,6 +2264,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2236,6 +2322,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2259,6 +2346,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2321,6 +2409,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2344,6 +2433,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2386,6 +2476,9 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.equal('The root capability has expired.');
           });
 
           it('should fail invoking a capability with `expires` ' +
@@ -2407,6 +2500,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2430,6 +2524,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2472,6 +2567,9 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.equal('The root capability has expired.');
           });
 
           it('should fail invoking a capability with missing `expires` ' +
@@ -2495,6 +2593,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id()
             };
@@ -2517,6 +2616,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2554,6 +2654,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.include(
+              'delegated capability must be equivalent or more restrictive');
           });
 
           it('should fail invoking a capability with missing `expires` in ' +
@@ -2577,6 +2681,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2600,6 +2705,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id()
             };
             //  6. Sign the delegated capability with Bob's delegation key
@@ -2636,6 +2742,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.include(
+              'delegated capability must be equivalent or more restrictive');
           });
 
           it('should fail invoking a capability with expired ' +
@@ -2658,6 +2768,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2681,6 +2792,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2718,6 +2830,9 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.contain('The root capability has expired.');
           });
 
           it('should fail invoking a capability with ' +
@@ -2741,6 +2856,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2764,6 +2880,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2829,6 +2946,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2857,6 +2975,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -2894,6 +3013,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.contain(
+              'A capability in the delegation chain has expired.');
           });
 
           it('should fail invoking a capability with second delegated ' +
@@ -2918,6 +3041,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -2945,6 +3069,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -3015,6 +3140,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -3039,6 +3165,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -3076,6 +3203,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.contain(
+              'delegated capability must be equivalent or more restrictive');
           });
 
           it('should fail invoking a capability with ' +
@@ -3100,6 +3231,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
               expires,
@@ -3129,6 +3261,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -3166,6 +3299,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.contain(
+              'delegated capability must be equivalent or more restrictive');
           });
 
           it('should verify invoking a capability with only expires on ' +
@@ -3184,6 +3321,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
             };
@@ -3211,6 +3349,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -3265,6 +3404,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.id,
               invoker: bob.id(),
               delegator: bob.id(),
             };
@@ -3292,6 +3432,7 @@ describe('ocapld.js', () => {
               '@context': SECURITY_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
               invoker: carol.id(),
               expires,
             };
@@ -3329,6 +3470,10 @@ describe('ocapld.js', () => {
             expect(result).to.exist;
             expect(result.verified).to.be.false;
             should.exist(result.error);
+            result.error.name.should.equal('VerificationError');
+            const [error] = result.error.errors;
+            error.message.should.equal(
+              'A capability in the delegation chain has expired.');
           });
         }); // end expiration date
       }); // end chain depth of 3
@@ -3343,6 +3488,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -3366,6 +3512,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id(),
             delegator: carol.id(),
           };
@@ -3388,6 +3535,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
+            invocationTarget: carolCap.invocationTarget,
             invoker: diana.id()
           };
           //  6. Sign the delegated capability with Carol's delegation key
@@ -3437,6 +3585,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -3460,6 +3609,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id(),
             delegator: carol.id(),
           };
@@ -3482,6 +3632,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
+            invocationTarget: carolCap.invocationTarget,
             invoker: diana.id()
           };
           //  6. Sign the delegated capability with Carol's delegation key
@@ -3538,6 +3689,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id,
             invoker: bob.id(),
             delegator: bob.id()
           };
@@ -3560,6 +3712,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
+            invocationTarget: bobCap.invocationTarget,
             invoker: carol.id(),
             delegator: carol.id(),
           };
@@ -3581,6 +3734,7 @@ describe('ocapld.js', () => {
             '@context': SECURITY_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
+            invocationTarget: carolCap.invocationTarget,
             invoker: diana.id()
           };
           //  6. Sign the delegated capability with Carol's delegation key

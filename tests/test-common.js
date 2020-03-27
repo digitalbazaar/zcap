@@ -228,7 +228,7 @@ describe('ocapld.js', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should fail to verify a capability chain of depth 2' +
+      it('should fail to verify a capability chain of depth 2 ' +
         'when the expectedRootCapability does not match', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability

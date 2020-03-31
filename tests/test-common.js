@@ -1700,10 +1700,8 @@ describe('ocapld.js', () => {
           addToLoader({doc: carolDelCap});
 
           const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta, invocationTarget
+            capabilityChain, capabilityChainMeta
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(2);
             capabilityChainMeta.should.be.an('array');
@@ -1772,10 +1770,8 @@ describe('ocapld.js', () => {
           addToLoader({doc: carolDelCap});
 
           const inspectCapabilityChain = async ({
-            capabilityChain, invocationTarget
+            capabilityChain
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(2);
             _checkCapabilityChain({capabilityChain});
@@ -2069,10 +2065,8 @@ describe('ocapld.js', () => {
           });
 
           const inspectCapabilityChain = async ({
-            capabilityChain, invocationTarget
+            capabilityChain
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(2);
             _checkCapabilityChain({capabilityChain});
@@ -2153,10 +2147,8 @@ describe('ocapld.js', () => {
           });
 
           const inspectCapabilityChain = async ({
-            capabilityChain, invocationTarget
+            capabilityChain
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             should.exist(capabilityChain);
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(2);
@@ -3551,10 +3543,8 @@ describe('ocapld.js', () => {
           addToLoader({doc: dianaDelCap});
 
           const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta, invocationTarget
+            capabilityChain, capabilityChainMeta
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -3648,10 +3638,8 @@ describe('ocapld.js', () => {
           addToLoader({doc: dianaDelCap});
 
           const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta, invocationTarget
+            capabilityChain, capabilityChainMeta
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -3751,10 +3739,8 @@ describe('ocapld.js', () => {
           });
 
           const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta, invocationTarget
+            capabilityChain, capabilityChainMeta
           }) => {
-            should.exist(invocationTarget);
-            invocationTarget.should.be.a('string');
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -4059,10 +4045,8 @@ describe('ocapld.js', () => {
         });
 
         const inspectCapabilityChain = async ({
-          capabilityChain, capabilityChainMeta, invocationTarget
+          capabilityChain, capabilityChainMeta
         }) => {
-          should.exist(invocationTarget);
-          invocationTarget.should.be.a('string');
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -4172,10 +4156,8 @@ describe('ocapld.js', () => {
         });
 
         const inspectCapabilityChain = async ({
-          capabilityChain, capabilityChainMeta, invocationTarget
+          capabilityChain, capabilityChainMeta
         }) => {
-          should.exist(invocationTarget);
-          invocationTarget.should.be.a('string');
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');

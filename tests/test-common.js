@@ -3971,16 +3971,16 @@ describe('ocapld.js', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        result.error.errors[0].errors.should.have.length(1);
-        const [error] = result.error.errors[0].errors;
+        const [error] = result.error.errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
       });
-      it.skip('should verify a capability chain with hierachical delegation',
+      it('should verify a capability chain with hierachical delegation ' +
+        'and inspectCapabilityChain',
         async () => {
 
         const rootCapability = {
-          id: 'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e',
+          id: 'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144',
           controller: alice.id(),
         };
         addToLoader({doc: rootCapability});
@@ -4034,7 +4034,6 @@ describe('ocapld.js', () => {
         //   4. Parent capability should point to Carol's capability
         //   5. The invoker should be Diana's ID
 
-        console.log('PPPPPPPP', carolCap.invocationTarget);
         // delegate access to a specific document under carol's capability
         const invocationTarget =
           `${carolCap.invocationTarget}/a-specific-document`;
@@ -4045,8 +4044,6 @@ describe('ocapld.js', () => {
           invocationTarget,
           invoker: diana.id()
         };
-
-        console.log('DIANA DELEGATION', JSON.stringify(dianaCap, null, 2));
 
         //  6. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
@@ -4060,8 +4057,6 @@ describe('ocapld.js', () => {
             ]
           })
         });
-
-        console.log('DIANA DELEGATION', JSON.stringify(dianaDelCap, null, 2));
 
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta, invocationTarget
@@ -4082,11 +4077,10 @@ describe('ocapld.js', () => {
           purpose: new CapabilityDelegation({
             allowHierarchicalDelegation: true,
             suite: new Ed25519Signature2018(),
-            // inspectCapabilityChain,
+            inspectCapabilityChain,
           }),
           documentLoader: testLoader
         });
-        console.log('RRRRRrr', JSON.stringify(result, null, 2));
 
         expect(result).to.exist;
         expect(result.verified).to.be.true;

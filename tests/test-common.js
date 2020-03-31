@@ -3777,7 +3777,7 @@ describe('ocapld.js', () => {
         });
       }); // end chain depth of 4
     });
-    describe.only('Hierarchical Delegation', () => {
+    describe('Hierarchical Delegation', () => {
       it('should verify a capability chain with hierachical delegation',
         async () => {
 
@@ -4084,6 +4084,124 @@ describe('ocapld.js', () => {
 
         expect(result).to.exist;
         expect(result.verified).to.be.true;
+      });
+      it('should fail an increasingly permissive capability chain with ' +
+        'hierachical delegation and inspectCapabilityChain',
+        async () => {
+
+        const rootCapability = {
+          id: 'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee',
+          controller: alice.id(),
+        };
+        addToLoader({doc: rootCapability});
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker and delegator should be Bob's ID
+        const bobCap = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.id,
+          invoker: bob.id(),
+          delegator: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await jsigs.sign(bobCap, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id]
+          })
+        });
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The invoker should be Carol's ID
+
+        // delegate access to a specific document under bob's capability
+        const invocationTarget =
+          `${bobCap.invocationTarget}/a-specific-document`;
+        const carolCap = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget,
+          invoker: carol.id(),
+          delegator: carol.id(),
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await jsigs.sign(carolCap, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id, bobDelCap]
+          })
+        });
+
+        // Create a delegated capability for Diana
+        //   4. Parent capability should point to Carol's capability
+        //   5. The invoker should be Diana's ID
+        const dianaCap = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: carolCap.id,
+          // NOTE: this is an invalid attempt to degate a capability to the
+          // root of the EDV when carol's zcap has an invocationTarget that
+          // is a specific EDV document
+          invocationTarget: bobCap.invocationTarget,
+          invoker: diana.id()
+        };
+
+        //  6. Sign the delegated capability with Carol's delegation key
+        //     that was specified as the delegator in Carol's capability
+        const dianaDelCap = await jsigs.sign(dianaCap, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [
+              rootCapability.id, bobCap.id, carolDelCap
+            ]
+          })
+        });
+
+        const inspectCapabilityChain = async ({
+          capabilityChain, capabilityChainMeta, invocationTarget
+        }) => {
+          should.exist(invocationTarget);
+          invocationTarget.should.be.a('string');
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(3);
+          capabilityChainMeta.should.be.an('array');
+          capabilityChainMeta.should.have.length(3);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+
+        const result = await jsigs.verify(dianaDelCap, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityDelegation({
+            allowHierarchicalDelegation: true,
+            suite: new Ed25519Signature2018(),
+            inspectCapabilityChain,
+          }),
+          documentLoader: testLoader
+        });
+
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        result.error.errors[0].errors.should.have.length(1);
+        const [error] = result.error.errors[0].errors;
+        error.message.should.include(
+          'delegated capability must be equivalent or more restrictive');
       });
     }); // end Hierarchical Delegation
   });

@@ -3849,7 +3849,7 @@ describe('ocapld.js', () => {
         const result = await jsigs.verify(dianaDelCap, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityDelegation({
-            allowHierarchicalDelegation: true,
+            allowTargetAttenuation: true,
             suite: new Ed25519Signature2018(),
           }),
           documentLoader: testLoader
@@ -3948,7 +3948,7 @@ describe('ocapld.js', () => {
         const result = await jsigs.verify(dianaDelCap, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityDelegation({
-            allowHierarchicalDelegation: true,
+            allowTargetAttenuation: true,
             suite: new Ed25519Signature2018(),
           }),
           documentLoader: testLoader
@@ -3962,7 +3962,7 @@ describe('ocapld.js', () => {
           'delegated capability must be equivalent or more restrictive');
       });
       it('should fail hierachical delegation when ' +
-        'allowHierarchicalDelegation is not explicitly allowed',
+        'allowTargetAttenuation is not explicitly allowed',
         async () => {
 
         const rootCapability = {
@@ -4047,9 +4047,9 @@ describe('ocapld.js', () => {
         const result = await jsigs.verify(dianaDelCap, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityDelegation({
-            // NOTE: allowHierarchicalDelegation is intentionally not set
+            // NOTE: allowTargetAttenuation is intentionally not set
             // here, the default is false
-            // allowHierarchicalDelegation: true,
+            // allowTargetAttenuation: true,
             suite: new Ed25519Signature2018(),
           }),
           documentLoader: testLoader
@@ -4159,7 +4159,7 @@ describe('ocapld.js', () => {
         const result = await jsigs.verify(dianaDelCap, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityDelegation({
-            allowHierarchicalDelegation: true,
+            allowTargetAttenuation: true,
             suite: new Ed25519Signature2018(),
             inspectCapabilityChain,
           }),
@@ -4270,7 +4270,7 @@ describe('ocapld.js', () => {
         const result = await jsigs.verify(dianaDelCap, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityDelegation({
-            allowHierarchicalDelegation: true,
+            allowTargetAttenuation: true,
             suite: new Ed25519Signature2018(),
             inspectCapabilityChain,
           }),

@@ -1,5 +1,22 @@
 # ocapld ChangeLog
 
+## 2.0.0 - TBD
+
+### Changed
+- **BREAKING**: An `invocationTarget` must be specified in all delegations.
+- Improve test coverage.
+
+### Fixed
+- Properly validate `allowedAction` in capabilities.
+
+### Added
+- Add verification of `expires` as a core feature.
+- Add the ability to specificy a `maxChainLength` when verifying capability
+  delegations.
+- Add an optional `allowTargetAttenuation` flag which allows the
+  `invocationTarget` of a delegation chain to be increasingly restrictive
+  based on a hierarchical RESTful URL structure.
+
 ## 1.8.0 - 2020-02-14
 
 ### Changed

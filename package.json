@@ -1,6 +1,6 @@
 {
   "name": "ocapld",
-  "version": "2.0.0",
+  "version": "2.0.1-0",
   "description": "Linked Data Capabilities reference implementation.",
   "homepage": "https://github.com/digitalbazaar/ocapld.js/",
   "author": {

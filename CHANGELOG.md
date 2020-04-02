@@ -1,6 +1,6 @@
 # ocapld ChangeLog
 
-## 2.0.0 - TBD
+## 2.0.0 - 2020-04-02
 
 ### Changed
 - **BREAKING**: An `invocationTarget` must be specified in all delegations.

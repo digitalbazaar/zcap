@@ -1,3 +1,4 @@
+*.lcov
 *.sublime-project
 *.sublime-workspace
 *.sw[nop]

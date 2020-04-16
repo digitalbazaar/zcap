@@ -5,5 +5,6 @@ module.exports = {
     node: true
   },
   extends: 'eslint-config-digitalbazaar',
-  root: true
+  root: true,
+  ignorePatterns: ['dist/', 'mock-documents/']
 };

@@ -24,7 +24,8 @@
     "lib/**/*.js"
   ],
   "dependencies": {
-    "jsonld-signatures": "^5.0.0"
+    "jsonld": "^2.0.2",
+    "jsonld-signatures": "digitalbazaar/jsonld-signatures#v6.x"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

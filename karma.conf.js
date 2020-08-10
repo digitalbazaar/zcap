@@ -93,10 +93,6 @@ module.exports = function(config) {
       },
       resolve: {
         alias: {
-          'bitcore-message':
-            require.resolve('bitcore-message/dist/bitcore-message.js'),
-          //'bitcoreMessage':
-          //  require.resolve('bitcore-message/dist/bitcore-message.js'),
           forge: require.resolve('node-forge'),
           jsonld: require.resolve('jsonld/dist/jsonld.js'),
           'jsonld-signatures': require.resolve(

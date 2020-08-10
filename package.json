@@ -36,7 +36,6 @@
     "@babel/preset-env": "^7.4.4",
     "@babel/runtime": "^7.4.4",
     "babel-loader": "^8.0.6",
-    "bitcore-message": "github:CoMakery/bitcore-message#dist",
     "browserify": "^16.1.0",
     "chai": "^4.1.2",
     "commander": "^2.20.0",

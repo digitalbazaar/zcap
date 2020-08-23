@@ -35,6 +35,8 @@
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
     "@babel/runtime": "^7.4.4",
+    "@digitalbazaar/ed25519-signature-2018": "digitalbazaar/ed25519-signature-2018#initial",
+    "@digitalbazaar/ed25519-verification-key-2018": "^1.0.2",
     "babel-loader": "^8.0.6",
     "browserify": "^16.1.0",
     "chai": "^4.1.2",

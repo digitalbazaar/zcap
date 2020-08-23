@@ -16,13 +16,14 @@ const {
 } = ocapld;
 
 const {
-  Ed25519Signature2018
-} = jsigs.suites;
-
-const {
-  Ed25519KeyPair,
   SECURITY_CONTEXT_URL
 } = jsigs;
+
+const {Ed25519Signature2018} =
+  require('@digitalbazaar/ed25519-signature-2018');
+
+const {Ed25519VerificationKey2018} =
+    require('@digitalbazaar/ed25519-verification-key-2018');
 
 const {
   controllers,
@@ -58,7 +59,7 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const signed = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
@@ -72,7 +73,7 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const signed = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
@@ -88,7 +89,7 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityInvocation()
           });
@@ -115,7 +116,7 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityDelegation({
@@ -139,7 +140,7 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityDelegation({
@@ -156,7 +157,7 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation()
           });
@@ -212,7 +213,7 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -245,7 +246,7 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -281,7 +282,7 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -294,7 +295,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -350,7 +352,8 @@ describe('ocapld.js', () => {
         };
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alpha.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              alpha.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: didDocs.alpha.id
@@ -380,7 +383,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -411,7 +415,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -442,7 +447,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -476,7 +482,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -507,7 +514,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -537,7 +545,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: root.id
@@ -571,7 +580,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -602,7 +611,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -615,7 +624,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -648,7 +658,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -661,7 +671,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -703,7 +714,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [mockRootCapability.id]
@@ -716,7 +727,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -759,7 +771,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -772,7 +784,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -812,7 +825,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -825,7 +838,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -863,7 +877,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -876,7 +890,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
@@ -914,7 +929,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -927,7 +942,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -969,7 +985,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -982,7 +998,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
@@ -1022,7 +1039,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1035,7 +1052,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
@@ -1073,7 +1091,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1086,7 +1104,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id
@@ -1127,7 +1146,7 @@ describe('ocapld.js', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1140,7 +1159,8 @@ describe('ocapld.js', () => {
         const doc = clone(mock.exampleDoc);
         const invocation = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityInvocation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
@@ -1182,7 +1202,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1203,7 +1223,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1240,7 +1261,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1262,7 +1283,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1304,7 +1326,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1326,7 +1348,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1368,7 +1391,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1390,7 +1413,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1432,7 +1456,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1454,7 +1478,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1490,7 +1515,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1512,7 +1537,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1548,7 +1574,7 @@ describe('ocapld.js', () => {
           ///    capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1571,7 +1597,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1608,7 +1635,7 @@ describe('ocapld.js', () => {
           ///    capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1629,7 +1656,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1670,7 +1698,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1691,7 +1719,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap]
@@ -1740,7 +1769,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1761,7 +1790,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1813,7 +1843,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1834,7 +1864,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1847,7 +1878,8 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           const invocation = await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
               capability: carolCap.id
@@ -1883,7 +1915,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1904,7 +1936,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1917,7 +1950,8 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           const invocation = await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
               capability: carolCap.id
@@ -1952,7 +1986,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1973,7 +2007,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -1986,7 +2021,8 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           const invocation = await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
               capability: carolCap.id
@@ -2023,7 +2059,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -2044,7 +2080,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -2057,7 +2094,8 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           const invocation = await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
               capability: carolCap.id
@@ -2105,7 +2143,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -2126,7 +2164,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id]
@@ -2139,7 +2178,8 @@ describe('ocapld.js', () => {
           const doc = clone(mock.exampleDoc);
           const invocation = await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
               capability: carolCap.id
@@ -2242,7 +2282,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2264,7 +2304,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2277,7 +2318,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2324,7 +2366,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2346,7 +2388,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2359,7 +2402,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2411,7 +2455,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2433,7 +2477,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2446,7 +2491,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2502,7 +2548,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2524,7 +2570,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2537,7 +2584,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2594,7 +2642,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2616,7 +2664,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2629,7 +2678,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2683,7 +2733,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2704,7 +2754,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2717,7 +2768,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2770,7 +2822,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2792,7 +2844,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2805,7 +2858,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2858,7 +2912,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2880,7 +2934,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2893,7 +2948,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -2948,7 +3004,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2975,7 +3031,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -2988,7 +3045,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3043,7 +3101,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3069,7 +3127,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -3082,7 +3141,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3142,7 +3202,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3165,7 +3225,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -3178,7 +3239,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3233,7 +3295,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3261,7 +3323,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -3274,7 +3337,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3322,7 +3386,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3349,7 +3413,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -3362,7 +3427,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3405,7 +3471,7 @@ describe('ocapld.js', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3432,7 +3498,8 @@ describe('ocapld.js', () => {
             //     that was specified as the delegator in Bob's capability
             const carolDelCap = await jsigs.sign(carolCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id, bobCap.id]
@@ -3445,7 +3512,8 @@ describe('ocapld.js', () => {
             const doc = clone(mock.exampleDoc);
             const invocation = await jsigs.sign(doc, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519KeyPair(carol.get('capabilityInvocation', 0))
+                key: new Ed25519VerificationKey2018(
+                  carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
                 capability: carolCap.id
@@ -3489,7 +3557,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3512,7 +3580,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobDelCap]
@@ -3534,7 +3603,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Carol's capability
           const dianaDelCap = await jsigs.sign(dianaCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id, carolCap]
@@ -3584,7 +3654,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3607,7 +3677,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobDelCap]
@@ -3629,7 +3700,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Carol's capability
           const dianaDelCap = await jsigs.sign(dianaCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobCap.id, carolCap]
@@ -3686,7 +3758,7 @@ describe('ocapld.js', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3708,7 +3780,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Bob's capability
           const carolDelCap = await jsigs.sign(carolCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                bob.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id, bobDelCap]
@@ -3729,7 +3802,8 @@ describe('ocapld.js', () => {
           //     that was specified as the delegator in Carol's capability
           const dianaDelCap = await jsigs.sign(dianaCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+              key: new Ed25519VerificationKey2018(
+                carol.get('capabilityDelegation', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [
@@ -3789,7 +3863,7 @@ describe('ocapld.js', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -3811,7 +3885,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Bob's capability
         const carolDelCap = await jsigs.sign(carolCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id, bobDelCap]
@@ -3837,7 +3912,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [
@@ -3884,7 +3960,7 @@ describe('ocapld.js', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -3910,7 +3986,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Bob's capability
         const carolDelCap = await jsigs.sign(carolCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id, bobDelCap]
@@ -3936,7 +4013,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [
@@ -3987,7 +4065,7 @@ describe('ocapld.js', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4009,7 +4087,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Bob's capability
         const carolDelCap = await jsigs.sign(carolCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id, bobDelCap]
@@ -4035,7 +4114,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [
@@ -4087,7 +4167,7 @@ describe('ocapld.js', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4109,7 +4189,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Bob's capability
         const carolDelCap = await jsigs.sign(carolCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id, bobDelCap]
@@ -4135,7 +4216,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [
@@ -4195,7 +4277,7 @@ describe('ocapld.js', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4221,7 +4303,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Bob's capability
         const carolDelCap = await jsigs.sign(carolCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(bob.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id, bobDelCap]
@@ -4246,7 +4329,8 @@ describe('ocapld.js', () => {
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519KeyPair(carol.get('capabilityDelegation', 0))
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityDelegation', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [

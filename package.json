@@ -1,8 +1,8 @@
 {
-  "name": "ocapld",
+  "name": "@digitalbazaar/zcapld",
   "version": "2.0.1-0",
   "description": "Linked Data Capabilities reference implementation.",
-  "homepage": "https://github.com/digitalbazaar/ocapld.js/",
+  "homepage": "https://github.com/digitalbazaar/zcapld",
   "author": {
     "name": "Digital Bazaar, Inc.",
     "email": "support@digitalbazaar.com",
@@ -10,10 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitalbazaar/ocapld.js"
+    "url": "https://github.com/digitalbazaar/zcapld"
   },
   "bugs": {
-    "url": "https://github.com/digitalbazaar/ocapld.js/issues/"
+    "url": "https://github.com/digitalbazaar/zcapld/issues/"
   },
   "license": "BSD-3-Clause",
   "main": "lib/index.js",

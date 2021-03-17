@@ -1,5 +1,5 @@
 /**
- * Karam configuration for ocapld.
+ * Karma configuration for zcapld.
  *
  * Copyright (c) 2011-2019 Digital Bazaar, Inc. All rights reserved.
  */

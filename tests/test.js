@@ -1,5 +1,5 @@
 /**
- * Node.js test runner for ocapld.js.
+ * Node.js test runner for zcapld.
  *
  * Copyright (c) 2011-2018 Digital Bazaar, Inc. All rights reserved.
  */
@@ -8,7 +8,7 @@
 const common = require('./test-common');
 const expect = require('chai').expect;
 const jsigs = require('../node_modules/jsonld-signatures');
-const ocapld = require('../lib');
+const zcapld = require('../lib');
 
 const mock = require('./mock-data');
 const helpers = require('./helpers');
@@ -18,7 +18,7 @@ const options = {
   helpers,
   jsigs,
   mock,
-  ocapld,
+  zcapld,
   nodejs: true
 };
 

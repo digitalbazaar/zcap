@@ -7,13 +7,13 @@ module.exports = async function(options) {
 'use strict';
 
 const should = require('chai').should();
-const {expect, helpers, jsigs, mock, ocapld} = options;
+const {expect, helpers, jsigs, mock, zcapld} = options;
 
 const {
   CapabilityInvocation,
   CapabilityDelegation,
   ExpirationCaveat
-} = ocapld;
+} = zcapld;
 
 const {
   SECURITY_CONTEXT_URL
@@ -52,7 +52,7 @@ const alpha = new Controller(privateDidDocs.alpha);
 const CONSTANT_DATE = '2018-02-13T21:26:08Z';
 
 // run tests
-describe('ocapld.js', () => {
+describe('zcapld', () => {
   context('Common', () => {
     describe('sign with capabilityInvocation proof purpose', () => {
       it('should succeed w/key invoker', async () => {

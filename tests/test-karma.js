@@ -1,5 +1,5 @@
 /**
- * Karma test runner for ocapld.js.
+ * Karma test runner for zcapld.
  *
  * Use environment vars to control, set via karma.conf.js/webpack:
  *
@@ -18,7 +18,7 @@
 const common = require('./test-common');
 const expect = require('chai').expect;
 const jsigs = require('jsonld-signatures');
-const ocapld = require('../lib');
+const zcapld = require('../lib');
 
 const mock = require('./mock-data');
 const helpers = require('./helpers');
@@ -28,7 +28,7 @@ const options = {
   helpers,
   jsigs,
   mock,
-  ocapld,
+  zcapld,
   nodejs: false
 };
 

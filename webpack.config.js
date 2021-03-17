@@ -1,5 +1,5 @@
 /**
- * ocapld webpack build rules.
+ * zcapld webpack build rules.
  *
  * @author Digital Bazaar, Inc.
  *
@@ -14,17 +14,17 @@ const {
 module.exports = [];
 
 // custom setup for each output
-// all built files will export the "ocapld" library but with
+// all built files will export the "zcapld" library but with
 // different content
 const outputs = [
-  // core ocapld library
+  // core zcapld library
   // larger version for wide compatibilty
   {
     entry: [
       // main lib
       './lib/index.js'
     ],
-    filenameBase: 'ocapld',
+    filenameBase: 'zcapld',
     targets: {
       // use slightly looser browserslist defaults
       browsers: 'defaults, > 0.25%'
@@ -37,7 +37,7 @@ const outputs = [
       // main lib
       './lib/index.js'
     ],
-    filenameBase: 'ocapld.esm',
+    filenameBase: 'zcapld.esm',
     targets: {
       esmodules: true
     }
@@ -49,7 +49,7 @@ const outputs = [
   // - see Babel and browserslist docs for targets
   //{
   //  entry: ['./lib/FOO.js', ..., './lib/jsonld.js'],
-  //  filenameBase: 'ocapld.custom'
+  //  filenameBase: 'zcapld.custom'
   //  libraryTarget: 'umd',
   //  targets: {
   //    // for example, just target latest browsers for development
@@ -63,7 +63,7 @@ outputs.forEach(info => {
   const common = {
     // each output uses the "jsonld" name but with different contents
     entry: {
-      ocapld: info.entry
+      zcapld: info.entry
     },
     // enable for easier debugging
     //optimization: {

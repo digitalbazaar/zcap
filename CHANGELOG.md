@@ -1,10 +1,14 @@
 # ocapld ChangeLog
 
 ### Changed
+- **BREAKING**: Only support Node.js >=12.
 - Update dependencies.
 - Use new `@digitalbazaar/ed25519-signature-2018` and
   `@digitalbazaar/ed25519-verification-key-2018` dependencies for testing.
-- **BREAKING**: Only support Node.js >=12.
+- Modernize bundle building.
+
+### Added
+- Ship bundled ESM version.
 
 ### Removed
 - **BREAKING**: Remove `bitcore-message` dependency. It's for a specialized use

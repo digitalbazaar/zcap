@@ -71,7 +71,21 @@ module.exports = function(config) {
             use: {
               loader: 'babel-loader',
               options: {
-                presets: ['@babel/preset-env'],
+                presets: [
+                  [
+                    '@babel/preset-env',
+                    {
+                      useBuiltIns: 'usage',
+                      corejs: '3.9',
+                      bugfixes: true,
+                      //debug: true,
+                      targets: {
+                        // test with slightly looser browserslist defaults
+                        browsers: 'defaults, > 0.25%'
+                      }
+                    }
+                  ]
+                ],
                 plugins: [
                   [
                     '@babel/plugin-proposal-object-rest-spread',
@@ -102,8 +116,12 @@ module.exports = function(config) {
     },
 
     browserify: {
-      debug: true
-      //transform: ['uglifyify']
+      debug: false,
+      plugin: [
+        [
+          require('esmify')
+        ]
+      ]
     },
 
     // test results reporter to use

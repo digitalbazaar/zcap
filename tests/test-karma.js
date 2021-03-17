@@ -15,13 +15,6 @@
 // FIXME: hack to ensure delay is set first
 //mocha.setup({delay: true, ui: 'bdd'});
 
-// jsonld compatibility
-//require('core-js/fn/array/includes');
-require('core-js/fn/object/assign');
-require('core-js/fn/promise');
-// FIXME: shouldn't need this with babel transform-runtime.
-require('regenerator-runtime/runtime');
-
 const common = require('./test-common');
 const expect = require('chai').expect;
 const jsigs = require('jsonld-signatures');

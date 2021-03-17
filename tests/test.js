@@ -23,6 +23,9 @@ const options = {
 };
 
 common(options).then(() => {
+  // '--delay' event loop hack for mocha 7.1.0+
+  return Promise.resolve();
+}).then(() => {
   run();
 }).catch(err => {
   console.error(err);

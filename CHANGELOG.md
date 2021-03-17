@@ -1,5 +1,14 @@
 # ocapld ChangeLog
 
+### Changed
+- Update dependencies.
+- Use new `@digitalbazaar/ed25519-signature-2018` and
+  `@digitalbazaar/ed25519-verification-key-2018` dependencies for testing.
+
+### Removed
+- **BREAKING**: Remove `bitcore-message` dependency. It's for a specialized use
+  case.
+
 ## 2.0.0 - 2020-04-02
 
 ### Changed

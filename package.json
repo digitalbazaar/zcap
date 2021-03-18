@@ -39,6 +39,7 @@
     "babel-loader": "^8.0.6",
     "browserify": "^17.0.0",
     "chai": "^4.3.3",
+    "core-js": "3.9.1",
     "cross-env": "^7.0.3",
     "eslint": "^7.22.0",
     "eslint-config-digitalbazaar": "^2.6.1",

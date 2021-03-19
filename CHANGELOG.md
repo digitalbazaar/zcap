@@ -2,7 +2,7 @@
 
 ### Changed
 - **BREAKING**: Changed package name from `ocapld` to `@digitalbazaar/zcapld`.
-- Resetting version to `1.0.0`.
+- **BREAKING**: Resetting version to `1.0.0`.
 - **BREAKING**: Only support Node.js >=12.
 - Update dependencies.
 - Use new `@digitalbazaar/ed25519-signature-2018` and

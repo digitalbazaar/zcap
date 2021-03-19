@@ -4,30 +4,13 @@
  * Copyright (c) 2011-2019 Digital Bazaar, Inc. All rights reserved.
  */
 module.exports = function(config) {
-  // bundler to test: webpack, browserify
-  const bundler = process.env.BUNDLER || 'webpack';
-
-  const frameworks = ['mocha'];
-  // main bundle preprocessors
-  const preprocessors = ['babel'];
-
-  if(bundler === 'browserify') {
-    frameworks.push(bundler);
-    preprocessors.push(bundler);
-  } else if(bundler === 'webpack') {
-    preprocessors.push(bundler);
-    preprocessors.push('sourcemap');
-  } else {
-    throw Error('Unknown bundler');
-  }
-
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks,
+    frameworks: ['mocha'],
 
     // list of files / patterns to load in the browser
     files: [
@@ -44,84 +27,18 @@ module.exports = function(config) {
     // available preprocessors:
     // https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      //'tests/*.js': ['webpack', 'babel'] //preprocessors
-      'tests/*.js': preprocessors
+      'tests/*.js': ['webpack', 'sourcemap']
     },
 
     webpack: {
       mode: 'development',
       devtool: 'inline-source-map',
-      module: {
-        rules: [
-          {
-            test: /\.js$/,
-            include: [{
-              // exclude node_modules by default
-              exclude: /(node_modules)/
-            }/*, {
-              // include jsonld
-              include: /(node_modules\/jsonld)/
-            }, {
-              // include rdf-canonize
-              include: /(node_modules\/rdf-canonize)/
-            }, {
-              // include jsonld-signatures
-              include: /(node_modules\/jsonld-signatures)/
-            }*/],
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: [
-                  [
-                    '@babel/preset-env',
-                    {
-                      useBuiltIns: 'usage',
-                      corejs: '3.9',
-                      bugfixes: true,
-                      //debug: true,
-                      targets: {
-                        // test with slightly looser browserslist defaults
-                        browsers: 'defaults, > 0.25%'
-                      }
-                    }
-                  ]
-                ],
-                plugins: [
-                  [
-                    '@babel/plugin-proposal-object-rest-spread',
-                    {useBuiltIns: true}
-                  ],
-                  '@babel/plugin-transform-modules-commonjs',
-                  '@babel/plugin-transform-runtime'
-                ]
-              }
-            }
-          }
-        ]
-      },
       node: {
         Buffer: false,
         process: false,
         crypto: false,
         setImmediate: false
-      },
-      resolve: {
-        alias: {
-          forge: require.resolve('node-forge'),
-          jsonld: require.resolve('jsonld/dist/jsonld.js'),
-          'jsonld-signatures': require.resolve(
-            'jsonld-signatures/dist/jsonld-signatures.js')
-        }
       }
-    },
-
-    browserify: {
-      debug: false,
-      plugin: [
-        [
-          require('esmify')
-        ]
-      ]
     },
 
     // test results reporter to use

@@ -1,10 +1,9 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 1.0.0 - 2021-xx-xx
+## 3.0.0 - 2021-03-19
 
 ### Changed
 - **BREAKING**: Changed package name from `ocapld` to `@digitalbazaar/zcapld`.
-- **BREAKING**: Resetting version to `1.0.0`.
 - **BREAKING**: Only support Node.js >=12.
 - Update dependencies.
 - Use new `@digitalbazaar/ed25519-signature-2018` and

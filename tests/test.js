@@ -1,7 +1,7 @@
 /**
  * Node.js test runner for zcapld.
  *
- * Copyright (c) 2011-2018 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2011-2021 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 

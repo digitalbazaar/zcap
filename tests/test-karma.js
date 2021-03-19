@@ -10,7 +10,7 @@
  * Bail with tests fail:
  *   BAIL=true
  *
- * Copyright (c) 2011-2018 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2011-2021 Digital Bazaar, Inc. All rights reserved.
  */
 // FIXME: hack to ensure delay is set first
 //mocha.setup({delay: true, ui: 'bdd'});

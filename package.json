@@ -24,8 +24,8 @@
     "lib/**/*.js"
   ],
   "dependencies": {
-    "jsonld": "^4.0.1",
-    "jsonld-signatures": "digitalbazaar/jsonld-signatures#v8.x"
+    "jsonld": "^5.0.0",
+    "jsonld-signatures": "^8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
@@ -35,7 +35,7 @@
     "@babel/preset-env": "^7.13.10",
     "@babel/runtime": "^7.13.10",
     "@digitalbazaar/ed25519-signature-2018": "digitalbazaar/ed25519-signature-2018#initial",
-    "@digitalbazaar/ed25519-verification-key-2018": "^1.0.2",
+    "@digitalbazaar/ed25519-verification-key-2018": "^3.0.0",
     "babel-loader": "^8.0.6",
     "browserify": "^17.0.0",
     "chai": "^4.3.3",

@@ -1,5 +1,7 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 1.0.0 - 2021-xx-xx
+
 ### Changed
 - **BREAKING**: Changed package name from `ocapld` to `@digitalbazaar/zcapld`.
 - **BREAKING**: Resetting version to `1.0.0`.

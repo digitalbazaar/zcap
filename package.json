@@ -23,7 +23,8 @@
   ],
   "dependencies": {
     "jsonld": "^5.0.0",
-    "jsonld-signatures": "^8.0.1"
+    "jsonld-signatures": "^8.0.1",
+    "lodash.isequal": "^4.5.0"
   },
   "devDependencies": {
     "@digitalbazaar/ed25519-signature-2018": "^1.0.0",

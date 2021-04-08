@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 3.1.0 - TBD
+## 3.1.0 - 2021-04-08
 
 ### Added
 - Skip `jsonld.compact` step when a JSON-LD document has specific contexts.

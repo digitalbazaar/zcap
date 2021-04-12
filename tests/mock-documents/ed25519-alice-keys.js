@@ -1,7 +1,7 @@
 module.exports = {
   "@context": "https://w3id.org/security/v2",
   "id": "https://example.com/i/alice",
-  "publicKey": [
+  "verificationMethod": [
     {
       "@context": "https://w3id.org/security/v2",
       "id": "https://example.com/i/alice/keys/1",

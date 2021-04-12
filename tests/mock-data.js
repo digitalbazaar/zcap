@@ -2,6 +2,11 @@ const jsonld = require('jsonld');
 const {SECURITY_CONTEXT_URL, strictDocumentLoader} =
   require('jsonld-signatures');
 
+const didContext = require('did-context');
+const v1Context = require('veres-one-context');
+const {Ed25519Signature2018} =
+  require('@digitalbazaar/ed25519-signature-2018');
+
 const mock = {};
 module.exports = mock;
 
@@ -11,7 +16,8 @@ const privateDidDocs = mock.privateDidDocs = {};
 const controllers = mock.controllers = {};
 const _loaderData = {};
 
-const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
+const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation',
+  'verificationMethod'];
 
 mock.exampleDoc = require('./mock-documents/example-doc');
 mock.exampleDocWithInvocation = {};
@@ -21,11 +27,11 @@ mock.exampleDocWithInvocation.alpha =
 mock.exampleDocWithInvocation.beta =
   require('./mock-documents/example-doc-with-beta-invocation');
 
-const didContext = require('./mock-documents/did-context');
-_loaderData['https://w3id.org/did/v0.11'] = didContext;
+_loaderData[didContext.constants.DID_CONTEXT_URL] = didContext.contexts
+  .get(didContext.constants.DID_CONTEXT_URL);
 
-const v1Context = require('./mock-documents/veres-one-context');
-_loaderData['https://w3id.org/veres-one/v1'] = v1Context;
+_loaderData[v1Context.constants.CONTEXT_URL] = v1Context.contexts
+  .get(v1Context.constants.CONTEXT_URL);
 
 controllers.alice = require('./mock-documents/ed25519-alice-keys');
 controllers.bob = require('./mock-documents/ed25519-bob-keys');
@@ -106,7 +112,8 @@ mock.testLoader = async url => {
             `Failed to get subgraph within a DID Document, uri: "${url}"`);
         }
         const document = {
-          '@context': _loaderData[url]['@context'],
+          // '@context': _loaderData[url]['@context'],
+          '@context': Ed25519Signature2018.CONTEXT_URL,
           ...subGraph
         };
         return {

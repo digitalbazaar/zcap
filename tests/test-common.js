@@ -57,9 +57,12 @@ describe('zcapld', () => {
     describe('sign with capabilityInvocation proof purpose', () => {
       it('should succeed w/key invoker', async () => {
         const doc = clone(mock.exampleDoc);
+
         const signed = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(
+              alice.get('verificationMethod', 0)
+            ),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
@@ -73,7 +76,9 @@ describe('zcapld', () => {
         const doc = clone(mock.exampleDoc);
         const signed = await jsigs.sign(doc, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(
+              alice.get('verificationMethod', 0)
+            ),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
@@ -89,7 +94,9 @@ describe('zcapld', () => {
           const doc = clone(mock.exampleDoc);
           await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(
+                alice.get('verificationMethod', 0)
+              )
             }),
             purpose: new CapabilityInvocation()
           });
@@ -116,7 +123,9 @@ describe('zcapld', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(
+              alice.get('verificationMethod', 0)
+            ),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityDelegation({
@@ -140,7 +149,9 @@ describe('zcapld', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0)),
+            key: new Ed25519VerificationKey2018(
+              alice.get('verificationMethod', 0)
+            ),
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityDelegation({
@@ -157,7 +168,7 @@ describe('zcapld', () => {
           const doc = clone(mock.exampleDoc);
           await jsigs.sign(doc, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation()
           });
@@ -213,7 +224,7 @@ describe('zcapld', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -246,7 +257,7 @@ describe('zcapld', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -282,7 +293,7 @@ describe('zcapld', () => {
         //     that was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.alpha.id]
@@ -367,6 +378,7 @@ describe('zcapld', () => {
           }),
           documentLoader: testLoader
         });
+
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
@@ -580,7 +592,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -611,7 +623,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -658,7 +670,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -714,7 +726,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [mockRootCapability.id]
@@ -771,7 +783,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -825,7 +837,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -877,7 +889,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -929,7 +941,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -985,7 +997,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1039,7 +1051,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1091,7 +1103,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1146,7 +1158,7 @@ describe('zcapld', () => {
         //     Alice's ID was specified as the delegator in the root capability
         const delegatedCapability = await jsigs.sign(newCapability, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [capabilities.root.beta.id]
@@ -1202,7 +1214,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1261,7 +1273,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1326,7 +1338,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1391,7 +1403,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1456,7 +1468,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1515,7 +1527,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1574,7 +1586,7 @@ describe('zcapld', () => {
           ///    capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1635,7 +1647,7 @@ describe('zcapld', () => {
           ///    capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1698,7 +1710,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1769,7 +1781,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1843,7 +1855,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1915,7 +1927,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -1986,7 +1998,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -2059,7 +2071,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -2143,7 +2155,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -2282,7 +2294,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2366,7 +2378,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2455,7 +2467,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2548,7 +2560,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2642,7 +2654,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2733,7 +2745,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2822,7 +2834,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -2912,7 +2924,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3004,7 +3016,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3101,7 +3113,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3202,7 +3214,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3295,7 +3307,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3386,7 +3398,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3471,7 +3483,7 @@ describe('zcapld', () => {
             //     capability
             const bobDelCap = await jsigs.sign(bobCap, {
               suite: new Ed25519Signature2018({
-                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+                key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
               }),
               purpose: new CapabilityDelegation({
                 capabilityChain: [rootCapability.id]
@@ -3557,7 +3569,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3654,7 +3666,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3758,7 +3770,7 @@ describe('zcapld', () => {
           //     capability
           const bobDelCap = await jsigs.sign(bobCap, {
             suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
             }),
             purpose: new CapabilityDelegation({
               capabilityChain: [capabilities.root.beta.id]
@@ -3863,7 +3875,7 @@ describe('zcapld', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -3960,7 +3972,7 @@ describe('zcapld', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4065,7 +4077,7 @@ describe('zcapld', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4167,7 +4179,7 @@ describe('zcapld', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]
@@ -4277,7 +4289,7 @@ describe('zcapld', () => {
         //     capability
         const bobDelCap = await jsigs.sign(bobCap, {
           suite: new Ed25519Signature2018({
-            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            key: new Ed25519VerificationKey2018(alice.get('verificationMethod', 0))
           }),
           purpose: new CapabilityDelegation({
             capabilityChain: [rootCapability.id]

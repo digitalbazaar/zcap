@@ -1,3 +1,8 @@
+/*!
+ * Copyright (c) 2018-2021 Digital Bazaar, Inc. All rights reserved.
+ */
+'use strict';
+
 const api = {};
 module.exports = api;
 

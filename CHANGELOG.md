@@ -1,5 +1,11 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 3.1.1 - 2021-04-15
+
+### Fixed
+- Use `jsonld-signatures@9`.
+- Update test dependencies and fix tests.
+
 ## 3.1.0 - 2021-04-08
 
 ### Added

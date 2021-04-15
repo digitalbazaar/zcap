@@ -1,6 +1,4 @@
-const jsonld = require('jsonld');
-const {SECURITY_CONTEXT_URL, strictDocumentLoader} =
-  require('jsonld-signatures');
+const {SECURITY_CONTEXT_URL} = require('jsonld-signatures');
 
 const mock = {};
 module.exports = mock;

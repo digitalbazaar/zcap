@@ -94,28 +94,6 @@ mock.addToLoader = ({doc}) => {
 
 mock.testLoader = async url => {
   if(url in _loaderData) {
-    if(url.startsWith('did:v1')) {
-      const hashFragment = url.split('#')[1];
-      if(hashFragment) {
-        const map = await jsonld.createNodeMap(_loaderData[url], {
-          documentLoader: strictDocumentLoader
-        });
-        const subGraph = map[url];
-        if(!subGraph) {
-          throw new Error(
-            `Failed to get subgraph within a DID Document, uri: "${url}"`);
-        }
-        const document = {
-          '@context': _loaderData[url]['@context'],
-          ...subGraph
-        };
-        return {
-          contextUrl: null,
-          document,
-          documentUrl: url
-        };
-      }
-    }
     return {
       contextUrl: null,
       document: _loaderData[url],

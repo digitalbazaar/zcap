@@ -1,5 +1,10 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 4.0.0 - 2021-04-TBD
+
+### Fixed
+- **BREAKING**: Use [`zcap-context@1.1.0`](https://github.com/digitalbazaar/zcap-context/blob/main/CHANGELOG.md).
+
 ## 3.1.1 - 2021-04-15
 
 ### Fixed

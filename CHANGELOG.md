@@ -1,9 +1,10 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 4.0.0 - 2021-04-TBD
+## 4.0.0 - 2021-04-26
 
 ### Fixed
-- **BREAKING**: Use [`zcap-context@1.1.0`](https://github.com/digitalbazaar/zcap-context/blob/main/CHANGELOG.md) and refactor `fetchInSecurityContext` api.
+- **BREAKING**: Use [`zcap-context@1.1.0`](https://github.com/digitalbazaar/zcap-context/blob/main/CHANGELOG.md)
+  and refactor `fetchInSecurityContext` API.
 - Use [`@digitalbazaar/security-context@1.0.0`](https://github.com/digitalbazaar/security-context/blob/main/CHANGELOG.md).
 
 ## 3.1.1 - 2021-04-15

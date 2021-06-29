@@ -1,5 +1,8 @@
 module.exports = {
-  "@context": "https://w3id.org/security/v2",
+  "@context": [
+    "https://w3id.org/zcap/v1",
+    "https://w3id.org/security/suites/ed25519-2018/v1"
+  ],
   "id": "https://whatacar.example/a-fancy-car/proc/7a397d7b-beta",
   "parentCapability": "https://example.org/alice/caps#0",
   "invoker": "https://example.com/i/bob",

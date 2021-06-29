@@ -1,5 +1,14 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 4.1.0 - 2021-xx-xx
+
+### Added
+- Expose `ZCAP_CONTEXT` in `constants` as a convenience.
+- Add `documentLoader` to expose a convenience document loader that will load
+  `ZCAP_CONTEXT`.
+- Add `extendDocumentLoader` for adding a custom document loader that extend
+  `documentLoader` to load other documents.
+
 ## 4.0.0 - 2021-04-26
 
 ### Fixed

@@ -4,6 +4,7 @@
 'use strict';
 
 const {SECURITY_CONTEXT_URL} = require('jsonld-signatures');
+const zcapld = require('../lib');
 
 const mock = {};
 module.exports = mock;
@@ -12,7 +13,7 @@ const capabilities = mock.capabilities = {};
 const didDocs = mock.didDocs = {};
 const privateDidDocs = mock.privateDidDocs = {};
 const controllers = mock.controllers = {};
-const _loaderData = {};
+const _loaderData = new Map();
 
 const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
 
@@ -25,10 +26,13 @@ mock.exampleDocWithInvocation.beta =
   require('./mock-documents/example-doc-with-beta-invocation');
 
 const didContext = require('./mock-documents/did-context');
-_loaderData['https://w3id.org/did/v0.11'] = didContext;
+_loaderData.set('https://w3id.org/did/v0.11', didContext);
 
 const v1Context = require('./mock-documents/veres-one-context');
-_loaderData['https://w3id.org/veres-one/v1'] = v1Context;
+_loaderData.set('https://w3id.org/veres-one/v1', v1Context);
+
+const {suiteContext} = require('@digitalbazaar/ed25519-signature-2018');
+_loaderData.set(suiteContext.CONTEXT_URL, suiteContext.CONTEXT);
 
 controllers.alice = require('./mock-documents/ed25519-alice-keys');
 controllers.bob = require('./mock-documents/ed25519-bob-keys');
@@ -85,26 +89,27 @@ ddocKeyList = [].concat.apply([], ddocKeyList)
 const keyList = controllersKeyList.concat(ddocKeyList);
 
 mock.addToLoader = ({doc}) => {
-  if(doc.id in _loaderData) {
+  if(_loaderData.has(doc.id)) {
     throw new Error(
       `ID of document has already been registered in the loader: ${doc.id}`);
   }
   if(!('@context' in doc)) {
     doc = {'@context': SECURITY_CONTEXT_URL, ...doc};
   }
-  _loaderData[doc.id] = doc;
+  _loaderData.set(doc.id, doc);
 };
 
-mock.testLoader = async url => {
-  if(url in _loaderData) {
+mock.testLoader = zcapld.extendDocumentLoader(async url => {
+  const document = _loaderData.get(url);
+  if(document !== undefined) {
     return {
       contextUrl: null,
-      document: _loaderData[url],
+      document,
       documentUrl: url
     };
   }
   throw new Error(`Document "${url}" not found.`);
-};
+});
 
 function _stripPrivateKeys(privateDidDocument) {
   // clone the doc

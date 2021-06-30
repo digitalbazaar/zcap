@@ -9,6 +9,10 @@
 - Add `extendDocumentLoader` for adding a custom document loader that extend
   `documentLoader` to load other documents.
 
+### Fixed
+- Ensure `expectedAction` is checked when looking for a matching proof,
+  not `capabilityAction`.
+
 ## 4.0.0 - 2021-04-26
 
 ### Fixed

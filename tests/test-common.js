@@ -905,6 +905,7 @@ describe('zcapld', () => {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityInvocation({
             expectedTarget: capabilities.root.beta.id,
+            expectedAction: 'write',
             suite: new Ed25519Signature2018()
           }),
           documentLoader: testLoader
@@ -966,7 +967,8 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'action "undefined" does not match the expected capability action');
+          'Could not verify any proofs; no proofs matched the required ' +
+          'suite and purpose.');
       });
 
       it('should fail to verify a capability chain of depth 2 when a ' +
@@ -1022,7 +1024,8 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'action "invalid" is not allowed by the capability');
+          'Could not verify any proofs; no proofs matched the required ' +
+          'suite and purpose.');
       });
 
       it('should verify a capability chain of depth 2 and a ' +
@@ -1068,7 +1071,7 @@ describe('zcapld', () => {
           purpose: new CapabilityInvocation({
             expectedTarget: capabilities.root.beta.id,
             suite: new Ed25519Signature2018(),
-            capabilityAction: 'write'
+            expectedAction: 'write'
           }),
           documentLoader: testLoader
         });
@@ -1119,7 +1122,7 @@ describe('zcapld', () => {
           purpose: new CapabilityInvocation({
             expectedTarget: capabilities.root.beta.id,
             suite: new Ed25519Signature2018(),
-            capabilityAction: 'write'
+            expectedAction: 'write'
           }),
           documentLoader: testLoader
         });
@@ -1175,7 +1178,7 @@ describe('zcapld', () => {
           purpose: new CapabilityInvocation({
             expectedTarget: capabilities.root.beta.id,
             suite: new Ed25519Signature2018(),
-            capabilityAction: 'read'
+            expectedAction: 'read'
           }),
           documentLoader: testLoader
         });

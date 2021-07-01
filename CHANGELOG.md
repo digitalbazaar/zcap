@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 4.1.0 - 2021-xx-xx
+## 5.0.0 - 2021-xx-xx
 
 ### Added
 - Expose `ZCAP_CONTEXT` in `constants` as a convenience.
@@ -8,6 +8,14 @@
   `ZCAP_CONTEXT`.
 - Add `extendDocumentLoader` for adding a custom document loader that extend
   `documentLoader` to load other documents.
+
+### Changed
+- **BREAKING**: LD capability invocation proofs now require `invocationTarget`
+  to be set in order for `match()` to find proofs based on `expectedTarget`.
+  This helps ensure that the proof creator's intended `invocationTarget` is
+  declared (important for systems that support RESTful attenuation) and it
+  enables more efficient proof verification when documents include multiple
+  capability invocation proofs that may have different invocation targets.
 
 ### Fixed
 - Ensure `expectedAction` is checked when looking for a matching proof,

@@ -64,6 +64,13 @@ capabilities.root.beta = {
   controller: controllers.alice.id
 };
 
+capabilities.root.restful = {
+  '@context': zcapld.constants.ZCAP_CONTEXT_URL,
+  id: `urn:zcap:root:${encodeURIComponent('https://zcap.example')}`,
+  controller: controllers.alice.id,
+  invocationTarget: 'https://zcap.example'
+};
+
 capabilities.delegated = {};
 capabilities.delegated.alpha =
   require('./mock-documents/delegated-ocap-root-alpha');
@@ -131,6 +138,7 @@ const docsForLoader = [
   didDocs.delta,
   capabilities.root.alpha,
   capabilities.root.beta,
+  capabilities.root.restful,
   ...keyList
 ];
 

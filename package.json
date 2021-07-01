@@ -24,7 +24,7 @@
   "dependencies": {
     "@digitalbazaar/security-context": "^1.0.0",
     "jsonld": "^5.2.0",
-    "jsonld-signatures": "^9.0.2",
+    "jsonld-signatures": "^9.2.0",
     "zcap-context": "^1.1.0"
   },
   "devDependencies": {

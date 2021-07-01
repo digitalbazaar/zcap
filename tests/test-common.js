@@ -64,7 +64,8 @@ describe('zcapld', () => {
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
-            capability: capabilities.root.alpha.id
+            capability: capabilities.root.alpha.id,
+            invocationTarget: capabilities.root.alpha.id
           })
         });
         expect(signed).to.deep.equal(mock.exampleDocWithInvocation.alpha);
@@ -78,7 +79,8 @@ describe('zcapld', () => {
             date: CONSTANT_DATE
           }),
           purpose: new CapabilityInvocation({
-            capability: capabilities.root.beta.id
+            capability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.id
           })
         });
         expect(signed).to.deep.equal(mock.exampleDocWithInvocation.beta);
@@ -99,6 +101,25 @@ describe('zcapld', () => {
         }
         expect(err).to.exist;
         expect(err.message).to.equal('"capability" is required.');
+      });
+
+      it('should fail when missing "invocationTarget"', async () => {
+        let err;
+        try {
+          const doc = clone(mock.exampleDoc);
+          await jsigs.sign(doc, {
+            suite: new Ed25519Signature2018({
+              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+            }),
+            purpose: new CapabilityInvocation({
+              capability: 'urn:foo'
+            })
+          });
+        } catch(e) {
+          err = e;
+        }
+        expect(err).to.exist;
+        expect(err.message).to.equal('"invocationTarget" is required.');
       });
     });
 
@@ -302,7 +323,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -359,7 +381,8 @@ describe('zcapld', () => {
               alpha.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: didDocs.alpha.id
+            capability: didDocs.alpha.id,
+            invocationTarget: didDocs.alpha.id
           })
         });
         // verify a self invoked capability
@@ -390,7 +413,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -422,7 +446,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -454,7 +479,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         // truncate the urn from the start of the root id
@@ -489,7 +515,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -503,6 +530,56 @@ describe('zcapld', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         // TODO: assert more about result.error
+      });
+
+      it('should verify two self-invoked root capabilities', async () => {
+        const doc = {
+          '@context': SECURITY_CONTEXT_URL,
+          id: uuid()
+        };
+        const target1 = 'https://zcap.example/target1';
+        const target2 = 'https://zcap.example/target2';
+        const invocation1 = await jsigs.sign(doc, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: capabilities.root.restful.id,
+            invocationTarget: target1
+          })
+        });
+        const invocation2 = await jsigs.sign(invocation1, {
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: capabilities.root.restful.id,
+            invocationTarget: target2
+          })
+        });
+        // verify both self-invoked capabilities for different targets
+        const result = await jsigs.verify(invocation2, {
+          suite: new Ed25519Signature2018(),
+          purpose: [
+            new CapabilityInvocation({
+              expectedRootCapability: capabilities.root.restful.id,
+              expectedTarget: [
+                capabilities.root.restful.invocationTarget,
+                target1
+              ]
+            }),
+            new CapabilityInvocation({
+              expectedRootCapability: capabilities.root.restful.id,
+              expectedTarget: [
+                capabilities.root.restful.invocationTarget,
+                target2
+              ]
+            })
+          ],
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
       });
 
       it('should verify a root capability w/ multiple controllers',
@@ -521,7 +598,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -552,7 +630,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: root.id
+            capability: root.id,
+            invocationTarget: root.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -631,7 +710,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -678,7 +758,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -734,7 +815,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: 'urn:foo'
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -791,7 +873,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -845,7 +928,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -898,7 +982,8 @@ describe('zcapld', () => {
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
-            capabilityAction: 'write'
+            capabilityAction: 'write',
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -950,7 +1035,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -966,9 +1052,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'Could not verify any proofs; no proofs matched the required ' +
-          'suite and purpose.');
+        error.name.should.equal('NotFoundError');
       });
 
       it('should fail to verify a capability chain of depth 2 when a ' +
@@ -1008,7 +1092,8 @@ describe('zcapld', () => {
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
-            capabilityAction: 'invalid'
+            capabilityAction: 'invalid',
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -1023,9 +1108,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'Could not verify any proofs; no proofs matched the required ' +
-          'suite and purpose.');
+        error.name.should.equal('NotFoundError');
       });
 
       it('should verify a capability chain of depth 2 and a ' +
@@ -1063,7 +1146,8 @@ describe('zcapld', () => {
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
-            capabilityAction: 'write'
+            capabilityAction: 'write',
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -1114,7 +1198,8 @@ describe('zcapld', () => {
               bob.get('capabilityInvocation', 0))
           }),
           purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id
+            capability: delegatedCapability.id,
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -1130,8 +1215,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'no proofs matched the required suite and purpose');
+        error.name.should.equal('NotFoundError');
       });
 
       it('should fail to verify a capability chain of depth 2 when an ' +
@@ -1170,7 +1254,8 @@ describe('zcapld', () => {
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
-            capabilityAction: 'write'
+            capabilityAction: 'write',
+            invocationTarget: delegatedCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
@@ -1186,8 +1271,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'no proofs matched the required suite and purpose');
+        error.name.should.equal('NotFoundError');
       });
 
       describe('chain depth of 3', () => {
@@ -1888,7 +1972,8 @@ describe('zcapld', () => {
                 carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
-              capability: carolCap.id
+              capability: carolCap.id,
+              invocationTarget: carolCap.invocationTarget
             })
           });
           const result = await jsigs.verify(invocation, {
@@ -1960,7 +2045,8 @@ describe('zcapld', () => {
                 carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
-              capability: carolCap.id
+              capability: carolCap.id,
+              invocationTarget: carolCap.invocationTarget
             })
           });
           const result = await jsigs.verify(invocation, {
@@ -2031,7 +2117,8 @@ describe('zcapld', () => {
                 carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
-              capability: carolCap.id
+              capability: carolCap.id,
+              invocationTarget: carolCap.invocationTarget
             })
           });
           const result = await jsigs.verify(invocation, {
@@ -2104,7 +2191,8 @@ describe('zcapld', () => {
                 carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
-              capability: carolCap.id
+              capability: carolCap.id,
+              invocationTarget: carolCap.invocationTarget
             })
           });
 
@@ -2188,7 +2276,8 @@ describe('zcapld', () => {
                 carol.get('capabilityInvocation', 0))
             }),
             purpose: new CapabilityInvocation({
-              capability: carolCap.id
+              capability: carolCap.id,
+              invocationTarget: carolCap.invocationTarget
             })
           });
 
@@ -2328,7 +2417,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -2412,7 +2502,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
 
@@ -2501,7 +2592,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
 
@@ -2594,7 +2686,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
 
@@ -2688,7 +2781,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -2778,7 +2872,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -2868,7 +2963,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -2958,7 +3054,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3055,7 +3152,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3151,7 +3249,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3249,7 +3348,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3347,7 +3447,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3437,7 +3538,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {
@@ -3522,7 +3624,8 @@ describe('zcapld', () => {
                   carol.get('capabilityInvocation', 0))
               }),
               purpose: new CapabilityInvocation({
-                capability: carolCap.id
+                capability: carolCap.id,
+                invocationTarget: carolCap.invocationTarget
               })
             });
             const result = await jsigs.verify(invocation, {

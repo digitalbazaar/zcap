@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.0.0 - 2021-xx-xx
+## 5.0.0 - 2021-07-02
 
 ### Added
 - Expose `ZCAP_CONTEXT` in `constants` as a convenience.

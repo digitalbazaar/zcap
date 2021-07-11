@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.1.0 - 2021-07-xx
+## 5.1.0 - 2021-07-11
 
 ### Changed
 - Updated jsonld-signatures to 9.3.x. This brings in an optimization for

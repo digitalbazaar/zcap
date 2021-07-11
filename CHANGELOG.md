@@ -1,5 +1,11 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 5.1.0 - 2021-07-xx
+
+### Changed
+- Updated jsonld-signatures to 9.3.x. This brings in an optimization for
+  controller documents that are JSON-LD DID documents.
+
 ## 5.0.0 - 2021-07-02
 
 ### Added

@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.1.1 - 2021-07-xx
+## 5.1.1 - 2021-07-21
 
 ### Fixed
 - Ensure `proof` uses an expected context during proof validation.

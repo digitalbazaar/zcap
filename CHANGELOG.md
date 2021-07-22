@@ -1,5 +1,11 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 5.1.2 - 2021-07-xx
+
+### Fixed
+- Enable zcap context to appear anywhere in a context array when
+  checking proof context because it is a protected context.
+
 ## 5.1.1 - 2021-07-21
 
 ### Fixed

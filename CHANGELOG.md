@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.1.2 - 2021-07-xx
+## 5.1.2 - 2021-07-21
 
 ### Fixed
 - Enable zcap context to appear anywhere in a context array when

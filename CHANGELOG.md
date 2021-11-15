@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.1.3 - 2021-11-xx
+## 5.1.3 - 2021-11-15
 
 ### Fixed
 - Ensure `invocationTarget` from an invocation proof is checked against the

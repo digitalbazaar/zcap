@@ -562,6 +562,7 @@ describe('zcapld', () => {
           suite: new Ed25519Signature2018(),
           purpose: [
             new CapabilityInvocation({
+              allowTargetAttenuation: true,
               expectedRootCapability: capabilities.root.restful.id,
               expectedTarget: [
                 capabilities.root.restful.invocationTarget,
@@ -569,6 +570,7 @@ describe('zcapld', () => {
               ]
             }),
             new CapabilityInvocation({
+              allowTargetAttenuation: true,
               expectedRootCapability: capabilities.root.restful.id,
               expectedTarget: [
                 capabilities.root.restful.invocationTarget,
@@ -791,7 +793,7 @@ describe('zcapld', () => {
           '@context': SECURITY_CONTEXT_URL,
           id: uuid(),
           parentCapability: mockRootCapability.id,
-          invocationTarget: mockRootCapability.id,
+          invocationTarget: mockRootCapability.invocationTarget,
           invoker: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -816,13 +818,13 @@ describe('zcapld', () => {
           }),
           purpose: new CapabilityInvocation({
             capability: delegatedCapability.id,
-            invocationTarget: 'urn:foo'
+            invocationTarget: mockRootCapability.invocationTarget
           })
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2018(),
           purpose: new CapabilityInvocation({
-            expectedTarget: 'urn:foo',
+            expectedTarget: mockRootCapability.invocationTarget,
             suite: new Ed25519Signature2018()
           }),
           documentLoader: testLoader
@@ -4003,8 +4005,8 @@ describe('zcapld', () => {
         });
 
         // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The invoker should be Diana's ID
+        //   7. Parent capability should point to Carol's capability
+        //   8. The invoker should be Diana's ID
 
         // delegate access to a specific document under carol's capability
         const invocationTarget =
@@ -4017,7 +4019,7 @@ describe('zcapld', () => {
           invoker: diana.id()
         };
 
-        //  6. Sign the delegated capability with Carol's delegation key
+        //  9. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
@@ -4104,8 +4106,8 @@ describe('zcapld', () => {
         });
 
         // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The invoker should be Diana's ID
+        //   7. Parent capability should point to Carol's capability
+        //   8. The invoker should be Diana's ID
 
         const dianaCap = {
           '@context': SECURITY_CONTEXT_URL,
@@ -4118,7 +4120,7 @@ describe('zcapld', () => {
           invoker: diana.id()
         };
 
-        //  6. Sign the delegated capability with Carol's delegation key
+        //  9. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
         const dianaDelCap = await jsigs.sign(dianaCap, {
           suite: new Ed25519Signature2018({
@@ -4147,6 +4149,404 @@ describe('zcapld', () => {
         const [error] = result.error.errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
+      });
+      it('should verify invocation of path-based hierachical delegation ' +
+        'when invoking at an exact-match target',
+        async () => {
+
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = {
+          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          invocationTarget: rootTarget,
+          controller: alice.id()
+        };
+        addToLoader({doc: rootCapability});
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker and delegator should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await jsigs.sign(bobCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id]
+          })
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The invoker should be Carol's ID
+
+        // delegate access to a specific document under bob's capability
+        const invocationTarget =
+          `${bobCap.invocationTarget}/a-specific-document`;
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await jsigs.sign(carolCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id, bobDelCap]
+          })
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The invoker should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await jsigs.sign(doc, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: carolCap.id,
+            invocationTarget: carolCap.invocationTarget
+          })
+        });
+
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            allowTargetAttenuation: true,
+            expectedTarget: [rootTarget, invocationTarget],
+            expectedRootCapability: rootCapability.id,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+      it('should fail invocation of path-based hierachical delegation ' +
+        'when invoking at an unexpected target',
+        async () => {
+
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = {
+          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          invocationTarget: rootTarget,
+          controller: alice.id()
+        };
+        addToLoader({doc: rootCapability});
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker and delegator should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await jsigs.sign(bobCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id]
+          })
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The invoker should be Carol's ID
+
+        // delegate access to a specific document under bob's capability
+        const invocationTarget =
+          `${bobCap.invocationTarget}/a-specific-document`;
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await jsigs.sign(carolCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id, bobDelCap]
+          })
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The invoker should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        // Note: This is intentionally an invalid target (a doc that
+        // carol should not have access to)
+        const invalidTarget = `${rootTarget}/a-different-specific-document`;
+        const invocation = await jsigs.sign(doc, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: carolCap.id,
+            invocationTarget: invalidTarget
+          })
+        });
+
+        const expectedTarget = [rootTarget, invocationTarget];
+        const purpose = new CapabilityInvocation({
+          allowTargetAttenuation: true,
+          expectedTarget,
+          expectedRootCapability: rootCapability.id,
+          suite: new Ed25519Signature2018()
+        });
+        // force match to true to test expected target code path
+        purpose.match = () => true;
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose,
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.include(
+          `Expected target (${expectedTarget}) does not match ` +
+          `invocation target (${invalidTarget})`);
+      });
+      it('should verify invocation of path-based hierachical delegation ' +
+        'when invoking at a valid sub target',
+        async () => {
+
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = {
+          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          invocationTarget: rootTarget,
+          controller: alice.id()
+        };
+        addToLoader({doc: rootCapability});
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker and delegator should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await jsigs.sign(bobCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id]
+          })
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The invoker should be Carol's ID
+
+        // delegate access to a specific document under bob's capability
+        const invocationTarget =
+          `${bobCap.invocationTarget}/a-specific-document`;
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await jsigs.sign(carolCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id, bobDelCap]
+          })
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The invoker should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        // Note: This is an attenuated path off of carol's zcap's target
+        const validSubTarget = `${carolDelCap.invocationTarget}/sub-path`;
+        const invocation = await jsigs.sign(doc, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: carolCap.id,
+            invocationTarget: validSubTarget
+          })
+        });
+
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            allowTargetAttenuation: true,
+            expectedTarget: [rootTarget, validSubTarget],
+            expectedRootCapability: rootCapability.id,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+      it('should fail invocation of path-based hierachical delegation ' +
+        'when invoking at an invalid target',
+        async () => {
+
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = {
+          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          invocationTarget: rootTarget,
+          controller: alice.id()
+        };
+        addToLoader({doc: rootCapability});
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The invoker and delegator should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await jsigs.sign(bobCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id]
+          })
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The invoker should be Carol's ID
+
+        // delegate access to a specific document under bob's capability
+        const invocationTarget =
+          `${bobCap.invocationTarget}/a-specific-document`;
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await jsigs.sign(carolCap, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              bob.get('capabilityDelegation', 0))
+          }),
+          purpose: new CapabilityDelegation({
+            capabilityChain: [rootCapability.id, bobDelCap]
+          })
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The invoker should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        // Note: This is intentionally an invalid target (a doc that
+        // carol should not have access to)
+        const invalidTarget = `${rootTarget}/a-different-specific-document`;
+        const invocation = await jsigs.sign(doc, {
+          documentLoader: testLoader,
+          suite: new Ed25519Signature2018({
+            key: new Ed25519VerificationKey2018(
+              carol.get('capabilityInvocation', 0))
+          }),
+          purpose: new CapabilityInvocation({
+            capability: carolCap.id,
+            invocationTarget: invalidTarget
+          })
+        });
+
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2018(),
+          purpose: new CapabilityInvocation({
+            allowTargetAttenuation: true,
+            // Note: Here we are simulating an endpoint that is expecting
+            // the `invalidTarget` -- it's just that the zcap being used
+            // is not authorized for that target.
+            expectedTarget: [rootTarget, invalidTarget],
+            expectedRootCapability: rootCapability.id,
+            invocationTarget: invalidTarget,
+            suite: new Ed25519Signature2018()
+          }),
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.include(
+          `Invocation target (${invalidTarget}) does not match capability ` +
+          `target (${carolDelCap.invocationTarget})`);
       });
       it('should fail hierachical delegation when ' +
         'allowTargetAttenuation is not explicitly allowed',

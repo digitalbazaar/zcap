@@ -1,5 +1,16 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 5.1.3 - 2021-11-xx
+
+### Fixed
+- Ensure `invocationTarget` from an invocation proof is checked against the
+  capability used and the `expectedTarget`. The `invocationTarget` from the
+  proof must both be in the `expectedTarget` list (or a direct match if a
+  string value is used for `expectedTarget` vs. an array) and it must also
+  match the `invocationTarget` in the capability used (if
+  `allowTargetAttenuation=true` then the capability's `invocationTarget` may
+  be a path prefix for the `invocationTarget` from the proof).
+
 ## 5.1.2 - 2021-07-21
 
 ### Fixed

@@ -28,11 +28,11 @@
     "zcap-context": "^1.1.0"
   },
   "devDependencies": {
-    "@digitalbazaar/ed25519-signature-2018": "^2.0.0",
-    "@digitalbazaar/ed25519-verification-key-2018": "^3.0.0",
+    "@digitalbazaar/ed25519-signature-2020": "^3.0.0",
+    "@digitalbazaar/ed25519-verification-key-2020": "^3.0.0",
     "chai": "^4.3.3",
     "cross-env": "^7.0.3",
-    "eslint": "^7.22.0",
+    "eslint": "^8.5.0",
     "eslint-config-digitalbazaar": "^2.6.1",
     "karma": "^5.2.3",
     "karma-chrome-launcher": "^3.1.0",

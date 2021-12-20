@@ -1,22 +1,25 @@
 module.exports = {
-  "@context": "https://w3id.org/security/v2",
+  "@context": [
+    "https://w3id.org/security/v2",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
   "id": "https://example.com/i/diana",
   "capabilityInvocation": [
     {
       "id": "https://example.com/i/diana/keys/1",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "https://example.com/i/diana",
-      "publicKeyBase58": "8VkLC59zjqEAvyuqc1XPJsQyBbR6qABB32wH1aSeV9Jf",
-      "privateKeyBase58": "4M2Ly3iFehEffeoYwebkiRbeb99WbGJzv3hzw4jrtRXcwSF4BKWM9z84p5es8GYYSgt7N1RAAp8HhBLZiRbxaKHq"
+      "publicKeyMultibase": "z6Mkmx1NnKQS5Nie3UkYHaVE9xxy1AgxF3RXj3rCqrQfQN63",
+      "privateKeyMultibase": "zrv3yvMmvs3EkVyb9j2YJ9jWQ2dopxcVCHXWQFG7v6Kvf6VS9xHZ7w97ZkKK1UMxebdS8vkA2m9kpu8WXLm9oJoaMtj"
     }
   ],
   "capabilityDelegation": [
     {
       "id": "https://example.com/i/diana/keys/2",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "https://example.com/i/diana",
-      "publicKeyBase58": "8VkLC59zjqEAvyuqc1XPJsQyBbR6qABB32wH1aSeV9Jf",
-      "privateKeyBase58": "4M2Ly3iFehEffeoYwebkiRbeb99WbGJzv3hzw4jrtRXcwSF4BKWM9z84p5es8GYYSgt7N1RAAp8HhBLZiRbxaKHq"
+      "publicKeyMultibase": "z6Mkmx1NnKQS5Nie3UkYHaVE9xxy1AgxF3RXj3rCqrQfQN63",
+      "privateKeyMultibase": "zrv3yvMmvs3EkVyb9j2YJ9jWQ2dopxcVCHXWQFG7v6Kvf6VS9xHZ7w97ZkKK1UMxebdS8vkA2m9kpu8WXLm9oJoaMtj"
     }
   ]
 };

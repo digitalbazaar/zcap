@@ -1,50 +1,58 @@
 module.exports = {
   "@context": {
-    "@version": 1.1,
+    "@protected": true,
     "id": "@id",
     "type": "@type",
 
-    "dc": "http://purl.org/dc/terms/",
-    "schema": "http://schema.org/",
-    "sec": "https://w3id.org/security#",
-    "didv": "https://w3id.org/did#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-
-    "Ed25519Signature2018": "sec:Ed25519Signature2018",
-    "Ed25519VerificationKey2018": "sec:Ed25519VerificationKey2018",
-    "RsaSignature2018": "sec:RsaSignature2018",
-    "RsaVerificationKey2018": "sec:RsaVerificationKey2018",
-    "ServiceEndpointProxyService": "didv:ServiceEndpointProxyService",
-
-    "allowedAction": "sec:allowedAction",
-    "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"},
-    "capability": {"@id": "sec:capability", "@type": "@id"},
-    "capabilityAction": "sec:capabilityAction",
-    "capabilityChain": {"@id": "sec:capabilityChain", "@type": "@id", "@container": "@list"},
-    "capabilityDelegation": {"@id": "sec:capabilityDelegationMethod", "@type": "@id", "@container": "@set"},
-    "capabilityInvocation": {"@id": "sec:capabilityInvocationMethod", "@type": "@id", "@container": "@set"},
-    "capabilityStatusList": {"@id": "sec:capabilityStatusList", "@type": "@id"},
-    "canonicalizationAlgorithm": "sec:canonicalizationAlgorithm",
-    "caveat": {"@id": "sec:caveat", "@type": "@id", "@container": "@set"},
-    "created": {"@id": "dc:created", "@type": "xsd:dateTime"},
-    "creator": {"@id": "dc:creator", "@type": "@id"},
-    "controller": {"@id": "sec:controller", "@type": "@id"},
-    "delegator": {"@id": "sec:delegator", "@type": "@id"},
-    "domain": "sec:domain",
-    "expirationDate": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
-    "invocationTarget": {"@id": "sec:invocationTarget", "@type": "@id"},
-    "invoker": {"@id": "sec:invoker", "@type": "@id"},
-    "jws": "sec:jws",
-    "nonce": "sec:nonce",
-    "owner": {"@id": "sec:owner", "@type": "@id"},
-    "proof": {"@id": "sec:proof", "@type": "@id", "@container": "@graph"},
-    "proofPurpose": {"@id": "sec:proofPurpose", "@type": "@vocab"},
-    "proofValue": "sec:proofValue",
-    "publicKey": {"@id": "sec:publicKey", "@type": "@id", "@container": "@set"},
-    "publicKeyBase58": "sec:publicKeyBase58",
-    "publicKeyPem": "sec:publicKeyPem",
-    "revoked": {"@id": "sec:revoked", "@type": "xsd:dateTime"},
-    "service": {"@id": "didv:service", "@type": "@id", "@container": "@set"},
-    "serviceEndpoint": {"@id": "didv:serviceEndpoint", "@type": "@id"}
+    "alsoKnownAs": {
+      "@id": "https://www.w3.org/ns/activitystreams#alsoKnownAs",
+      "@type": "@id"
+    },
+    "assertionMethod": {
+      "@id": "https://w3id.org/security#assertionMethod",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "authentication": {
+      "@id": "https://w3id.org/security#authenticationMethod",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "capabilityDelegation": {
+      "@id": "https://w3id.org/security#capabilityDelegationMethod",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "capabilityInvocation": {
+      "@id": "https://w3id.org/security#capabilityInvocationMethod",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "controller": {
+      "@id": "https://w3id.org/security#controller",
+      "@type": "@id"
+    },
+    "keyAgreement": {
+      "@id": "https://w3id.org/security#keyAgreementMethod",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "service": {
+      "@id": "https://www.w3.org/ns/did#service",
+      "@type": "@id",
+      "@context": {
+        "@protected": true,
+        "id": "@id",
+        "type": "@type",
+        "serviceEndpoint": {
+          "@id": "https://www.w3.org/ns/did#serviceEndpoint",
+          "@type": "@id"
+        }
+      }
+    },
+    "verificationMethod": {
+      "@id": "https://w3id.org/security#verificationMethod",
+      "@type": "@id"
+    }
   }
 };

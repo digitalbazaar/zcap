@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 5.2.0 - 2021-12-xx
+## 5.2.0 - 2021-12-20
 
 ### Added
 - Add optional `maxDelegationTtl` to enable checking that all zcaps in a

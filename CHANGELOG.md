@@ -1,5 +1,17 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 6.0.0 - 2021-12-xx
+
+### Removed
+- **BREAKING**: Removed support for using `invoker` and `delegator` properties.
+  Only `controller` is now permitted and it is `required`, i.e., a ZCAP MUST
+  have a `controller` property, the value of the ZCAP's `id` property is not
+  considered a default controller value for the ZCAP. This change simplifies
+  ZCAP implementations and better reflects the fact that a delegation cannot
+  actually be restricted -- a system can only force users to use data model
+  and protocol-external mechanisms to delegate. This change keeps all
+  delegation within the data model/protocol for improved auditability.
+
 ## 5.2.0 - 2021-12-20
 
 ### Added

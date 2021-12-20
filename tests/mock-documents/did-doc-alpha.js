@@ -1,31 +1,35 @@
 module.exports = {
-  "@context": ["https://w3id.org/did/v0.11", "https://w3id.org/veres-one/v1"],
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/veres-one/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
   "id": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",
   "authentication": [
     {
       "id": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa#authn-key-1",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",
-      "publicKeyBase58": "8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",
-      "privateKeyBase58": "2zKdDUaipASwDLmn9TS4GPFv8gQ2iu1rVB4D7Juyd4kap8D9H9U5vsVgJssz53w9djNAJVUVGMnrkah6zaCDEMqz"
+      "publicKeyMultibase": "z6MkmiaTWH2pqNm3uTGvfFAYyH5rFoZzkfLksiTJM2KDRmzx",
+      "privateKeyMultibase": "zrv2dDe2MjWQDiF8qhFk6z34MguMND8cpzP5XbUJAGSfJKTJqvNewtstT7voohUuRzEdBQo6WpUrNZhZvhJRwu4EQSt"
     }
   ],
   "capabilityDelegation": [
     {
       "id": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa#ocap-grant-key-1",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",
-      "publicKeyBase58": "E68w5N8gZYoemxnmJrQWwA4fTSjc5KUTMQ3Z3DJhk95C",
-      "privateKeyBase58": "4kVqpZWb5L5MaBVDGrhgANq8jiQe9LriXwvwH18i4tZUwe4tgDLUipa2wTdb9bmfmFiPyJLUj4Emb6wEkNUjaKzJ"
+      "publicKeyMultibase": "z6MksYPyfcP7u6J7tTdTzRNMnFcfH21TVCip3QxUsVGifMra",
+      "privateKeyMultibase": "zrv4PPrdSfNfPLfVgQgsWFexMG7xQDk3GqF8JUCTrVB788MSMn841mGgQCHSPT5yypkkhm2mKgUK51cQSwSBkBaaNbC"
     }
   ],
   "capabilityInvocation": [
     {
       "id": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa#ocap-invoke-key-1",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "did:v1:test:nym:8GKQv2nPVqGanxSDygCi8BXrSEJ9Ln6QBhYNWkMCWZDa",
-      "publicKeyBase58": "4sjfmLbFgKiZUFPAo9tkMpz2Hb2gvyxzmGMnaHJaBgMi",
-      "privateKeyBase58": "4kwqy7hsmDYYiHVH1CBir4vSQfte2L2QZUZx1nxRwv1rbYG3ieEk3qvekctamQQk8kzBdyHmNgY4VVpBMS3KVfME"
+      "publicKeyMultibase": "z6MkiKziMaqh1sD2akDsUirbCvY27AJYLsDMTHGiQZGb6u96",
+      "privateKeyMultibase": "zrv4PqrmzrfMGordnQkbqjhe3MRdMhjvFzw9q7DCeJtz9aj6FyH6SfY1RYuFYi5bnTq8D2pRzdkxhJuJqpNnokAVhx8"
     }
   ]
-}
+};

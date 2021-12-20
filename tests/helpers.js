@@ -3,10 +3,7 @@
  */
 'use strict';
 
-const api = {};
-module.exports = api;
-
-api.Controller = class Controller {
+exports.Controller = class Controller {
   constructor(doc) {
     // doc is the key controller document
     this.doc = doc;
@@ -17,11 +14,16 @@ api.Controller = class Controller {
   }
 
   get(keyType, index) {
-    return this.doc[keyType][index];
+    const vm = this.doc[keyType][index];
+    if(typeof vm === 'string') {
+      // dereference verification method
+      return this.doc.verificationMethod.find(({id}) => id === vm);
+    }
+    return vm;
   }
 };
 
 /* eslint-disable */
 const b = a=>a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b);
-api.uuid = () => `urn:uuid:${b()}`;
+exports.uuid = () => `urn:uuid:${b()}`;
 /* eslint-enable */

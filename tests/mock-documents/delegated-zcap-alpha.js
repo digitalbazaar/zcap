@@ -1,19 +1,19 @@
 module.exports = {
   "@context": [
     "https://w3id.org/zcap/v1",
-    "https://w3id.org/security/suites/ed25519-2018/v1"
+    "https://w3id.org/security/suites/ed25519-2020/v1"
   ],
-  "id": "https://whatacar.example/a-fancy-car/proc/7a397d7b-alpha",
+  "id": "urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41",
   "parentCapability": "https://example.org/alice/caps#1",
-  "invoker": "https://example.com/i/bob/keys/1",
+  "controller": "https://example.com/i/bob/keys/1",
   "proof": {
-    "type": "Ed25519Signature2018",
+    "type": "Ed25519Signature2020",
     "created": "2018-02-13T21:26:08Z",
     "capabilityChain": [
       "https://example.org/alice/caps#1"
     ],
-    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..lfAFjrWE-4RxhL0gtzSMRX72NR9SRDgaMmkjPA4if0ERbw4R2bnts5sAs8OyhAlbFzBAKOqrFk57AYqwSR2vCw",
     "proofPurpose": "capabilityDelegation",
+    "proofValue": "z5JNMfJmGj27wxpKhNVTnQmwrATAENSDD2wmJAhx7h7fdy7YcF6yiAfb6XbeoVsQZJvcd14xZ9dd8qjs74oRFEkTw",
     "verificationMethod": "https://example.com/i/alice/keys/1"
   }
 };

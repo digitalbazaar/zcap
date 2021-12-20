@@ -1,16 +1,22 @@
 module.exports = {
-  "@context": "https://w3id.org/security/v2",
+  "@context": [
+    "https://w3id.org/security/v2",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
   "id": "https://example.com/i/alice",
-  "publicKey": [
+  "verificationMethod": [
     {
-      "@context": "https://w3id.org/security/v2",
       "id": "https://example.com/i/alice/keys/1",
-      "type": "Ed25519VerificationKey2018",
+      "type": "Ed25519VerificationKey2020",
       "controller": "https://example.com/i/alice",
-      "publicKeyBase58": "GycSSui454dpYRKiFdsQ5uaE8Gy3ac6dSMPcAoQsk8yq",
-      "privateKeyBase58": "3Mmk4UzTRJTEtxaKk61LxtgUxAa2Dg36jF6VogPtRiKvfpsQWKPCLesKSV182RMmvMJKk6QErH3wgdHp8itkSSiF"
+      "publicKeyMultibase": "z6MkvRsV39xVQc8HevAQwCqEw18DwrEtzVLz8NJY15NtfMmD",
+      "privateKeyMultibase": "zrv2zfksN9F1MiYpTVoLjZKks7UArP87c1dKbdkzXkMTwtoAYadt7ozJEVZwQpcroQruoLxY7kESHpnVyJ1a6bbSVK9"
     }
   ],
-  "capabilityInvocation": ["https://example.com/i/alice/keys/1"],
-  "capabilityDelegation": ["https://example.com/i/alice/keys/1"]
+  "capabilityInvocation": [
+    "https://example.com/i/alice/keys/1"
+  ],
+  "capabilityDelegation": [
+    "https://example.com/i/alice/keys/1"
+  ]
 };

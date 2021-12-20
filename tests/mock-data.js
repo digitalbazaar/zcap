@@ -15,7 +15,9 @@ const privateDidDocs = mock.privateDidDocs = {};
 const controllers = mock.controllers = {};
 const _loaderData = new Map();
 
-const KEY_TYPES = ['capabilityDelegation', 'capabilityInvocation', 'publicKey'];
+const KEY_TYPES = [
+  'capabilityDelegation', 'capabilityInvocation', 'verificationMethod'
+];
 
 mock.exampleDoc = require('./mock-documents/example-doc');
 mock.exampleDocWithInvocation = {};
@@ -26,12 +28,12 @@ mock.exampleDocWithInvocation.beta =
   require('./mock-documents/example-doc-with-beta-invocation');
 
 const didContext = require('./mock-documents/did-context');
-_loaderData.set('https://w3id.org/did/v0.11', didContext);
+_loaderData.set('https://www.w3.org/ns/did/v1', didContext);
 
 const v1Context = require('./mock-documents/veres-one-context');
 _loaderData.set('https://w3id.org/veres-one/v1', v1Context);
 
-const {suiteContext} = require('@digitalbazaar/ed25519-signature-2018');
+const {suiteContext} = require('@digitalbazaar/ed25519-signature-2020');
 _loaderData.set(suiteContext.CONTEXT_URL, suiteContext.CONTEXT);
 
 controllers.alice = require('./mock-documents/ed25519-alice-keys');
@@ -50,14 +52,13 @@ didDocs.gamma = _stripPrivateKeys(privateDidDocs.gamma);
 didDocs.delta = _stripPrivateKeys(privateDidDocs.delta);
 
 capabilities.root = {};
-// keys as invoker and delegator
+
+// keys as controller
 capabilities.root.alpha = {
   '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#1',
-  invoker: 'https://example.com/i/alice/keys/1',
-  delegator: 'https://example.com/i/alice/keys/1'
+  controller: 'https://example.com/i/alice/keys/1'
 };
-// using `controller` to cover both `delegator` and `invoker`
 capabilities.root.beta = {
   '@context': SECURITY_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
@@ -72,28 +73,13 @@ capabilities.root.restful = {
 };
 
 capabilities.delegated = {};
-capabilities.delegated.alpha =
-  require('./mock-documents/delegated-ocap-root-alpha');
-capabilities.delegated.beta =
-  require('./mock-documents/delegated-ocap-root-beta');
+capabilities.delegated.alpha = require('./mock-documents/delegated-zcap-alpha');
+capabilities.delegated.beta = require('./mock-documents/delegated-zcap-beta');
 
-// Generate a flattened list of all keys
-let controllersKeyList = Object.keys(controllers).map(name => KEY_TYPES
-  .map(keyType => controllers[name][keyType])
-  .reduce((acc, curr) => acc.concat(curr), [])
-);
-controllersKeyList = [].concat.apply([], controllersKeyList)
-  .filter(key => !!key && typeof key !== 'string');
-
-let ddocKeyList = Object.keys(privateDidDocs).map(name => KEY_TYPES
-  .map(keyType => privateDidDocs[name][keyType])
-  .reduce((acc, curr) => acc.concat(curr), [])
-);
-ddocKeyList = [].concat.apply([], ddocKeyList)
-  .filter(key => !!key && typeof key !== 'string')
-  .reduce((acc, curr) => acc.concat(curr), []);
-
-const keyList = controllersKeyList.concat(ddocKeyList);
+// generate a flattened list of all keys
+const keyList = [].concat(
+  ...Object.values(controllers).map(_getKeysWithContext),
+  ...Object.values(privateDidDocs).map(_getKeysWithContext));
 
 mock.addToLoader = ({doc}) => {
   if(_loaderData.has(doc.id)) {
@@ -143,3 +129,13 @@ const docsForLoader = [
 ];
 
 docsForLoader.map(doc => mock.addToLoader({doc}));
+
+function _getKeysWithContext(doc) {
+  const keys = [];
+  for(const keyType of KEY_TYPES) {
+    keys.push(...(doc[keyType] || [])
+      .filter(k => typeof k !== 'string')
+      .map(k => ({'@context': doc['@context'], ...k})));
+  }
+  return keys;
+}

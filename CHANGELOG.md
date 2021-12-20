@@ -1,5 +1,18 @@
 # @digitalbazaar/zcapld ChangeLog
 
+## 5.2.0 - 2021-12-xx
+
+### Added
+- Add optional `maxDelegationTtl` to enable checking that all zcaps in a
+  delegation chain have a time-to-live that is not greater than a certain
+  value. This check will have a default value shorter than `Infinity` in
+  a future breaking version.
+- Add optional `requireChainDateMonotonicity` to enable checking that all
+  zcaps in a delegation chain have delegation proofs that were created using
+  dates that monotonically increase (i.e., no delegated zcap was delegated
+  any later than its parent). This check will be required in a future breaking
+  version.
+
 ## 5.1.3 - 2021-11-15
 
 ### Fixed

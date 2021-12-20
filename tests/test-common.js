@@ -16,10 +16,6 @@ const {
   constants: {ZCAP_CONTEXT_URL}
 } = zcapld;
 
-const {
-  SECURITY_CONTEXT_URL
-} = jsigs;
-
 const {Ed25519Signature2020} =
   require('@digitalbazaar/ed25519-signature-2020');
 
@@ -209,7 +205,7 @@ describe('zcapld', () => {
   });
 
   context('Verifying capability chains', () => {
-    describe.only('Invoker and Delegator as keys', () => {
+    describe('Invoker and Delegator as keys', () => {
       it('should verify a self-invoked root capability', async () => {
         const result = await jsigs.verify(mock.exampleDocWithInvocation.alpha, {
           suite: new Ed25519Signature2020(),
@@ -239,7 +235,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's invocation key
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
           invocationTarget: capabilities.root.alpha.id,
@@ -274,7 +270,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's invocation key
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
           invocationTarget: capabilities.root.alpha.id,
@@ -312,7 +308,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's invocation key
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
           invocationTarget: capabilities.root.alpha.id,
@@ -374,11 +370,11 @@ describe('zcapld', () => {
 
       it('should fail to verify a root capability as delegated', async () => {
         // root has no invoker and no keys
-        const doc = {
-          '@context': SECURITY_CONTEXT_URL,
+        const root = {
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid()
         };
-        const result = await jsigs.verify(doc, {
+        const result = await jsigs.verify(root, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityDelegation(),
           documentLoader: testLoader
@@ -390,11 +386,11 @@ describe('zcapld', () => {
       it('should verify a self-invoked root ' +
         'capability with missing invoker and delegator', async () => {
         // invoke the root capability using the invoker key
-        const doc = {
-          '@context': SECURITY_CONTEXT_URL,
+        const root = {
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid()
         };
-        const invocation = await jsigs.sign(doc, {
+        const invocation = await jsigs.sign(root, {
           documentLoader: testLoader,
           suite: new Ed25519Signature2020({
             key: new Ed25519VerificationKey2020(
@@ -420,7 +416,7 @@ describe('zcapld', () => {
       it('should verify a invoking root capability w/ separate target when ' +
         'a matching `expectedRootCapability` is given', async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: bob.id()
@@ -454,7 +450,7 @@ describe('zcapld', () => {
       it('should verify a root capability w/ separate target when ' +
         'a matching `expectedRootCapability` array is given', async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: bob.id()
@@ -488,7 +484,7 @@ describe('zcapld', () => {
       it('should fail to verify a root capability w/ separate target when ' +
         '`expectedRootCapability` is not a URI', async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: bob.id()
@@ -525,7 +521,7 @@ describe('zcapld', () => {
       it('should fail to verify a root capability w/ separate target when ' +
         'no `expectedRootCapability` is given', async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: bob.id()
@@ -558,8 +554,8 @@ describe('zcapld', () => {
 
       it('should verify two self-invoked root capabilities', async () => {
         const doc = {
-          '@context': SECURITY_CONTEXT_URL,
-          id: uuid()
+          '@context': ZCAP_CONTEXT_URL,
+          'example:foo': uuid()
         };
         const target1 = 'https://zcap.example/target1';
         const target2 = 'https://zcap.example/target2';
@@ -615,7 +611,7 @@ describe('zcapld', () => {
       it('should verify a root capability w/ multiple controllers',
         async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: ['urn:other', bob.id()],
@@ -648,7 +644,7 @@ describe('zcapld', () => {
 
       it('should verify a root zcap w/ multiple controllers', async () => {
         const root = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           invocationTarget: uuid(),
           controller: ['urn:other', bob.id()],
@@ -684,7 +680,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -717,7 +713,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -768,7 +764,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -828,7 +824,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: mockRootCapability.id,
           invocationTarget: mockRootCapability.invocationTarget,
@@ -888,7 +884,7 @@ describe('zcapld', () => {
         const expires = new Date();
         expires.setHours(expires.getHours() + 1);
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -946,7 +942,7 @@ describe('zcapld', () => {
         const expires = new Date();
         expires.setHours(expires.getHours() - 1);
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1002,7 +998,7 @@ describe('zcapld', () => {
         //   2. The controller should be Bob's ID
         //   3. Add an allowed action of `write`
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1059,7 +1055,7 @@ describe('zcapld', () => {
         //   3. Add a caveat that states the capability should expire an
         //      hour ago
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1118,7 +1114,7 @@ describe('zcapld', () => {
         //   3. Add a caveat that states the capability should expire an
         //      hour ago
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1176,7 +1172,7 @@ describe('zcapld', () => {
         //   2. The controller should be Bob's ID
         //   3. Add an allowed action of `write`
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1232,7 +1228,7 @@ describe('zcapld', () => {
         //   3. Add a caveat that states the capability should expire an
         //      hour ago
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1290,7 +1286,7 @@ describe('zcapld', () => {
         //   3. Add a caveat that states the capability should expire an
         //      hour ago
         const newCapability = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.id,
@@ -1347,7 +1343,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1371,7 +1367,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -1407,7 +1403,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
@@ -1432,7 +1428,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: 'write',
@@ -1474,7 +1470,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
@@ -1499,7 +1495,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['read', 'write'],
@@ -1541,7 +1537,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
@@ -1566,7 +1562,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['foo', 'bar'],
@@ -1608,7 +1604,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
@@ -1633,7 +1629,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: ['read'],
@@ -1670,7 +1666,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1694,7 +1690,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             allowedAction: 'read',
@@ -1731,7 +1727,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1757,7 +1753,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -1794,7 +1790,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1818,7 +1814,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -1859,7 +1855,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1883,7 +1879,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -1933,7 +1929,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -1957,7 +1953,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2012,7 +2008,6 @@ describe('zcapld', () => {
             //   2. The controller should be Bob's ID
             const bobCap = {
               '@context': ZCAP_CONTEXT_URL,
-              // FIXME: fix broken IDs
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
               invocationTarget: capabilities.root.beta.id,
@@ -2084,7 +2079,6 @@ describe('zcapld', () => {
             //   2. The controller should be Bob's ID
             const bobCap = {
               '@context': ZCAP_CONTEXT_URL,
-              // FIXME: fix broken IDs
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
               invocationTarget: capabilities.root.beta.id,
@@ -2157,7 +2151,6 @@ describe('zcapld', () => {
             const delegated = new Date(Date.now() + ttl);
             const bobCap = {
               '@context': ZCAP_CONTEXT_URL,
-              // FIXME: fix broken IDs
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
               invocationTarget: capabilities.root.beta.id,
@@ -2231,7 +2224,6 @@ describe('zcapld', () => {
             const delegated = new Date();
             const bobCap = {
               '@context': ZCAP_CONTEXT_URL,
-              // FIXME: fix broken IDs
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
               invocationTarget: capabilities.root.beta.id,
@@ -2298,7 +2290,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -2321,7 +2313,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2371,7 +2363,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -2394,7 +2386,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2444,7 +2436,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -2467,7 +2459,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2532,7 +2524,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -2556,7 +2548,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2621,7 +2613,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -2644,7 +2636,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -2760,7 +2752,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -2784,7 +2776,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -2845,7 +2837,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -2869,7 +2861,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -2935,7 +2927,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -2959,7 +2951,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3029,7 +3021,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3053,7 +3045,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3125,7 +3117,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3148,7 +3140,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3216,7 +3208,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3240,7 +3232,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3306,7 +3298,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3330,7 +3322,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3397,7 +3389,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3421,7 +3413,7 @@ describe('zcapld', () => {
             //   4. Parent capability should point to Bob's capability
             //   5. The controller should be Carol's ID
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3490,7 +3482,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3519,7 +3511,7 @@ describe('zcapld', () => {
             expires.setHours(expires.getHours() - 10);
             expires = expires.toISOString();
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3588,7 +3580,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3616,7 +3608,7 @@ describe('zcapld', () => {
             expires = new Date(0);
             expires = expires.toISOString();
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3690,7 +3682,7 @@ describe('zcapld', () => {
             expires.setHours(expires.getHours() + 100);
             expires = expires.toISOString();
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3715,7 +3707,7 @@ describe('zcapld', () => {
             //   5. The controller should be Carol's ID
 
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3784,7 +3776,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3814,7 +3806,7 @@ describe('zcapld', () => {
             expires.setHours(expires.getHours() + 100);
             expires = expires.toISOString();
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3877,7 +3869,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3905,7 +3897,7 @@ describe('zcapld', () => {
             expires.setHours(expires.getHours() + 10);
             expires = expires.toISOString();
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -3963,7 +3955,7 @@ describe('zcapld', () => {
             addToLoader({doc: rootCapability});
 
             const bobCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
               invocationTarget: rootCapability.id,
@@ -3991,7 +3983,7 @@ describe('zcapld', () => {
             expires.setHours(expires.getHours() - 10);
             expires = expires.toISOString();
             const carolCap = {
-              '@context': SECURITY_CONTEXT_URL,
+              '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: bobCap.id,
               invocationTarget: bobCap.invocationTarget,
@@ -4050,7 +4042,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -4074,7 +4066,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -4097,7 +4089,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Carol's capability
           //   5. The controller should be Diana's ID
           const dianaCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
             invocationTarget: carolCap.invocationTarget,
@@ -4146,7 +4138,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -4170,7 +4162,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -4193,7 +4185,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Carol's capability
           //   5. The controller should be Diana's ID
           const dianaCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
             invocationTarget: carolCap.invocationTarget,
@@ -4249,7 +4241,7 @@ describe('zcapld', () => {
           //   1. Parent capability should point to the root capability
           //   2. The controller should be Bob's ID
           const bobCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.id,
@@ -4272,7 +4264,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Bob's capability
           //   5. The controller should be Carol's ID
           const carolCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: bobCap.id,
             invocationTarget: bobCap.invocationTarget,
@@ -4294,7 +4286,7 @@ describe('zcapld', () => {
           //   4. Parent capability should point to Carol's capability
           //   5. The controller should be Diana's ID
           const dianaCap = {
-            '@context': SECURITY_CONTEXT_URL,
+            '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: carolCap.id,
             invocationTarget: carolCap.invocationTarget,
@@ -4353,7 +4345,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const bobCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
           invocationTarget: rootCapability.id,
@@ -4376,7 +4368,7 @@ describe('zcapld', () => {
         //   4. Parent capability should point to Bob's capability
         //   5. The controller should be Carol's ID
         const carolCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: bobCap.id,
           invocationTarget: bobCap.invocationTarget,
@@ -4402,7 +4394,7 @@ describe('zcapld', () => {
         const invocationTarget =
           `${carolCap.invocationTarget}/a-specific-document`;
         const dianaCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: carolCap.id,
           invocationTarget,
@@ -4449,7 +4441,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const bobCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
           invocationTarget: rootCapability.id,
@@ -4476,7 +4468,7 @@ describe('zcapld', () => {
         const invocationTarget =
           `${bobCap.invocationTarget}/a-specific-document`;
         const carolCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: bobCap.id,
           invocationTarget,
@@ -4499,7 +4491,7 @@ describe('zcapld', () => {
         //   8. The controller should be Diana's ID
 
         const dianaCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: carolCap.id,
           // NOTE: this is an invalid attempt to degate a capability to the
@@ -4955,7 +4947,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const bobCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
           invocationTarget: rootCapability.id,
@@ -4979,7 +4971,7 @@ describe('zcapld', () => {
         //   4. Parent capability should point to Bob's capability
         //   5. The controller should be Carol's ID
         const carolCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: bobCap.id,
           invocationTarget: bobCap.invocationTarget,
@@ -5006,7 +4998,7 @@ describe('zcapld', () => {
         const invocationTarget =
           `${carolCap.invocationTarget}/a-specific-document`;
         const dianaCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: carolCap.id,
           invocationTarget,
@@ -5059,7 +5051,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const bobCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
           invocationTarget: rootCapability.id,
@@ -5083,7 +5075,7 @@ describe('zcapld', () => {
         //   4. Parent capability should point to Bob's capability
         //   5. The controller should be Carol's ID
         const carolCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: bobCap.id,
           invocationTarget: bobCap.invocationTarget,
@@ -5110,7 +5102,7 @@ describe('zcapld', () => {
         const invocationTarget =
           `${carolCap.invocationTarget}/a-specific-document`;
         const dianaCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: carolCap.id,
           invocationTarget,
@@ -5171,7 +5163,7 @@ describe('zcapld', () => {
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
         const bobCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
           invocationTarget: rootCapability.id,
@@ -5199,7 +5191,7 @@ describe('zcapld', () => {
         const invocationTarget =
           `${bobCap.invocationTarget}/a-specific-document`;
         const carolCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: bobCap.id,
           invocationTarget,
@@ -5222,7 +5214,7 @@ describe('zcapld', () => {
         //   4. Parent capability should point to Carol's capability
         //   5. The controller should be Diana's ID
         const dianaCap = {
-          '@context': SECURITY_CONTEXT_URL,
+          '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: carolCap.id,
           // NOTE: this is an invalid attempt to degate a capability to the
@@ -5284,15 +5276,9 @@ describe('zcapld', () => {
 };
 
 function _checkCapabilityChain({capabilityChain}) {
-  for(const [i, c] of capabilityChain.entries()) {
+  for(const c of capabilityChain) {
     c.should.be.an('object');
     c.should.have.property('id');
-    // FIXME: only accept `controller` in the next version
-    // c.should.have.property('controller');
-    c.should.have.any.keys(['controller', 'invoker']);
-    // the last capability will not have a delegator field
-    if(i < capabilityChain.length - 1) {
-      c.should.have.any.keys(['controller', 'delegator']);
-    }
+    c.should.have.property('controller');
   }
 }

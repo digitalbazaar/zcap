@@ -1921,140 +1921,287 @@ describe('zcapld', () => {
         it('should fail to verify a capability chain of depth 3 ' +
           'w/delegated zcap created before parent',
           async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            // FIXME: fix broken IDs
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await jsigs.sign(bobCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id]
-            })
-          });
-          addToLoader({doc: bobDelCap});
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The invoker should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            invoker: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await jsigs.sign(carolCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2018({
-              // force proof creation date to be in the past
-              date: new Date(0),
-              key: new Ed25519VerificationKey2018(
-                bob.get('capabilityDelegation', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            })
-          });
-          addToLoader({doc: carolDelCap});
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The controller should be Bob's ID
+            const bobCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              // FIXME: fix broken IDs
+              id: uuid(),
+              parentCapability: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.id,
+              controller: bob.id()
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+            const carolCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
+              controller: carol.id()
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                // force proof creation date to be in the past
+                date: new Date(0),
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
 
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2018(),
-            purpose: new CapabilityDelegation({
+            const result = await jsigs.verify(carolDelCap, {
               suite: new Ed25519Signature2018(),
-              requireChainDateMonotonicity: true
-            }),
-            documentLoader: testLoader
+              purpose: new CapabilityDelegation({
+                suite: new Ed25519Signature2018(),
+                requireChainDateMonotonicity: true
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            expect(result.error.errors[0]).to.exist;
+            result.error.errors[0].message.should.contain(
+              'delegated before its parent');
           });
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          expect(result.error.errors[0]).to.exist;
-          result.error.errors[0].message.should.contain(
-            'delegated before its parent');
-        });
 
-        it.only('should fail to verify a capability chain of depth 3 ' +
+        it('should fail to verify a capability chain of depth 3 ' +
           'w/delegated zcap with no expiration date',
           async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            // FIXME: fix broken IDs
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await jsigs.sign(bobCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2018({
-              key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id]
-            })
-          });
-          addToLoader({doc: bobDelCap});
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The invoker should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            invoker: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await jsigs.sign(carolCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2018({
-              // force proof creation date to be in the past
-              date: new Date(0),
-              key: new Ed25519VerificationKey2018(
-                bob.get('capabilityDelegation', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            })
-          });
-          addToLoader({doc: carolDelCap});
-          console.log('carolDelCap', carolDelCap);
+            // TTL of 1 day
+            const ttl = 1000 * 60 * 60 * 24;
 
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2018(),
-            purpose: new CapabilityDelegation({
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The controller should be Bob's ID
+            const bobCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              // FIXME: fix broken IDs
+              id: uuid(),
+              parentCapability: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.id,
+              controller: bob.id()
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+            const carolCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
+              controller: carol.id()
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
+
+            const result = await jsigs.verify(carolDelCap, {
               suite: new Ed25519Signature2018(),
-              requireChainDateMonotonicity: true
-            }),
-            documentLoader: testLoader
+              purpose: new CapabilityDelegation({
+                suite: new Ed25519Signature2018(),
+                // max TTL of 1 day
+                maxDelegationTtl: ttl
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            expect(result.error.errors[0]).to.exist;
+            result.error.errors[0].message.should.contain(
+              'does not have an expiration date');
           });
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          expect(result.error.errors[0]).to.exist;
-          console.log('error', result.error.errors[0]);
-          result.error.errors[0].message.should.contain(
-            'delegated before its parent');
-        });
+
+        it.only('should fail to verify a capability chain of depth 3 ' +
+          'w/delegated zcap in the future',
+          async () => {
+            // TTL of 1 day
+            const ttl = 1000 * 60 * 60 * 24;
+
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The controller should be Bob's ID
+            const delegated = new Date();
+            const bobCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              // FIXME: fix broken IDs
+              id: uuid(),
+              parentCapability: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.id,
+              controller: bob.id(),
+              expires: new Date(delegated.getTime() + ttl + 1).toJSON()
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                date: delegated,
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+            const carolCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
+              controller: carol.id(),
+              expires: bobDelCap.expires
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
+
+            const result = await jsigs.verify(carolDelCap, {
+              suite: new Ed25519Signature2018(),
+              purpose: new CapabilityDelegation({
+                suite: new Ed25519Signature2018(),
+                maxDelegationTtl: ttl
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            expect(result.error.errors[0]).to.exist;
+            console.log('error', result.error.errors[0]);
+            result.error.errors[0].message.should.contain(
+              'delegated in the future');
+          });
+
+        it('should fail to verify a capability chain of depth 3 ' +
+          'w/delegated zcap with a TTL that is too long',
+          async () => {
+            // TTL of 1 day
+            const ttl = 1000 * 60 * 60 * 24;
+
+            // Create a delegated capability
+            //   1. Parent capability should point to the root capability
+            //   2. The controller should be Bob's ID
+            const delegated = new Date();
+            const bobCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              // FIXME: fix broken IDs
+              id: uuid(),
+              parentCapability: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.id,
+              controller: bob.id(),
+              expires: new Date(delegated.getTime() + ttl + 1).toJSON()
+            };
+            //  3. Sign the delegated capability with Alice's delegation key;
+            //     Alice's ID was specified as the delegator in the root
+            //     capability
+            const bobDelCap = await jsigs.sign(bobCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                date: delegated,
+                key: new Ed25519VerificationKey2018(alice.get('publicKey', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id]
+              })
+            });
+            addToLoader({doc: bobDelCap});
+            // Create a delegated capability for Carol
+            //   4. Parent capability should point to Bob's capability
+            //   5. The invoker should be Carol's ID
+            const carolCap = {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              parentCapability: bobCap.id,
+              invocationTarget: bobCap.invocationTarget,
+              controller: carol.id(),
+              expires: bobDelCap.expires
+            };
+            //  6. Sign the delegated capability with Bob's delegation key
+            //     that was specified as the delegator in Bob's capability
+            const carolDelCap = await jsigs.sign(carolCap, {
+              documentLoader: testLoader,
+              suite: new Ed25519Signature2018({
+                key: new Ed25519VerificationKey2018(
+                  bob.get('capabilityDelegation', 0))
+              }),
+              purpose: new CapabilityDelegation({
+                capabilityChain: [capabilities.root.beta.id, bobCap.id]
+              })
+            });
+            addToLoader({doc: carolDelCap});
+
+            const result = await jsigs.verify(carolDelCap, {
+              suite: new Ed25519Signature2018(),
+              purpose: new CapabilityDelegation({
+                suite: new Ed25519Signature2018(),
+                maxDelegationTtl: ttl
+              }),
+              documentLoader: testLoader
+            });
+            expect(result).to.exist;
+            expect(result.verified).to.be.false;
+            expect(result.error.errors[0]).to.exist;
+            result.error.errors[0].message.should.contain(
+              'time to live that is too long');
+          });
 
         it('should verify invoking a capability chain of depth 3', async () => {
           // Create a delegated capability

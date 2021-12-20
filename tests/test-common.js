@@ -2065,7 +2065,8 @@ describe('zcapld', () => {
             // Create a delegated capability
             //   1. Parent capability should point to the root capability
             //   2. The controller should be Bob's ID
-            const delegated = new Date();
+            // force delegation into the future
+            const delegated = new Date(Date.now() + ttl);
             const bobCap = {
               '@context': ZCAP_CONTEXT_URL,
               // FIXME: fix broken IDs
@@ -2073,7 +2074,7 @@ describe('zcapld', () => {
               parentCapability: capabilities.root.beta.id,
               invocationTarget: capabilities.root.beta.id,
               controller: bob.id(),
-              expires: new Date(delegated.getTime() + ttl + 1).toJSON()
+              expires: new Date(delegated.getTime() + ttl / 2).toJSON()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
             //     Alice's ID was specified as the delegator in the root

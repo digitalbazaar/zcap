@@ -355,7 +355,7 @@ describe('zcapld', () => {
       });
     });
 
-    describe('Invoker and Delegator as controllers', () => {
+    describe.only('Invoker and Delegator as controllers', () => {
       it('should verify a self-invoked root capability', async () => {
         const result = await jsigs.verify(mock.exampleDocWithInvocation.beta, {
           suite: new Ed25519Signature2020(),
@@ -383,8 +383,8 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
       });
 
-      it('should verify a self-invoked root ' +
-        'capability with missing invoker and delegator', async () => {
+      it('should fail to verify a self-invoked root ' +
+        'capability with missing controller', async () => {
         // invoke the root capability using the invoker key
         const root = {
           '@context': ZCAP_CONTEXT_URL,
@@ -401,7 +401,7 @@ describe('zcapld', () => {
             invocationTarget: didDocs.alpha.id
           })
         });
-        // verify a self invoked capability
+        // try to verify a self invoked capability
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
@@ -410,9 +410,14 @@ describe('zcapld', () => {
           documentLoader: testLoader
         });
         expect(result).to.exist;
-        expect(result.verified).to.be.true;
+        expect(result.verified).to.be.false;
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain('Capability controller not found');
       });
 
+      // FIXME: require `invocationTarget` to be declared in root zcap;
+      // update CHANGELOG with this requirement
       it('should verify a invoking root capability w/ separate target when ' +
         'a matching `expectedRootCapability` is given', async () => {
         const root = {
@@ -552,6 +557,7 @@ describe('zcapld', () => {
         // TODO: assert more about result.error
       });
 
+      // FIXME: change all "self-invoked" root zcap language
       it('should verify two self-invoked root capabilities', async () => {
         const doc = {
           '@context': ZCAP_CONTEXT_URL,

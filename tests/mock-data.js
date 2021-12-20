@@ -5,6 +5,7 @@
 
 const {SECURITY_CONTEXT_URL} = require('jsonld-signatures');
 const zcapld = require('../lib');
+const {constants: {ZCAP_CONTEXT_URL}} = zcapld;
 
 const mock = {};
 module.exports = mock;
@@ -55,18 +56,18 @@ capabilities.root = {};
 
 // keys as controller
 capabilities.root.alpha = {
-  '@context': SECURITY_CONTEXT_URL,
+  '@context': ZCAP_CONTEXT_URL,
   id: 'https://example.org/alice/caps#1',
   controller: 'https://example.com/i/alice/keys/1'
 };
 capabilities.root.beta = {
-  '@context': SECURITY_CONTEXT_URL,
+  '@context': ZCAP_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
   controller: controllers.alice.id
 };
 
 capabilities.root.restful = {
-  '@context': zcapld.constants.ZCAP_CONTEXT_URL,
+  '@context': ZCAP_CONTEXT_URL,
   id: `urn:zcap:root:${encodeURIComponent('https://zcap.example')}`,
   controller: controllers.alice.id,
   invocationTarget: 'https://zcap.example'
@@ -87,6 +88,9 @@ mock.addToLoader = ({doc}) => {
       `ID of document has already been registered in the loader: ${doc.id}`);
   }
   if(!('@context' in doc)) {
+    // FIXME: remove me
+    console.log('missing context', doc);
+    process.exit(1);
     doc = {'@context': SECURITY_CONTEXT_URL, ...doc};
   }
   _loaderData.set(doc.id, doc);
@@ -107,9 +111,9 @@ mock.testLoader = zcapld.extendDocumentLoader(async url => {
 function _stripPrivateKeys(privateDidDocument) {
   // clone the doc
   const didDocument = JSON.parse(JSON.stringify(privateDidDocument));
-  delete didDocument.authentication[0].privateKeyBase58;
-  delete didDocument.capabilityDelegation[0].privateKeyBase58;
-  delete didDocument.capabilityInvocation[0].privateKeyBase58;
+  delete didDocument.authentication[0].privateKeyMultibase;
+  delete didDocument.capabilityDelegation[0].privateKeyMultibase;
+  delete didDocument.capabilityInvocation[0].privateKeyMultibase;
   return didDocument;
 }
 

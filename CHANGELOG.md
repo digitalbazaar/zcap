@@ -2,6 +2,10 @@
 
 ## 6.0.0 - 2021-12-xx
 
+### Changed
+- **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates
+  optionality, simplifying implementations.
+
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.
   Only `controller` is now permitted and it is `required`, i.e., a ZCAP MUST

@@ -58,12 +58,14 @@ capabilities.root = {};
 capabilities.root.alpha = {
   '@context': ZCAP_CONTEXT_URL,
   id: 'https://example.org/alice/caps#1',
-  controller: 'https://example.com/i/alice/keys/1'
+  controller: 'https://example.com/i/alice/keys/1',
+  invocationTarget: 'https://example.org/alice/targets/alpha'
 };
 capabilities.root.beta = {
   '@context': ZCAP_CONTEXT_URL,
   id: 'https://example.org/alice/caps#0',
-  controller: controllers.alice.id
+  controller: controllers.alice.id,
+  invocationTarget: 'https://example.org/alice/targets/beta'
 };
 
 capabilities.root.restful = {

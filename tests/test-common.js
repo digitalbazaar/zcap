@@ -3169,15 +3169,9 @@ describe('zcapld', () => {
           };
           //  6. Sign the delegated capability with Carol's delegation key
           //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await jsigs.sign(dianaCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                carol.get('capabilityDelegation', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id, bobCap.id, carolCap]
-            })
+          const dianaDelCap = await _delegate({
+            newCapability: dianaCap, delegator: carol,
+            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
           });
           addToLoader({doc: dianaDelCap});
 
@@ -3256,15 +3250,9 @@ describe('zcapld', () => {
           };
           //  6. Sign the delegated capability with Carol's delegation key
           //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await jsigs.sign(dianaCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                carol.get('capabilityDelegation', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [capabilities.root.beta.id, bobCap.id, carolCap]
-            })
+          const dianaDelCap = await _delegate({
+            newCapability: dianaCap, delegator: carol,
+            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
           });
           addToLoader({doc: dianaDelCap});
 
@@ -3348,17 +3336,9 @@ describe('zcapld', () => {
           };
           //  6. Sign the delegated capability with Carol's delegation key
           //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await jsigs.sign(dianaCap, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                carol.get('capabilityDelegation', 0))
-            }),
-            purpose: new CapabilityDelegation({
-              capabilityChain: [
-                capabilities.root.beta.id, bobCap.id, carolDelCap
-              ]
-            })
+          const dianaDelCap = await _delegate({
+            newCapability: dianaCap, delegator: carol,
+            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
           });
 
           const inspectCapabilityChain = async ({
@@ -3452,17 +3432,9 @@ describe('zcapld', () => {
 
         //  9. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await jsigs.sign(dianaCap, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              carol.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [
-              rootCapability.id, bobCap.id, carolDelCap
-            ]
-          })
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
         const result = await jsigs.verify(dianaDelCap, {
@@ -3547,17 +3519,9 @@ describe('zcapld', () => {
 
         //  9. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await jsigs.sign(dianaCap, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              carol.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [
-              rootCapability.id, bobCap.id, carolDelCap
-            ]
-          })
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
         const result = await jsigs.verify(dianaDelCap, {
@@ -3967,17 +3931,9 @@ describe('zcapld', () => {
 
         //  6. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await jsigs.sign(dianaCap, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              carol.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [
-              rootCapability.id, bobCap.id, carolDelCap
-            ]
-          })
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
         const result = await jsigs.verify(dianaDelCap, {
@@ -4063,17 +4019,9 @@ describe('zcapld', () => {
 
         //  6. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await jsigs.sign(dianaCap, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              carol.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [
-              rootCapability.id, bobCap.id, carolDelCap
-            ]
-          })
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
         const inspectCapabilityChain = async ({
@@ -4166,17 +4114,9 @@ describe('zcapld', () => {
 
         //  6. Sign the delegated capability with Carol's delegation key
         //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await jsigs.sign(dianaCap, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              carol.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [
-              rootCapability.id, bobCap.id, carolDelCap
-            ]
-          })
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
         const inspectCapabilityChain = async ({

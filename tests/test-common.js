@@ -2546,15 +2546,12 @@ describe('zcapld', () => {
             // the capability was still valid 20 hours ago
             const currentDate = new Date();
             currentDate.setHours(currentDate.getHours() - 20);
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
+            const result = await _verifyInvocation({
+              invocation, purposeOptions: {
                 expectedRootCapability: rootCapability.id,
                 expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020(),
-                currentDate,
-              }),
-              documentLoader: testLoader
+                currentDate
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.true;
@@ -2631,15 +2628,12 @@ describe('zcapld', () => {
             // the capability was also expired 20 hours ago
             const currentDate = new Date();
             currentDate.setHours(currentDate.getHours() - 20);
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
+            const result = await _verifyInvocation({
+              invocation, purposeOptions: {
                 expectedRootCapability: rootCapability.id,
                 expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020(),
-                currentDate,
-              }),
-              documentLoader: testLoader
+                currentDate
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -2720,15 +2714,13 @@ describe('zcapld', () => {
             // the capability will have expired in 100 hours
             const currentDate = new Date();
             currentDate.setHours(currentDate.getHours() + 100);
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
+            const result = await _verifyInvocation({
+              invocation, purposeOptions: {
                 expectedRootCapability: rootCapability.id,
                 expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020(),
                 currentDate,
-              }),
-              documentLoader: testLoader
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -2807,14 +2799,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -2894,14 +2880,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -2981,14 +2961,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3068,14 +3042,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3162,14 +3130,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3255,14 +3217,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3350,14 +3306,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3445,14 +3395,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3532,14 +3476,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.true;
@@ -3614,14 +3552,8 @@ describe('zcapld', () => {
             const invocation = await _invoke({
               doc, controller: carol, capability: carolCap
             });
-            const result = await jsigs.verify(invocation, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityInvocation({
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020()
-              }),
-              documentLoader: testLoader
+            const result = await _verifyInvocation({
+              invocation, rootCapability
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -4226,15 +4158,12 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, controller: carol, capability: carolCap
         });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
             allowTargetAttenuation: true,
             expectedTarget: [rootTarget, invocationTarget],
-            expectedRootCapability: rootCapability.id,
-            suite: new Ed25519Signature2020()
-          }),
-          documentLoader: testLoader
+            expectedRootCapability: rootCapability.id
+          }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -4420,15 +4349,12 @@ describe('zcapld', () => {
             invocationTarget: validSubTarget
           }
         });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
             allowTargetAttenuation: true,
             expectedTarget: [rootTarget, validSubTarget],
-            expectedRootCapability: rootCapability.id,
-            suite: new Ed25519Signature2020()
-          }),
-          documentLoader: testLoader
+            expectedRootCapability: rootCapability.id
+          }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -4513,19 +4439,16 @@ describe('zcapld', () => {
             invocationTarget: invalidTarget
           }
         });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
             allowTargetAttenuation: true,
             // Note: Here we are simulating an endpoint that is expecting
             // the `invalidTarget` -- it's just that the zcap being used
             // is not authorized for that target.
             expectedTarget: [rootTarget, invalidTarget],
             expectedRootCapability: rootCapability.id,
-            invocationTarget: invalidTarget,
-            suite: new Ed25519Signature2020()
-          }),
-          documentLoader: testLoader
+            invocationTarget: invalidTarget
+          }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;

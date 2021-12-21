@@ -117,16 +117,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0)),
-            date: CONSTANT_DATE
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.alpha.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice, date: CONSTANT_DATE,
+          capabilityChain: [capabilities.root.alpha.id]
         });
         expect(delegatedCapability).to.deep.equal(capabilities.delegated.alpha);
       });
@@ -144,16 +137,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0)),
-            date: CONSTANT_DATE
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice, date: CONSTANT_DATE,
+          capabilityChain: [capabilities.root.beta.id]
         });
         expect(delegatedCapability).to.deep.equal(capabilities.delegated.beta);
       });
@@ -163,13 +149,8 @@ describe('zcapld', () => {
         let err;
         try {
           const doc = clone(mock.exampleDoc);
-          await jsigs.sign(doc, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                alice.get('capabilityDelegation', 0)),
-            }),
-            purpose: new CapabilityDelegation()
+          await _delegate({
+            newCapability: doc, controller: alice, purposeOptions: {}
           });
         } catch(e) {
           err = e;
@@ -218,15 +199,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0)),
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.alpha.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.alpha.id]
         });
         addToLoader({doc: delegatedCapability});
         // verify the delegation chain
@@ -253,15 +228,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0)),
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.alpha.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.alpha.id]
         });
         addToLoader({doc: delegatedCapability});
         // verify the delegation chain
@@ -291,15 +260,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(alice.
-              get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.alpha.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.alpha.id]
         });
         addToLoader({doc: delegatedCapability});
         //   4. Use Bob's invocation key that was assigned as invoker in
@@ -560,15 +523,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         const result = await jsigs.verify(delegatedCapability, {
@@ -593,15 +550,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   4. Use Bob's invocation key that can be found in Bob's
@@ -633,15 +584,9 @@ describe('zcapld', () => {
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   4. Use Bob's invocation key that can be found in Bob's
@@ -684,15 +629,9 @@ describe('zcapld', () => {
         new ExpirationCaveat({expires}).update(newCapability);
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -735,15 +674,9 @@ describe('zcapld', () => {
         new ExpirationCaveat({expires}).update(newCapability);
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -784,15 +717,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -830,15 +757,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -878,15 +799,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -922,15 +837,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -965,15 +874,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -1010,15 +913,9 @@ describe('zcapld', () => {
         };
         //  4. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [capabilities.root.beta.id]
-          })
+        const delegatedCapability = await _delegate({
+          newCapability, controller: alice,
+          capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
         //   5. Use Bob's invocation key that can be found in Bob's
@@ -4873,14 +4770,27 @@ async function _verifyInvocation({
   });
 }
 
-async function _delegate({newCapability, key, suiteOptions, purposeOptions}) {
+async function _delegate({
+  newCapability, key, controller, date, capabilityChain, purposeOptions
+}) {
+  if(controller) {
+    key = controller.get('capabilityDelegation', 0);
+  }
+  let purpose;
+  if(capabilityChain) {
+    // common case
+    purpose = new CapabilityDelegation({capabilityChain});
+  } else {
+    // custom case
+    purpose = new CapabilityDelegation(purposeOptions);
+  }
   return jsigs.sign(newCapability, {
     documentLoader: testLoader,
     suite: new Ed25519Signature2020({
       key: new Ed25519VerificationKey2020(key),
-      ...suiteOptions
+      date
     }),
-    purpose: new CapabilityDelegation(purposeOptions)
+    purpose
   });
 }
 

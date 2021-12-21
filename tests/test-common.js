@@ -205,10 +205,8 @@ describe('zcapld', () => {
         });
         addToLoader({doc: delegatedCapability});
         // verify the delegation chain
-        const result = await jsigs.verify(delegatedCapability, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation(),
-          documentLoader: testLoader
+        const result = await _verifyDelegation({
+          delegation: delegatedCapability
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -234,11 +232,10 @@ describe('zcapld', () => {
         });
         addToLoader({doc: delegatedCapability});
         // verify the delegation chain
-        const result = await jsigs.verify(delegatedCapability, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation(
-            {expectedRootCapability: 'urn:uuid:fake'}),
-          documentLoader: testLoader
+        const result = await _verifyDelegation({
+          delegation: delegatedCapability, purposeOptions: {
+            expectedRootCapability: 'urn:uuid:fake'
+          }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -296,11 +293,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid()
         };
-        const result = await jsigs.verify(root, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation(),
-          documentLoader: testLoader
-        });
+        const result = await _verifyDelegation({delegation: root});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
       });
@@ -528,10 +521,8 @@ describe('zcapld', () => {
           capabilityChain: [capabilities.root.beta.id]
         });
         addToLoader({doc: delegatedCapability});
-        const result = await jsigs.verify(delegatedCapability, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation(),
-          documentLoader: testLoader
+        const result = await _verifyDelegation({
+          delegation: delegatedCapability
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -977,13 +968,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           expect(result).to.exist;
           expect(result.verified).to.be.true;
         });
@@ -1028,13 +1013,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
@@ -1084,13 +1063,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
@@ -1140,13 +1113,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           should.exist(result);
           result.verified.should.be.false;
           should.exist(result.error);
@@ -1196,13 +1163,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           should.exist(result);
           result.verified.should.be.true;
         });
@@ -1246,13 +1207,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           should.exist(result);
           result.verified.should.be.true;
         });
@@ -1297,13 +1252,7 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id]
           });
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           expect(result).to.exist;
           expect(result.verified).to.be.false;
           result.error.name.should.equal('VerificationError');
@@ -1349,13 +1298,7 @@ describe('zcapld', () => {
           // change ID to something else (breaking signature)
           carolDelCap.id = uuid();
           addToLoader({doc: carolDelCap});
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020()
-            }),
-            documentLoader: testLoader
-          });
+          const result = await _verifyDelegation({delegation: carolDelCap});
           expect(result).to.exist;
           expect(result.verified).to.be.false;
           result.error.name.should.equal('VerificationError');
@@ -1415,13 +1358,8 @@ describe('zcapld', () => {
             // a real implementation would look for revocations here
             return {valid: true};
           };
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020(),
-              inspectCapabilityChain,
-            }),
-            documentLoader: testLoader
+          const result = await _verifyDelegation({
+            delegation: carolDelCap, inspectCapabilityChain
           });
           expect(result).to.exist;
           expect(result.verified).to.be.true;
@@ -1468,9 +1406,11 @@ describe('zcapld', () => {
           });
           addToLoader({doc: carolDelCap});
 
+          let checkedChain = false;
           const inspectCapabilityChain = async ({
             capabilityChain
           }) => {
+            checkedChain = true;
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(2);
             _checkCapabilityChain({capabilityChain});
@@ -1481,18 +1421,14 @@ describe('zcapld', () => {
               valid: false,
             };
           };
-          const result = await jsigs.verify(carolDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020(),
-              inspectCapabilityChain,
-            }),
-            documentLoader: testLoader
+          const result = await _verifyDelegation({
+            delegation: carolDelCap, inspectCapabilityChain
           });
           expect(result).to.exist;
           expect(result.verified).to.be.false;
           expect(result.error.errors[0]).to.exist;
           result.error.errors[0].message.should.contain('revoked');
+          checkedChain.should.be.true;
         });
 
         it('should fail to verify a capability chain of depth 3 ' +
@@ -1537,13 +1473,10 @@ describe('zcapld', () => {
             });
             addToLoader({doc: carolDelCap});
 
-            const result = await jsigs.verify(carolDelCap, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityDelegation({
-                suite: new Ed25519Signature2020(),
+            const result = await _verifyDelegation({
+              delegation: carolDelCap, purposeOptions: {
                 requireChainDateMonotonicity: true
-              }),
-              documentLoader: testLoader
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -1595,14 +1528,11 @@ describe('zcapld', () => {
             });
             addToLoader({doc: carolDelCap});
 
-            const result = await jsigs.verify(carolDelCap, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityDelegation({
-                suite: new Ed25519Signature2020(),
+            const result = await _verifyDelegation({
+              delegation: carolDelCap, purposeOptions: {
                 // max TTL of 1 day
                 maxDelegationTtl: ttl
-              }),
-              documentLoader: testLoader
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -1658,13 +1588,10 @@ describe('zcapld', () => {
             });
             addToLoader({doc: carolDelCap});
 
-            const result = await jsigs.verify(carolDelCap, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityDelegation({
-                suite: new Ed25519Signature2020(),
+            const result = await _verifyDelegation({
+              delegation: carolDelCap, purposeOptions: {
                 maxDelegationTtl: ttl
-              }),
-              documentLoader: testLoader
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -1719,13 +1646,10 @@ describe('zcapld', () => {
             });
             addToLoader({doc: carolDelCap});
 
-            const result = await jsigs.verify(carolDelCap, {
-              suite: new Ed25519Signature2020(),
-              purpose: new CapabilityDelegation({
-                suite: new Ed25519Signature2020(),
+            const result = await _verifyDelegation({
+              delegation: carolDelCap, purposeOptions: {
                 maxDelegationTtl: ttl
-              }),
-              documentLoader: testLoader
+              }
             });
             expect(result).to.exist;
             expect(result.verified).to.be.false;
@@ -3175,9 +3099,11 @@ describe('zcapld', () => {
           });
           addToLoader({doc: dianaDelCap});
 
+          let checkedChain = false;
           const inspectCapabilityChain = async ({
             capabilityChain, capabilityChainMeta
           }) => {
+            checkedChain = true;
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -3187,16 +3113,12 @@ describe('zcapld', () => {
             return {valid: true};
           };
 
-          const result = await jsigs.verify(dianaDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020(),
-              inspectCapabilityChain,
-            }),
-            documentLoader: testLoader
+          const result = await _verifyDelegation({
+            delegation: dianaDelCap, inspectCapabilityChain
           });
           expect(result).to.exist;
           expect(result.verified).to.be.true;
+          checkedChain.should.be.true;
         });
 
         it('should fail a capability chain that exceeds maxChainLength',
@@ -3256,9 +3178,11 @@ describe('zcapld', () => {
           });
           addToLoader({doc: dianaDelCap});
 
+          let checkedChain = false;
           const inspectCapabilityChain = async ({
             capabilityChain, capabilityChainMeta
           }) => {
+            checkedChain = true;
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -3268,14 +3192,11 @@ describe('zcapld', () => {
             return {valid: true};
           };
 
-          const result = await jsigs.verify(dianaDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020(),
+          const result = await _verifyDelegation({
+            delegation: dianaDelCap, purposeOptions: {
               inspectCapabilityChain,
-              maxChainLength: 2,
-            }),
-            documentLoader: testLoader
+              maxChainLength: 2
+            }
           });
           expect(result).to.exist;
           expect(result.verified).to.be.false;
@@ -3284,6 +3205,8 @@ describe('zcapld', () => {
           result.error.errors.should.have.length(1);
           result.error.errors[0].message.should.equal(
             'The capabability chain exceeds the maximum allowed length of 2.');
+          // should not get to check chain because of invalid chain length
+          checkedChain.should.be.false;
         });
 
         it('should verify a capability chain ' +
@@ -3341,9 +3264,11 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
           });
 
+          let checkedChain = false;
           const inspectCapabilityChain = async ({
             capabilityChain, capabilityChainMeta
           }) => {
+            checkedChain = true;
             capabilityChain.should.be.an('array');
             capabilityChain.should.have.length(3);
             capabilityChainMeta.should.be.an('array');
@@ -3353,16 +3278,12 @@ describe('zcapld', () => {
             return {valid: true};
           };
 
-          const result = await jsigs.verify(dianaDelCap, {
-            suite: new Ed25519Signature2020(),
-            purpose: new CapabilityDelegation({
-              suite: new Ed25519Signature2020(),
-              inspectCapabilityChain,
-            }),
-            documentLoader: testLoader
+          const result = await _verifyDelegation({
+            delegation: dianaDelCap, inspectCapabilityChain
           });
           expect(result).to.exist;
           expect(result.verified).to.be.true;
+          checkedChain.should.be.true;
         });
       }); // end chain depth of 4
     });
@@ -3437,15 +3358,11 @@ describe('zcapld', () => {
           capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
-        const result = await jsigs.verify(dianaDelCap, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation({
-            allowTargetAttenuation: true,
-            suite: new Ed25519Signature2020(),
-          }),
-          documentLoader: testLoader
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, purposeOptions: {
+            allowTargetAttenuation: true
+          }
         });
-
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
@@ -3524,15 +3441,11 @@ describe('zcapld', () => {
           capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
-        const result = await jsigs.verify(dianaDelCap, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation({
-            allowTargetAttenuation: true,
-            suite: new Ed25519Signature2020(),
-          }),
-          documentLoader: testLoader
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, purposeOptions: {
+            allowTargetAttenuation: true
+          }
         });
-
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
@@ -3936,17 +3849,9 @@ describe('zcapld', () => {
           capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
-        const result = await jsigs.verify(dianaDelCap, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation({
-            // NOTE: allowTargetAttenuation is intentionally not set
-            // here, the default is false
-            // allowTargetAttenuation: true,
-            suite: new Ed25519Signature2020(),
-          }),
-          documentLoader: testLoader
-        });
-
+        // NOTE: allowTargetAttenuation is intentionally not set
+        // here, the default is false
+        const result = await _verifyDelegation({delegation: dianaDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
@@ -4024,9 +3929,11 @@ describe('zcapld', () => {
           capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
+        let checkedChain = false;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
+          checkedChain = true;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -4036,18 +3943,15 @@ describe('zcapld', () => {
           return {valid: true};
         };
 
-        const result = await jsigs.verify(dianaDelCap, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation({
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, purposeOptions: {
             allowTargetAttenuation: true,
-            suite: new Ed25519Signature2020(),
-            inspectCapabilityChain,
-          }),
-          documentLoader: testLoader
+            inspectCapabilityChain
+          }
         });
-
         expect(result).to.exist;
         expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
       });
       it('should fail an increasingly permissive capability chain with ' +
         'hierachical delegation and inspectCapabilityChain',
@@ -4119,9 +4023,11 @@ describe('zcapld', () => {
           capabilityChain: [rootCapability.id, bobCap.id, carolDelCap]
         });
 
+        let checkedChain = false;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
+          checkedChain = true;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -4131,16 +4037,12 @@ describe('zcapld', () => {
           return {valid: true};
         };
 
-        const result = await jsigs.verify(dianaDelCap, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityDelegation({
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, purposeOptions: {
             allowTargetAttenuation: true,
-            suite: new Ed25519Signature2020(),
-            inspectCapabilityChain,
-          }),
-          documentLoader: testLoader
+            inspectCapabilityChain
+          }
         });
-
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
@@ -4148,6 +4050,8 @@ describe('zcapld', () => {
         const [error] = result.error.errors[0].errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
+        // should not get to check chain because of invalid zcap
+        checkedChain.should.be.false;
       });
     }); // end Hierarchical Delegation
   });
@@ -4241,6 +4145,20 @@ async function _delegate({
       date
     }),
     purpose
+  });
+}
+
+async function _verifyDelegation({
+  delegation, inspectCapabilityChain, purposeOptions = {}
+}) {
+  return jsigs.verify(delegation, {
+    documentLoader: testLoader,
+    suite: new Ed25519Signature2020(),
+    purpose: new CapabilityDelegation({
+      suite: new Ed25519Signature2020(),
+      inspectCapabilityChain,
+      ...purposeOptions
+    })
   });
 }
 

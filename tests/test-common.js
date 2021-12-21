@@ -50,464 +50,887 @@ const CONSTANT_DATE = '2018-02-13T21:26:08Z';
 
 // run tests
 describe('zcapld', () => {
-  context('Common', () => {
-    describe('sign with capabilityInvocation proof purpose', () => {
-      it('should succeed w/key invoker', async () => {
-        const doc = clone(mock.exampleDoc);
-        const signed = await _invoke({
-          doc, invoker: alice, date: CONSTANT_DATE,
-          capability: capabilities.root.alpha
-        });
-        expect(signed).to.deep.equal(mock.exampleDocWithInvocation.alpha);
+  describe('Sign with capabilityInvocation proof purpose', () => {
+    it('should succeed w/key invoker', async () => {
+      const doc = clone(mock.exampleDoc);
+      const signed = await _invoke({
+        doc, invoker: alice, date: CONSTANT_DATE,
+        capability: capabilities.root.alpha
       });
-
-      it('should succeed w/controller invoker', async () => {
-        const doc = clone(mock.exampleDoc);
-        const signed = await _invoke({
-          doc, invoker: alice, date: CONSTANT_DATE,
-          capability: capabilities.root.beta
-        });
-        expect(signed).to.deep.equal(mock.exampleDocWithInvocation.beta);
-      });
-
-      it('should fail when missing "capability"', async () => {
-        let err;
-        try {
-          const doc = clone(mock.exampleDoc);
-          await _invoke({
-            doc, invoker: alice,
-            purposeOptions: {}
-          });
-        } catch(e) {
-          err = e;
-        }
-        expect(err).to.exist;
-        expect(err.message).to.equal('"capability" is required.');
-      });
-
-      it('should fail when missing "invocationTarget"', async () => {
-        let err;
-        try {
-          const doc = clone(mock.exampleDoc);
-          await _invoke({
-            doc, invoker: alice,
-            purposeOptions: {
-              capability: 'urn:foo'
-            }
-          });
-        } catch(e) {
-          err = e;
-        }
-        expect(err).to.exist;
-        expect(err.message).to.equal('"invocationTarget" is required.');
-      });
+      expect(signed).to.deep.equal(mock.exampleDocWithInvocation.alpha);
     });
 
-    describe('sign with capabilityDelegation proof purpose', () => {
-      it('should succeed w/key delegator', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's invocation key
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: 'urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41',
-          parentCapability: capabilities.root.alpha.id,
-          controller: bob.get('capabilityInvocation', 0).id,
-          invocationTarget: capabilities.root.alpha.invocationTarget
-        };
-        //  3. Sign the delegated capability with Alice's delegation key
-        //     that was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice, date: CONSTANT_DATE,
-          capabilityChain: [capabilities.root.alpha.id]
-        });
-        expect(delegatedCapability).to.deep.equal(capabilities.delegated.alpha);
+    it('should succeed w/controller invoker', async () => {
+      const doc = clone(mock.exampleDoc);
+      const signed = await _invoke({
+        doc, invoker: alice, date: CONSTANT_DATE,
+        capability: capabilities.root.beta
       });
+      expect(signed).to.deep.equal(mock.exampleDocWithInvocation.beta);
+    });
 
-      it('should succeed w/controller delegator', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's invocation key
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
-          parentCapability: capabilities.root.beta.id,
-          controller: bob.id(),
-          invocationTarget: capabilities.root.beta.invocationTarget
-        };
-        //  3. Sign the delegated capability with Alice's delegation key
-        //     that was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice, date: CONSTANT_DATE,
-          capabilityChain: [capabilities.root.beta.id]
+    it('should fail when missing "capability"', async () => {
+      let err;
+      try {
+        const doc = clone(mock.exampleDoc);
+        await _invoke({
+          doc, invoker: alice,
+          purposeOptions: {}
         });
-        expect(delegatedCapability).to.deep.equal(capabilities.delegated.beta);
-      });
+      } catch(e) {
+        err = e;
+      }
+      expect(err).to.exist;
+      expect(err.message).to.equal('"capability" is required.');
+    });
 
-      it('should fail when missing "capabilityChain" and "parentCapability"',
-        async () => {
-        let err;
-        try {
-          const doc = clone(mock.exampleDoc);
-          await _delegate({
-            newCapability: doc, delegator: alice, purposeOptions: {}
-          });
-        } catch(e) {
-          err = e;
-        }
-        expect(err).to.exist;
-        expect(err.message).to.equal(
-          'Cannot compute capability chain; capability has no ' +
-          '"parentCapability".');
-      });
+    it('should fail when missing "invocationTarget"', async () => {
+      let err;
+      try {
+        const doc = clone(mock.exampleDoc);
+        await _invoke({
+          doc, invoker: alice,
+          purposeOptions: {
+            capability: 'urn:foo'
+          }
+        });
+      } catch(e) {
+        err = e;
+      }
+      expect(err).to.exist;
+      expect(err.message).to.equal('"invocationTarget" is required.');
     });
   });
 
-  context('Verifying capability chains', () => {
-    describe('Controller is verification method', () => {
-      it('should verify an invoked root capability', async () => {
-        const result = await _verifyInvocation({
-          invocation: mock.exampleDocWithInvocation.alpha,
-          rootCapability: capabilities.root.alpha
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+  describe('Sign with capabilityDelegation proof purpose', () => {
+    it('should succeed w/key delegator', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: 'urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41',
+        parentCapability: capabilities.root.alpha.id,
+        controller: bob.get('capabilityInvocation', 0).id,
+        invocationTarget: capabilities.root.alpha.invocationTarget
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice, date: CONSTANT_DATE,
+        capabilityChain: [capabilities.root.alpha.id]
       });
-
-      it('should verify w/array expected target', async () => {
-        const result = await _verifyInvocation({
-          invocation: mock.exampleDocWithInvocation.alpha,
-          purposeOptions: {
-            expectedRootCapability: capabilities.root.alpha.id,
-            expectedTarget: [capabilities.root.alpha.invocationTarget]
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
-
-      it('should verify a capability chain of depth 2', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's invocation key
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.alpha.id,
-          invocationTarget: capabilities.root.alpha.invocationTarget,
-          controller: bob.get('capabilityInvocation', 0).id
-        };
-        //  3. Sign the delegated capability with Alice's delegation key
-        //     that was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
-          capabilityChain: [capabilities.root.alpha.id]
-        });
-        addToLoader({doc: delegatedCapability});
-        // verify the delegation chain
-        const result = await _verifyDelegation({
-          delegation: delegatedCapability
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
-
-      it('should fail to verify a capability chain of depth 2 ' +
-        'when the expectedRootCapability does not match', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's invocation key
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.alpha.id,
-          invocationTarget: capabilities.root.alpha.id,
-          controller: bob.get('capabilityInvocation', 0).id
-        };
-        //  3. Sign the delegated capability with Alice's delegation key
-        //     that was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
-          capabilityChain: [capabilities.root.alpha.id]
-        });
-        addToLoader({doc: delegatedCapability});
-        // verify the delegation chain
-        const result = await _verifyDelegation({
-          delegation: delegatedCapability, purposeOptions: {
-            expectedRootCapability: 'urn:uuid:fake'
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.contain('does not match actual root capability');
-      });
-
-      it('should verify invoking a capability chain of depth 2', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's invocation key
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.alpha.id,
-          invocationTarget: capabilities.root.alpha.invocationTarget,
-          controller: bob.get('capabilityInvocation', 0).id
-        };
-        //  3. Sign the delegated capability with Alice's delegation key
-        //     that was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
-          capabilityChain: [capabilities.root.alpha.id]
-        });
-        addToLoader({doc: delegatedCapability});
-        //   4. Use Bob's invocation key that was assigned as invoker in
-        //      the delegated capability
-        //   5. The controller should be Bob's invocation key
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.alpha
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
+      expect(delegatedCapability).to.deep.equal(capabilities.delegated.alpha);
     });
 
-    describe('Controller uses verification method', () => {
-      it('should verify an invoked root capability', async () => {
-        const result = await _verifyInvocation({
-          invocation: mock.exampleDocWithInvocation.beta,
-          rootCapability: capabilities.root.beta
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+    it('should succeed w/controller delegator', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
+        parentCapability: capabilities.root.beta.id,
+        controller: bob.id(),
+        invocationTarget: capabilities.root.beta.invocationTarget
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice, date: CONSTANT_DATE,
+        capabilityChain: [capabilities.root.beta.id]
       });
+      expect(delegatedCapability).to.deep.equal(capabilities.delegated.beta);
+    });
 
-      it('should fail to verify a root capability as delegated', async () => {
-        // root has no invoker and no keys
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid()
-        };
-        const result = await _verifyDelegation({delegation: root});
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-      });
-
-      it('should fail to invoke a root zcap with no controller', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid()
-        };
-        addToLoader({doc: root});
-        const doc = {
-          '@context': ZCAP_CONTEXT_URL,
-          'example:foo': uuid()
-        };
-        const invocation = await _invoke({
-          doc, invoker: alpha, capability: root
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: root
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.contain('Capability controller not found');
-      });
-
-      // FIXME: require `invocationTarget` to be declared in root zcap;
-      // update CHANGELOG with this requirement
-      it('should verify a invoking root capability w/ separate target when ' +
-        'a matching `expectedRootCapability` is given', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: bob.id()
-        };
-        addToLoader({doc: root});
+    it('should fail when missing "capabilityChain" and "parentCapability"',
+      async () => {
+      let err;
+      try {
         const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
+        await _delegate({
+          newCapability: doc, delegator: alice, purposeOptions: {}
         });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: root
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
+      } catch(e) {
+        err = e;
+      }
+      expect(err).to.exist;
+      expect(err.message).to.equal(
+        'Cannot compute capability chain; capability has no ' +
+        '"parentCapability".');
+    });
+  });
 
-      it('should verify a root capability w/ separate target when ' +
-        'a matching `expectedRootCapability` array is given', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: bob.id()
-        };
-        addToLoader({doc: root});
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
-        });
-        const result = await _verifyInvocation({
-          invocation, purposeOptions: {
-            expectedRootCapability: [root.id],
-            expectedTarget: root.invocationTarget
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+  context('Capability controller is itself a verification method', () => {
+    it('should verify an invoked root capability', async () => {
+      const result = await _verifyInvocation({
+        invocation: mock.exampleDocWithInvocation.alpha,
+        rootCapability: capabilities.root.alpha
       });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
 
-      it('should fail to verify a root capability w/ separate target when ' +
-        '`expectedRootCapability` is not a URI', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: bob.id()
-        };
-        addToLoader({doc: root});
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
-        });
-        // truncate the urn from the start of the root id
-        // this will make it an invalid expectedRootCapability
-        const expectedRootCapability = [root.id.replace('urn:uuid:', '')];
-        const result = await _verifyInvocation({
-          invocation, purposeOptions: {
-            expectedRootCapability,
-            expectedTarget: root.invocationTarget
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
+    it('should verify w/array expected target', async () => {
+      const result = await _verifyInvocation({
+        invocation: mock.exampleDocWithInvocation.alpha,
+        purposeOptions: {
+          expectedRootCapability: capabilities.root.alpha.id,
+          expectedTarget: [capabilities.root.alpha.invocationTarget]
+        }
       });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
 
-      it('should fail to verify a root capability w/ separate target when ' +
-        'no `expectedRootCapability` is given', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: bob.id()
-        };
-        addToLoader({doc: root});
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
-        });
-        const result = await _verifyInvocation({
-          invocation, purposeOptions: {
-            expectedTarget: root.invocationTarget
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        // TODO: assert more about result.error
+    it('should verify a capability chain of depth 2', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.alpha.id,
+        invocationTarget: capabilities.root.alpha.invocationTarget,
+        controller: bob.get('capabilityInvocation', 0).id
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.alpha.id]
       });
+      addToLoader({doc: delegatedCapability});
+      // verify the delegation chain
+      const result = await _verifyDelegation({
+        delegation: delegatedCapability
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
 
-      it('should verify two invocation proofs on the same doc', async () => {
-        const doc = {
-          '@context': ZCAP_CONTEXT_URL,
-          'example:foo': uuid()
-        };
-        const target1 = 'https://zcap.example/target1';
-        const target2 = 'https://zcap.example/target2';
-        const invocation1 = await _invoke({
-          doc, invoker: alice,
-          purposeOptions: {
-            capability: capabilities.root.restful.id,
-            invocationTarget: target1
-          }
-        });
-        const invocation2 = await _invoke({
-          doc: invocation1, invoker: alice,
-          purposeOptions: {
-            capability: capabilities.root.restful.id,
-            invocationTarget: target2
-          }
-        });
-        // verify both invocation proofs for different targets
-        const result = await jsigs.verify(invocation2, {
+    it('should fail to verify a capability chain of depth 2 ' +
+      'when the expectedRootCapability does not match', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.alpha.id,
+        invocationTarget: capabilities.root.alpha.id,
+        controller: bob.get('capabilityInvocation', 0).id
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.alpha.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      // verify the delegation chain
+      const result = await _verifyDelegation({
+        delegation: delegatedCapability, purposeOptions: {
+          expectedRootCapability: 'urn:uuid:fake'
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain('does not match actual root capability');
+    });
+
+    it('should verify invoking a capability chain of depth 2', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.alpha.id,
+        invocationTarget: capabilities.root.alpha.invocationTarget,
+        controller: bob.get('capabilityInvocation', 0).id
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.alpha.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   4. Use Bob's invocation key that was assigned as invoker in
+      //      the delegated capability
+      //   5. The controller should be Bob's invocation key
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.alpha
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+  });
+
+  context('Capability controller uses verification method', () => {
+    it('should verify an invoked root capability', async () => {
+      const result = await _verifyInvocation({
+        invocation: mock.exampleDocWithInvocation.beta,
+        rootCapability: capabilities.root.beta
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should fail to verify a root capability as delegated', async () => {
+      // root has no invoker and no keys
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid()
+      };
+      const result = await _verifyDelegation({delegation: root});
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+    });
+
+    it('should fail to invoke a root zcap with no controller', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid()
+      };
+      addToLoader({doc: root});
+      const doc = {
+        '@context': ZCAP_CONTEXT_URL,
+        'example:foo': uuid()
+      };
+      const invocation = await _invoke({
+        doc, invoker: alpha, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: root
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain('Capability controller not found');
+    });
+
+    // FIXME: require `invocationTarget` to be declared in root zcap;
+    // update CHANGELOG with this requirement
+    it('should verify a invoking root capability w/ separate target when ' +
+      'a matching `expectedRootCapability` is given', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: bob.id()
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: root
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should verify a root capability w/ separate target when ' +
+      'a matching `expectedRootCapability` array is given', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: bob.id()
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedRootCapability: [root.id],
+          expectedTarget: root.invocationTarget
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should fail to verify a root capability w/ separate target when ' +
+      '`expectedRootCapability` is not a URI', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: bob.id()
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      // truncate the urn from the start of the root id
+      // this will make it an invalid expectedRootCapability
+      const expectedRootCapability = [root.id.replace('urn:uuid:', '')];
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedRootCapability,
+          expectedTarget: root.invocationTarget
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+    });
+
+    it('should fail to verify a root capability w/ separate target when ' +
+      'no `expectedRootCapability` is given', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: bob.id()
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedTarget: root.invocationTarget
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      // TODO: assert more about result.error
+    });
+
+    it('should verify two invocation proofs on the same doc', async () => {
+      const doc = {
+        '@context': ZCAP_CONTEXT_URL,
+        'example:foo': uuid()
+      };
+      const target1 = 'https://zcap.example/target1';
+      const target2 = 'https://zcap.example/target2';
+      const invocation1 = await _invoke({
+        doc, invoker: alice,
+        purposeOptions: {
+          capability: capabilities.root.restful.id,
+          invocationTarget: target1
+        }
+      });
+      const invocation2 = await _invoke({
+        doc: invocation1, invoker: alice,
+        purposeOptions: {
+          capability: capabilities.root.restful.id,
+          invocationTarget: target2
+        }
+      });
+      // verify both invocation proofs for different targets
+      const result = await jsigs.verify(invocation2, {
+        suite: new Ed25519Signature2020(),
+        purpose: [
+          new CapabilityInvocation({
+            allowTargetAttenuation: true,
+            expectedRootCapability: capabilities.root.restful.id,
+            expectedTarget: [
+              capabilities.root.restful.invocationTarget,
+              target1
+            ]
+          }),
+          new CapabilityInvocation({
+            allowTargetAttenuation: true,
+            expectedRootCapability: capabilities.root.restful.id,
+            expectedTarget: [
+              capabilities.root.restful.invocationTarget,
+              target2
+            ]
+          })
+        ],
+        documentLoader: testLoader
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should verify an invoked root capability w/ multiple controllers',
+      async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: ['urn:other', bob.id()],
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: root
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should verify a root zcap w/ multiple controllers', async () => {
+      const root = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        invocationTarget: uuid(),
+        controller: ['urn:other', bob.id()],
+      };
+      addToLoader({doc: root});
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: root
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: root
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should verify a capability chain of depth 2', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  3. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      const result = await _verifyDelegation({
+        delegation: delegatedCapability
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should verify invoking a capability chain of depth 2', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  3. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   4. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   5. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should fail if expectedRootCapability does not match', async () => {
+      // FIXME: create helper to create delegated zcap w/ uuid(), etc.
+
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  3. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   4. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   5. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedRootCapability: 'urn:this-should-matter',
+          expectedTarget: capabilities.root.beta.invocationTarget
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain(
+        'does not match actual root capability');
+    });
+
+    it('should verify a capability chain of depth 2 and a ' +
+      'valid caveat on one capability', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour from now
+      const expires = new Date();
+      expires.setHours(expires.getHours() + 1);
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      new ExpirationCaveat({expires}).update(newCapability);
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await jsigs.verify(invocation, {
+        suite: new Ed25519Signature2020(),
+        purpose: new CapabilityInvocation({
+          expectedRootCapability: capabilities.root.beta.id,
+          expectedTarget: capabilities.root.beta.invocationTarget,
           suite: new Ed25519Signature2020(),
-          purpose: [
-            new CapabilityInvocation({
-              allowTargetAttenuation: true,
-              expectedRootCapability: capabilities.root.restful.id,
-              expectedTarget: [
-                capabilities.root.restful.invocationTarget,
-                target1
-              ]
-            }),
-            new CapabilityInvocation({
-              allowTargetAttenuation: true,
-              expectedRootCapability: capabilities.root.restful.id,
-              expectedTarget: [
-                capabilities.root.restful.invocationTarget,
-                target2
-              ]
-            })
-          ],
-          documentLoader: testLoader
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+          caveat: new ExpirationCaveat()
+        }),
+        documentLoader: testLoader
       });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
 
-      it('should verify an invoked root capability w/ multiple controllers',
-        async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: ['urn:other', bob.id()],
-        };
-        addToLoader({doc: root});
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: root
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+    it('should fail to verify a capability chain of depth 2 when a ' +
+      'caveat is not met on one capability', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour ago
+      const expires = new Date();
+      expires.setHours(expires.getHours() - 1);
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      new ExpirationCaveat({expires}).update(newCapability);
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
       });
-
-      it('should verify a root zcap w/ multiple controllers', async () => {
-        const root = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          invocationTarget: uuid(),
-          controller: ['urn:other', bob.id()],
-        };
-        addToLoader({doc: root});
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: root
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: root
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
       });
+      const result = await jsigs.verify(invocation, {
+        suite: new Ed25519Signature2020(),
+        purpose: new CapabilityInvocation({
+          expectedRootCapability: capabilities.root.beta.id,
+          expectedTarget: capabilities.root.beta.invocationTarget,
+          suite: new Ed25519Signature2020(),
+          caveat: new ExpirationCaveat()
+        }),
+        documentLoader: testLoader
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+    });
 
-      it('should verify a capability chain of depth 2', async () => {
+    it('should verify a capability chain of depth 2 and an ' +
+      'allowed action on one capability', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add an allowed action of `write`
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id(),
+        allowedAction: 'write'
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'write'
+      });
+      // FIXME: require a capability action for all invocations and
+      // require `expectedAction` be passed
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'write'
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should fail to verify a capability chain of depth 2 when a ' +
+      '"capabilityAction" is required but missing', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour ago
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id(),
+        allowedAction: 'write'
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedTarget: capabilities.root.beta.id,
+          expectedAction: 'write'
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.name.should.equal('NotFoundError');
+    });
+
+    it('should fail to verify a capability chain of depth 2 when a ' +
+      '"capabilityAction" is not in "allowedAction"', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour ago
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id(),
+        allowedAction: 'write'
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'invalid'
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.name.should.equal('NotFoundError');
+    });
+
+    it('should verify a capability chain of depth 2 and a ' +
+      'specific expected capability action', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add an allowed action of `write`
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'write'
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'write'
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.true;
+    });
+
+    it('should fail to verify a capability chain of depth 2 when an ' +
+      'expected "capabilityAction" is required but missing', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour ago
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'write'
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.name.should.equal('NotFoundError');
+    });
+
+    it('should fail to verify a capability chain of depth 2 when an ' +
+      'expected "capabilityAction" does not match', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's ID
+      //   3. Add a caveat that states the capability should expire an
+      //      hour ago
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: uuid(),
+        parentCapability: capabilities.root.beta.id,
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        controller: bob.id()
+      };
+      //  4. Sign the delegated capability with Alice's delegation key;
+      //     Alice's ID was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+      addToLoader({doc: delegatedCapability});
+      //   5. Use Bob's invocation key that can be found in Bob's
+      //      controller document of keys
+      //   6. The controller should be Bob's ID
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'write'
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'read'
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.name.should.equal('NotFoundError');
+    });
+
+    describe('Chain depth of 3', () => {
+      it('should verify chain', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
@@ -515,2782 +938,2341 @@ describe('zcapld', () => {
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        const result = await _verifyDelegation({
-          delegation: delegatedCapability
+        // FIXME: remove all `addToLoader` calls for delegated zcaps
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          // FIXME: make using reference for last zcap in chain invalid
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
         });
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
 
-      it('should verify invoking a capability chain of depth 2', async () => {
+      it('should fail to verify a chain ' +
+        'w/invalid allowedAction strings', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
+          allowedAction: 'read',
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   4. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   5. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.beta
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
+        addToLoader({doc: bobDelCap});
 
-      it('should fail if expectedRootCapability does not match', async () => {
-        // FIXME: create helper to create delegated zcap w/ uuid(), etc.
-
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const newCapability = {
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
+          parentCapability: bobCap.id,
+          allowedAction: 'write',
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
         };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   4. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   5. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
-        });
-        const result = await _verifyInvocation({
-          invocation, purposeOptions: {
-            expectedRootCapability: 'urn:this-should-matter',
-            expectedTarget: capabilities.root.beta.invocationTarget
-          }
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
+        should.exist(result);
+        result.verified.should.be.false;
+        should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'does not match actual root capability');
+          'delegated capability must be equivalent or more restrictive');
       });
 
-      it('should verify a capability chain of depth 2 and a ' +
-        'valid caveat on one capability', async () => {
+      it('should fail to verify chain w/invalid allowedAction string vs array', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour from now
-        const expires = new Date();
-        expires.setHours(expires.getHours() + 1);
-        const newCapability = {
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          allowedAction: 'read',
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          allowedAction: ['read', 'write'],
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
+        should.exist(result);
+        result.verified.should.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should fail to verify chain ' +
+        'w/invalid allowedAction arrays', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          allowedAction: ['read', 'write'],
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          allowedAction: ['foo', 'bar'],
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
+        should.exist(result);
+        result.verified.should.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should verify chain when child allowedAction is ' +
+        'a valid subset of the parent allowedAction array', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          allowedAction: ['read', 'write'],
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          allowedAction: ['read'],
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
+        should.exist(result);
+        result.verified.should.be.true;
+      });
+
+      it('should verify chain when child allowedAction is ' +
+        'a valid subset of the undefined parent allowedAction', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
-        new ExpirationCaveat({expires}).update(newCapability);
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   6. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          allowedAction: 'read',
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
         });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
-            expectedRootCapability: capabilities.root.beta.id,
-            expectedTarget: capabilities.root.beta.invocationTarget,
-            suite: new Ed25519Signature2020(),
-            caveat: new ExpirationCaveat()
-          }),
-          documentLoader: testLoader
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
+        should.exist(result);
+        result.verified.should.be.true;
       });
 
-      it('should fail to verify a capability chain of depth 2 when a ' +
-        'caveat is not met on one capability', async () => {
+      it('should fail to verify chain w/bad middle capability', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour ago
-        const expires = new Date();
-        expires.setHours(expires.getHours() - 1);
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
-        new ExpirationCaveat({expires}).update(newCapability);
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        ///    capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   6. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
+        // change ID to something else (breaking signature)
+        bobDelCap.id = uuid();
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
         });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
-            expectedRootCapability: capabilities.root.beta.id,
-            expectedTarget: capabilities.root.beta.invocationTarget,
-            suite: new Ed25519Signature2020(),
-            caveat: new ExpirationCaveat()
-          }),
-          documentLoader: testLoader
-        });
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
       });
 
-      it('should verify a capability chain of depth 2 and an ' +
-        'allowed action on one capability', async () => {
+      it('should fail to verify chain w/bad last capability', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add an allowed action of `write`
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id(),
-          allowedAction: 'write'
+          controller: bob.id()
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        ///    capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   6. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability,
-          capabilityAction: 'write'
-        });
-        // FIXME: require a capability action for all invocations and
-        // require `expectedAction` be passed
-        const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.beta,
-          expectedAction: 'write'
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-      });
+        addToLoader({doc: bobDelCap});
 
-      it('should fail to verify a capability chain of depth 2 when a ' +
-        '"capabilityAction" is required but missing', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour ago
-        const newCapability = {
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id(),
-          allowedAction: 'write'
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   6. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
-        });
-        const result = await _verifyInvocation({
-          invocation, purposeOptions: {
-            expectedTarget: capabilities.root.beta.id,
-            expectedAction: 'write'
-          }
-        });
+        // change ID to something else (breaking signature)
+        carolDelCap.id = uuid();
+        addToLoader({doc: carolDelCap});
+        const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.name.should.equal('NotFoundError');
+        error.message.should.equal('Invalid signature.');
       });
 
-      it('should fail to verify a capability chain of depth 2 when a ' +
-        '"capabilityAction" is not in "allowedAction"', async () => {
+      it('should verify chain w/inspectCapabilityChain', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour ago
-        const newCapability = {
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap]
+        });
+        addToLoader({doc: carolDelCap});
+
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain, capabilityChainMeta
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          capabilityChainMeta.should.be.an('array');
+          capabilityChainMeta.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, inspectCapabilityChain
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
+      });
+
+      it('should fail to verify w/inspectCapabilityChain w/revoked capability',
+        async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {
+            error: new Error(`The capability "${capabilityChain[0].id}" ` +
+              'has been revoked.'),
+            valid: false,
+          };
+        };
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, inspectCapabilityChain
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain('revoked');
+        checkedChain.should.be.true;
+      });
+
+      it('should fail to verify w/delegated zcap created before ' +
+        'parent', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          // force proof creation date to be in the past
+          date: new Date(0),
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, purposeOptions: {
+            requireChainDateMonotonicity: true
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain(
+          'delegated before its parent');
+      });
+
+      it('should fail to verify w/delegated zcap with no expiration ' +
+        'date', async () => {
+        // TTL of 1 day
+        const ttl = 1000 * 60 * 60 * 24;
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, purposeOptions: {
+            // max TTL of 1 day
+            maxDelegationTtl: ttl
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain(
+          'does not have an expiration date');
+      });
+
+      it('should fail to verify chain w/delegated zcap in the ' +
+        'future', async () => {
+        // TTL of 1 day
+        const ttl = 1000 * 60 * 60 * 24;
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        // force delegation into the future
+        const delegated = new Date(Date.now() + ttl);
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
-          allowedAction: 'write'
+          expires: new Date(delegated.getTime() + ttl / 2).toJSON()
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice, date: delegated,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires: bobDelCap.expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, purposeOptions: {
+            maxDelegationTtl: ttl
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain(
+          'delegated in the future');
+      });
+
+      it('should fail to verify chain ' +
+        'w/delegated zcap with a TTL that is too long', async () => {
+        // TTL of 1 day
+        const ttl = 1000 * 60 * 60 * 24;
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const delegated = new Date();
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id(),
+          expires: new Date(delegated.getTime() + ttl + 1).toJSON()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice, date: delegated,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires: bobDelCap.expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        const result = await _verifyDelegation({
+          delegation: carolDelCap, purposeOptions: {
+            maxDelegationTtl: ttl
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain(
+          'time to live that is too long');
+      });
+
+      it('should verify invoking', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
-        //   6. The controller should be Bob's ID
+        //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability,
-          capabilityAction: 'invalid'
+          doc, invoker: carol, capability: carolCap
         });
         const result = await _verifyInvocation({
           invocation, rootCapability: capabilities.root.beta
         });
         expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.name.should.equal('NotFoundError');
+        expect(result.verified).to.be.true;
       });
 
-      it('should verify a capability chain of depth 2 and a ' +
-        'specific expected capability action', async () => {
+      it('should verify chain w/ multiple delegators', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add an allowed action of `write`
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
+          controller: ['urn:other', bob.id()]
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
-        //   6. The controller should be Bob's ID
+        //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability,
-          capabilityAction: 'write'
+          doc, invoker: carol, capability: carolCap
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.beta,
-          expectedAction: 'write'
+          invocation, rootCapability: capabilities.root.beta
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
 
-      it('should fail to verify a capability chain of depth 2 when an ' +
-        'expected "capabilityAction" is required but missing', async () => {
+      it('should verify invoking w/inspectCapabilityChain', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour ago
-        const newCapability = {
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
-        //   6. The controller should be Bob's ID
+        //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability
+          doc, invoker: carol, capability: carolCap
         });
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
         const result = await _verifyInvocation({
           invocation, rootCapability: capabilities.root.beta,
-          expectedAction: 'write'
+          inspectCapabilityChain
         });
         expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.name.should.equal('NotFoundError');
+        expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
       });
 
-      it('should fail to verify a capability chain of depth 2 when an ' +
-        'expected "capabilityAction" does not match', async () => {
+      it('should verify invoking ' +
+        'w/TTL and delegation date monotonicity checks', async () => {
+        // 24 hour TTL
+        const ttl = 1000 * 60 * 60 * 24;
+
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        //   3. Add a caveat that states the capability should expire an
-        //      hour ago
-        const newCapability = {
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id(),
+          expires: new Date(Date.now() + ttl / 2).toJSON()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires: bobDelCap.expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+        const result = await _verifyInvocation({
+          invocation,
+          purposeOptions: {
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
+            inspectCapabilityChain,
+            maxDelegationTtl: ttl,
+            requireChainDateMonotonicity: true
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
+      });
+
+      it('should fail invoking ' +
+        'w/inspectCapabilityChain and a revoked capability', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
-        //  4. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await _delegate({
-          newCapability, delegator: alice,
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: delegatedCapability});
-        //   5. Use Bob's invocation key that can be found in Bob's
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
-        //   6. The controller should be Bob's ID
+        //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: bob, capability: delegatedCapability,
-          capabilityAction: 'write'
+          doc, invoker: carol, capability: carolCap
         });
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain
+        }) => {
+          checkedChain = true;
+          should.exist(capabilityChain);
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(2);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {
+            error: new Error(
+              `The capability "${capabilityChain[0].id}" has been revoked.`),
+            valid: false,
+          };
+        };
         const result = await _verifyInvocation({
           invocation, rootCapability: capabilities.root.beta,
-          expectedAction: 'read'
+          inspectCapabilityChain
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.name.should.equal('NotFoundError');
+        expect(result.error.errors[0]).to.exist;
+        result.error.errors[0].message.should.contain('has been revoked');
+        checkedChain.should.be.true;
       });
+    }); // end Chain depth of 3
 
-      describe('chain depth of 3', () => {
-        it('should verify a valid capability chain', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          // FIXME: remove all `addToLoader` calls for delegated zcaps
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            // FIXME: make using reference for last zcap in chain invalid
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-        });
-
-        it('should fail to verify a capability chain ' +
-          'with invalid allowedAction strings', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            allowedAction: 'read',
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            allowedAction: 'write',
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          should.exist(result);
-          result.verified.should.be.false;
-          should.exist(result.error);
-          result.error.name.should.equal('VerificationError');
-          const [error] = result.error.errors;
-          error.message.should.contain(
-            'delegated capability must be equivalent or more restrictive');
-        });
-
-        it('should fail to verify a capability chain ' +
-          'with invalid allowedAction string vs array', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            allowedAction: 'read',
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            allowedAction: ['read', 'write'],
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          should.exist(result);
-          result.verified.should.be.false;
-          should.exist(result.error);
-          result.error.name.should.equal('VerificationError');
-          const [error] = result.error.errors;
-          error.message.should.contain(
-            'delegated capability must be equivalent or more restrictive');
-        });
-
-        it('should fail to verify a capability chain ' +
-          'with invalid allowedAction arrays', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            allowedAction: ['read', 'write'],
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            allowedAction: ['foo', 'bar'],
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          should.exist(result);
-          result.verified.should.be.false;
-          should.exist(result.error);
-          result.error.name.should.equal('VerificationError');
-          const [error] = result.error.errors;
-          error.message.should.contain(
-            'delegated capability must be equivalent or more restrictive');
-        });
-
-        it('should verify a capability chain when child allowedAction is ' +
-          'a valid subset of the parent allowedAction array', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            allowedAction: ['read', 'write'],
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            allowedAction: ['read'],
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          should.exist(result);
-          result.verified.should.be.true;
-        });
-
-        it('should verify a capability chain when child allowedAction is ' +
-          'a valid subset of the parent allowedAction undefined', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            allowedAction: 'read',
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          should.exist(result);
-          result.verified.should.be.true;
-        });
-
-        it('should fail to verify a capability chain ' +
-          'because of bad middle capability', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          ///    capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          // change ID to something else (breaking signature)
-          bobDelCap.id = uuid();
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          result.error.name.should.equal('VerificationError');
-        });
-
-        it('should fail to verify a capability chain ' +
-          'because of bad last capability', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          ///    capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          // change ID to something else (breaking signature)
-          carolDelCap.id = uuid();
-          addToLoader({doc: carolDelCap});
-          const result = await _verifyDelegation({delegation: carolDelCap});
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          result.error.name.should.equal('VerificationError');
-          const [error] = result.error.errors;
-          error.message.should.equal('Invalid signature.');
-        });
-
-        it('should verify a capability chain ' +
-          'w/inspectCapabilityChain', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap]
-          });
-          addToLoader({doc: carolDelCap});
-
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(2);
-            capabilityChainMeta.should.be.an('array');
-            capabilityChainMeta.should.have.length(2);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-          const result = await _verifyDelegation({
-            delegation: carolDelCap, inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-          checkedChain.should.be.true;
-        });
-
-        it('should fail to verify a capability chain of depth 3 ' +
-          'w/inspectCapabilityChain that includes a revoked capability',
-          async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(2);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {
-              error: new Error(`The capability "${capabilityChain[0].id}" ` +
-                'has been revoked.'),
-              valid: false,
-            };
-          };
-          const result = await _verifyDelegation({
-            delegation: carolDelCap, inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          expect(result.error.errors[0]).to.exist;
-          result.error.errors[0].message.should.contain('revoked');
-          checkedChain.should.be.true;
-        });
-
-        it('should fail to verify a capability chain of depth 3 ' +
-          'w/delegated zcap created before parent',
-          async () => {
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.invocationTarget,
-              controller: bob.id()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id()
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              // force proof creation date to be in the past
-              date: new Date(0),
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            const result = await _verifyDelegation({
-              delegation: carolDelCap, purposeOptions: {
-                requireChainDateMonotonicity: true
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            expect(result.error.errors[0]).to.exist;
-            result.error.errors[0].message.should.contain(
-              'delegated before its parent');
-          });
-
-        it('should fail to verify a capability chain of depth 3 ' +
-          'w/delegated zcap with no expiration date',
-          async () => {
-            // TTL of 1 day
-            const ttl = 1000 * 60 * 60 * 24;
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.invocationTarget,
-              controller: bob.id()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id()
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            const result = await _verifyDelegation({
-              delegation: carolDelCap, purposeOptions: {
-                // max TTL of 1 day
-                maxDelegationTtl: ttl
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            expect(result.error.errors[0]).to.exist;
-            result.error.errors[0].message.should.contain(
-              'does not have an expiration date');
-          });
-
-        it('should fail to verify a capability chain of depth 3 ' +
-          'w/delegated zcap in the future',
-          async () => {
-            // TTL of 1 day
-            const ttl = 1000 * 60 * 60 * 24;
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            // force delegation into the future
-            const delegated = new Date(Date.now() + ttl);
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.invocationTarget,
-              controller: bob.id(),
-              expires: new Date(delegated.getTime() + ttl / 2).toJSON()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice, date: delegated,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires: bobDelCap.expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            const result = await _verifyDelegation({
-              delegation: carolDelCap, purposeOptions: {
-                maxDelegationTtl: ttl
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            expect(result.error.errors[0]).to.exist;
-            result.error.errors[0].message.should.contain(
-              'delegated in the future');
-          });
-
-        it('should fail to verify a capability chain of depth 3 ' +
-          'w/delegated zcap with a TTL that is too long',
-          async () => {
-            // TTL of 1 day
-            const ttl = 1000 * 60 * 60 * 24;
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const delegated = new Date();
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.invocationTarget,
-              controller: bob.id(),
-              expires: new Date(delegated.getTime() + ttl + 1).toJSON()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice, date: delegated,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires: bobDelCap.expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [capabilities.root.beta.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            const result = await _verifyDelegation({
-              delegation: carolDelCap, purposeOptions: {
-                maxDelegationTtl: ttl
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            expect(result.error.errors[0]).to.exist;
-            result.error.errors[0].message.should.contain(
-              'time to live that is too long');
-          });
-
-        it('should verify invoking a capability chain of depth 3', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          //   7. Use Carol's invocation key that can be found in Carol's
-          //      controller document of keys
-          //   8. The controller should be Carol's ID
-          const doc = clone(mock.exampleDoc);
-          const invocation = await _invoke({
-            doc, invoker: carol, capability: carolCap
-          });
-          const result = await _verifyInvocation({
-            invocation, rootCapability: capabilities.root.beta
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-        });
-
-        it('should verify a capability chain of depth 3 w/ multiple delegators',
-          async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: ['urn:other', bob.id()]
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          //   7. Use Carol's invocation key that can be found in Carol's
-          //      controller document of keys
-          //   8. The controller should be Carol's ID
-          const doc = clone(mock.exampleDoc);
-          const invocation = await _invoke({
-            doc, invoker: carol, capability: carolCap
-          });
-          const result = await _verifyInvocation({
-            invocation, rootCapability: capabilities.root.beta
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-        });
-
-        it('should verify invoking a capability chain of depth 3 ' +
-          'w/inspectCapabilityChain', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          //   7. Use Carol's invocation key that can be found in Carol's
-          //      controller document of keys
-          //   8. The controller should be Carol's ID
-          const doc = clone(mock.exampleDoc);
-          const invocation = await _invoke({
-            doc, invoker: carol, capability: carolCap
-          });
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(2);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-          const result = await _verifyInvocation({
-            invocation, rootCapability: capabilities.root.beta,
-            inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-          checkedChain.should.be.true;
-        });
-
-        it('should verify invoking a capability chain of depth 3 ' +
-          'w/TTL and delegation date monotonicity checks', async () => {
-          // 24 hour TTL
-          const ttl = 1000 * 60 * 60 * 24;
-
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id(),
-            expires: new Date(Date.now() + ttl / 2).toJSON()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id(),
-            expires: bobDelCap.expires
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          //   7. Use Carol's invocation key that can be found in Carol's
-          //      controller document of keys
-          //   8. The controller should be Carol's ID
-          const doc = clone(mock.exampleDoc);
-          const invocation = await _invoke({
-            doc, invoker: carol, capability: carolCap
-          });
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(2);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-          const result = await _verifyInvocation({
-            invocation,
-            purposeOptions: {
-              expectedRootCapability: capabilities.root.beta.id,
-              expectedTarget: capabilities.root.beta.invocationTarget,
-              inspectCapabilityChain,
-              maxDelegationTtl: ttl,
-              requireChainDateMonotonicity: true
-            }
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-          checkedChain.should.be.true;
-        });
-
-        it('should fail invoking a capability chain of depth 3 ' +
-          'w/inspectCapabilityChain and a revoked capability', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id]
-          });
-          addToLoader({doc: carolDelCap});
-
-          //   7. Use Carol's invocation key that can be found in Carol's
-          //      controller document of keys
-          //   8. The controller should be Carol's ID
-          const doc = clone(mock.exampleDoc);
-          const invocation = await _invoke({
-            doc, invoker: carol, capability: carolCap
-          });
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain
-          }) => {
-            checkedChain = true;
-            should.exist(capabilityChain);
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(2);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {
-              error: new Error(
-                `The capability "${capabilityChain[0].id}" has been revoked.`),
-              valid: false,
-            };
-          };
-          const result = await _verifyInvocation({
-            invocation, rootCapability: capabilities.root.beta,
-            inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          expect(result.error.errors[0]).to.exist;
-          result.error.errors[0].message.should.contain('has been revoked');
-          checkedChain.should.be.true;
-        });
-
-        describe('expiration date', () => {
-          it('CapabilityInvocation throws TypeError on currentDate = null',
-            async () => {
-            let result;
-            let err;
-            try {
-              result = new CapabilityInvocation({
-                expectedTarget:
-                  'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
-                suite: new Ed25519Signature2020(),
-                currentDate: null,
-              });
-            } catch(e) {
-              err = e;
-            }
-            should.exist(err);
-            should.not.exist(result);
-            err.should.be.instanceof(TypeError);
-            err.message.should.contain('must be a Date');
-          });
-          it('CapabilityDelegation throws TypeError on currentDate = null',
-            async () => {
-            let result;
-            let err;
-            try {
-              result = new CapabilityDelegation({
-                capabilityChain: [
-                  'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
-                ],
-                currentDate: null,
-              });
-            } catch(e) {
-              err = e;
-            }
-            should.exist(err);
-            should.not.exist(result);
-            err.should.be.instanceof(TypeError);
-            err.message.should.contain('must be a Date');
-          });
-          it('should verify invoking a capability with `expires`',
-            async () => {
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 1);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:9ff561b8-0b3f-4bbc-af00-03ba785a7fc6';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-              addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.true;
-          });
-
-          it('should verify invoking a capability with `expires` ' +
-            'and `currentDate` parameter in the past', async () => {
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            // the capability is presently expired
-            let expires = new Date();
-            expires.setHours(expires.getHours() - 10);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:1c919b19-baab-45ee-b0ef-24309dfb355d';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-              addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            // the capability was still valid 20 hours ago
-            const currentDate = new Date();
-            currentDate.setHours(currentDate.getHours() - 20);
-            const result = await _verifyInvocation({
-              invocation, purposeOptions: {
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                currentDate
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.true;
-          });
-
-          it('should fail invoking a capability with `expires` ' +
-            'and `currentDate` parameter in the past', async () => {
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            // the capability is presently expired
-            let expires = new Date();
-            expires.setHours(expires.getHours() - 50);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            // the capability was also expired 20 hours ago
-            const currentDate = new Date();
-            currentDate.setHours(currentDate.getHours() - 20);
-            const result = await _verifyInvocation({
-              invocation, purposeOptions: {
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                currentDate
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.equal('The root capability has expired.');
-          });
-
-          it('should fail invoking a capability with `expires` ' +
-            'and `currentDate` parameter in the future', async () => {
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            // the capability is presently valid
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 50);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            // the capability will have expired in 100 hours
-            const currentDate = new Date();
-            currentDate.setHours(currentDate.getHours() + 100);
-            const result = await _verifyInvocation({
-              invocation, purposeOptions: {
-                expectedRootCapability: rootCapability.id,
-                expectedTarget: rootCapability.invocationTarget,
-                suite: new Ed25519Signature2020(),
-                currentDate,
-              }
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.equal('The root capability has expired.');
-          });
-
-          it('should fail invoking a capability with missing `expires` ' +
-            'in the first delegated capability',
-            async () => {
-            // the root capability has expires, but the delegation does not
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 1);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:7c496483-8e82-4c7c-867d-66874ca356f6';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [capabilities.root.beta.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.include(
-              'delegated capability must be equivalent or more restrictive');
-          });
-
-          it('should fail invoking a capability with missing `expires` in ' +
-            'the second capability delegation', async () => {
-            // the capability from alice to bob has proper expires, but the
-            // capability from bob to carol does not
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 1);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id()
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.include(
-              'delegated capability must be equivalent or more restrictive');
-          });
-
-          it('should fail invoking a capability with expired ' +
-            'root capability', async () => {
-            // the entire chain has the same expiration date in the past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() - 1);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:028731be-69ae-460a-a4c6-5175883358a2';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.contain('The root capability has expired.');
-          });
-
-          it('should fail invoking a capability with ' +
-            'root capability that expires on the Unix epoch', async () => {
-            // the entire chain has the same expiration date in the past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            // set the expires to the Unix epoch
-            let expires = new Date(0);
-            expires = expires.toISOString();
-
-            rootCapability.id = 'urn:zcap:cbddee5a-09fb-44db-a921-70c36436c253';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.errors.should.have.length(1);
-            const [error] = result.error.errors;
-            error.message.should.contain(
-              'root capability has expired');
-          });
-
-          it('should fail invoking a capability with expired ' +
-            'second delegated capability', async () => {
-            // the root capability specifies a date in the future, but
-            // the delegation from bob to carol specifies a date that is in the
-            // past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 10);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:3c034da3-8b5e-4fdc-b75d-8c37d73cd21e';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            // set expires for this delegation well in the past
-            expires = new Date();
-            expires.setHours(expires.getHours() - 10);
-            expires = expires.toISOString();
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.contain(
-              'A capability in the delegation chain has expired.');
-          });
-
-          it('should fail invoking a capability with second delegated ' +
-            'capability that expires on the Unix epoch', async () => {
-            // the root capability specifies a date in the future, but
-            // the delegation from bob to carol specifies a date that is in the
-            // past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 10);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:6286a906-619b-4f5b-a8ae-af9fb774b070';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            // set expires for this delegation to the Unix epoch
-            expires = new Date(0);
-            expires = expires.toISOString();
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.errors.should.have.length(1);
-            const [error] = result.error.errors;
-            error.message.should.contain(
-              'capability in the delegation chain has expired');
-          });
-
-          it('should fail invoking a capability with ' +
-          'first delegated capability that expires after root', async () => {
-            // the root capability specifies a date in the future, but
-            // the delegation from bob to carol specifies a date that is in the
-            // past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 10);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:1e7dfae9-85a3-40d7-97ea-20105f0b9d99';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            // set expires for this delegation beyond the expiration of the
-            // root capability, which is not allowed
-            expires = new Date();
-            expires.setHours(expires.getHours() + 100);
-            expires = expires.toISOString();
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.contain(
-              'delegated capability must be equivalent or more restrictive');
-          });
-
-          it('should fail invoking a capability with ' +
-            'second delegated capability that expires after root', async () => {
-            // the root capability specifies a date in the future, but
-            // the delegation from bob to carol specifies a date that is in the
-            // past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 10);
-            expires = expires.toISOString();
-            rootCapability.id = 'urn:zcap:79eed455-ff71-4302-96b5-436de2ca9190';
-            rootCapability.expires = expires;
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id(),
-              expires
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            // set expires for this delegation beyond the expiration of the
-            // root capability, which is not allowed
-            expires = new Date();
-            expires.setHours(expires.getHours() + 100);
-            expires = expires.toISOString();
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.contain(
-              'delegated capability must be equivalent or more restrictive');
-          });
-
-          it('should verify invoking a capability with only expires on ' +
-            'second delegated capability', async () => {
-            // only the second delegation has a valid future expiration
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            rootCapability.id = 'urn:zcap:a0d0360b-7e93-4c9c-8804-69ca426c60c3';
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            // set expires for this delegation well in the past
-            let expires = new Date();
-            expires.setHours(expires.getHours() + 10);
-            expires = expires.toISOString();
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.true;
-          });
-
-          it('should fail invoking a capability with only an expired ' +
-            'second delegated capability', async () => {
-            // only the second delegation has an expiration in the past
-
-            // Create a delegated capability
-            //   1. Parent capability should point to the root capability
-            //   2. The controller should be Bob's ID
-            const rootCapability = Object.assign({}, capabilities.root.beta);
-
-            rootCapability.id = 'urn:zcap:2c41869c-95bb-4e23-9bcd-2fbb320bb440';
-            addToLoader({doc: rootCapability});
-
-            const bobCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.invocationTarget,
-              controller: bob.id()
-            };
-            //  3. Sign the delegated capability with Alice's delegation key;
-            //     Alice's ID was specified as the delegator in the root
-            //     capability
-            const bobDelCap = await _delegate({
-              newCapability: bobCap, delegator: alice,
-              capabilityChain: [rootCapability.id]
-            });
-            addToLoader({doc: bobDelCap});
-
-            // Create a delegated capability for Carol
-            //   4. Parent capability should point to Bob's capability
-            //   5. The controller should be Carol's ID
-
-            // set expires for this delegation well in the past
-            let expires = new Date();
-            expires.setHours(expires.getHours() - 10);
-            expires = expires.toISOString();
-            const carolCap = {
-              '@context': ZCAP_CONTEXT_URL,
-              id: uuid(),
-              parentCapability: bobCap.id,
-              invocationTarget: bobCap.invocationTarget,
-              controller: carol.id(),
-              expires
-            };
-            //  6. Sign the delegated capability with Bob's delegation key
-            //     that was specified as the delegator in Bob's capability
-            const carolDelCap = await _delegate({
-              newCapability: carolCap, delegator: bob,
-              capabilityChain: [rootCapability.id, bobCap.id]
-            });
-            addToLoader({doc: carolDelCap});
-
-            //   7. Use Carol's invocation key that can be found in Carol's
-            //      controller document of keys
-            //   8. The controller should be Carol's ID
-            const doc = clone(mock.exampleDoc);
-            const invocation = await _invoke({
-              doc, invoker: carol, capability: carolCap
-            });
-            const result = await _verifyInvocation({
-              invocation, rootCapability
-            });
-            expect(result).to.exist;
-            expect(result.verified).to.be.false;
-            should.exist(result.error);
-            result.error.name.should.equal('VerificationError');
-            const [error] = result.error.errors;
-            error.message.should.equal(
-              'A capability in the delegation chain has expired.');
-          });
-        }); // end expiration date
-      }); // end chain depth of 3
-
-      describe('chain depth of 4', () => {
-        it('should verify a capability chain ' +
-          'w/inspectCapabilityChain', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobDelCap]
-          });
-          addToLoader({doc: carolDelCap});
-
-          // Create a delegated capability for Diana
-          //   4. Parent capability should point to Carol's capability
-          //   5. The controller should be Diana's ID
-          const dianaCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: carolCap.id,
-            invocationTarget: carolCap.invocationTarget,
-            controller: diana.id()
-          };
-          //  6. Sign the delegated capability with Carol's delegation key
-          //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await _delegate({
-            newCapability: dianaCap, delegator: carol,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
-          });
-          addToLoader({doc: dianaDelCap});
-
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(3);
-            capabilityChainMeta.should.be.an('array');
-            capabilityChainMeta.should.have.length(3);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-
-          const result = await _verifyDelegation({
-            delegation: dianaDelCap, inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-          checkedChain.should.be.true;
-        });
-
-        it('should fail a capability chain that exceeds maxChainLength',
-          async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-          addToLoader({doc: bobDelCap});
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobDelCap]
-          });
-          addToLoader({doc: carolDelCap});
-
-          // Create a delegated capability for Diana
-          //   4. Parent capability should point to Carol's capability
-          //   5. The controller should be Diana's ID
-          const dianaCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: carolCap.id,
-            invocationTarget: carolCap.invocationTarget,
-            controller: diana.id()
-          };
-          //  6. Sign the delegated capability with Carol's delegation key
-          //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await _delegate({
-            newCapability: dianaCap, delegator: carol,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
-          });
-          addToLoader({doc: dianaDelCap});
-
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(3);
-            capabilityChainMeta.should.be.an('array');
-            capabilityChainMeta.should.have.length(3);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-
-          const result = await _verifyDelegation({
-            delegation: dianaDelCap, purposeOptions: {
-              inspectCapabilityChain,
-              maxChainLength: 2
-            }
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.false;
-          should.exist(result.error);
-          should.exist(result.error.errors);
-          result.error.errors.should.have.length(1);
-          result.error.errors[0].message.should.equal(
-            'The capabability chain exceeds the maximum allowed length of 2.');
-          // should not get to check chain because of invalid chain length
-          checkedChain.should.be.false;
-        });
-
-        it('should verify a capability chain ' +
-          'w/inspectCapabilityChain using embedded capabilities from ' +
-          'capabilityChain', async () => {
-          // Create a delegated capability
-          //   1. Parent capability should point to the root capability
-          //   2. The controller should be Bob's ID
-          const bobCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.invocationTarget,
-            controller: bob.id()
-          };
-          //  3. Sign the delegated capability with Alice's delegation key;
-          //     Alice's ID was specified as the delegator in the root
-          //     capability
-          const bobDelCap = await _delegate({
-            newCapability: bobCap, delegator: alice,
-            capabilityChain: [capabilities.root.beta.id]
-          });
-
-          // Create a delegated capability for Carol
-          //   4. Parent capability should point to Bob's capability
-          //   5. The controller should be Carol's ID
-          const carolCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: bobCap.id,
-            invocationTarget: bobCap.invocationTarget,
-            controller: carol.id()
-          };
-          //  6. Sign the delegated capability with Bob's delegation key
-          //     that was specified as the delegator in Bob's capability
-          const carolDelCap = await _delegate({
-            newCapability: carolCap, delegator: bob,
-            capabilityChain: [capabilities.root.beta.id, bobDelCap]
-          });
-
-          // Create a delegated capability for Diana
-          //   4. Parent capability should point to Carol's capability
-          //   5. The controller should be Diana's ID
-          const dianaCap = {
-            '@context': ZCAP_CONTEXT_URL,
-            id: uuid(),
-            parentCapability: carolCap.id,
-            invocationTarget: carolCap.invocationTarget,
-            controller: diana.id()
-          };
-          //  6. Sign the delegated capability with Carol's delegation key
-          //     that was specified as the delegator in Carol's capability
-          const dianaDelCap = await _delegate({
-            newCapability: dianaCap, delegator: carol,
-            capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
-          });
-
-          let checkedChain = false;
-          const inspectCapabilityChain = async ({
-            capabilityChain, capabilityChainMeta
-          }) => {
-            checkedChain = true;
-            capabilityChain.should.be.an('array');
-            capabilityChain.should.have.length(3);
-            capabilityChainMeta.should.be.an('array');
-            capabilityChainMeta.should.have.length(3);
-            _checkCapabilityChain({capabilityChain});
-            // a real implementation would look for revocations here
-            return {valid: true};
-          };
-
-          const result = await _verifyDelegation({
-            delegation: dianaDelCap, inspectCapabilityChain
-          });
-          expect(result).to.exist;
-          expect(result.verified).to.be.true;
-          checkedChain.should.be.true;
-        });
-      }); // end chain depth of 4
-    });
-    describe('Hierarchical Delegation', () => {
-      it('should verify a capability chain with hierachical delegation',
+    describe('Expiration date', () => {
+      it('CapabilityInvocation throws TypeError on currentDate = null',
         async () => {
+        let result;
+        let err;
+        try {
+          result = new CapabilityInvocation({
+            expectedTarget:
+              'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
+            suite: new Ed25519Signature2020(),
+            currentDate: null,
+          });
+        } catch(e) {
+          err = e;
+        }
+        should.exist(err);
+        should.not.exist(result);
+        err.should.be.instanceof(TypeError);
+        err.message.should.contain('must be a Date');
+      });
+      it('CapabilityDelegation throws TypeError on currentDate = null',
+        async () => {
+        let result;
+        let err;
+        try {
+          result = new CapabilityDelegation({
+            capabilityChain: [
+              'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
+            ],
+            currentDate: null,
+          });
+        } catch(e) {
+          err = e;
+        }
+        should.exist(err);
+        should.not.exist(result);
+        err.should.be.instanceof(TypeError);
+        err.message.should.contain('must be a Date');
+      });
+      it('should verify invoking a capability with `expires`',
+        async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
 
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:9ff561b8-0b3f-4bbc-af00-03ba785a7fc6';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+          addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
+      it('should verify invoking a capability with `expires` ' +
+        'and `currentDate` parameter in the past', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        // the capability is presently expired
+        let expires = new Date();
+        expires.setHours(expires.getHours() - 10);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:1c919b19-baab-45ee-b0ef-24309dfb355d';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+          addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        // the capability was still valid 20 hours ago
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() - 20);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            currentDate
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
+      it('should fail invoking a capability with `expires` ' +
+        'and `currentDate` parameter in the past', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        // the capability is presently expired
+        let expires = new Date();
+        expires.setHours(expires.getHours() - 50);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        // the capability was also expired 20 hours ago
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() - 20);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            currentDate
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The root capability has expired.');
+      });
+
+      it('should fail invoking a capability with `expires` ' +
+        'and `currentDate` parameter in the future', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        // the capability is presently valid
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 50);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        // the capability will have expired in 100 hours
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + 100);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            suite: new Ed25519Signature2020(),
+            currentDate,
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The root capability has expired.');
+      });
+
+      it('should fail invoking a capability with missing `expires` ' +
+        'in the first delegated capability',
+        async () => {
+        // the root capability has expires, but the delegation does not
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:7c496483-8e82-4c7c-867d-66874ca356f6';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.include(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should fail invoking a capability with missing `expires` in ' +
+        'the second capability delegation', async () => {
+        // the capability from alice to bob has proper expires, but the
+        // capability from bob to carol does not
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.include(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should fail invoking a capability with expired ' +
+        'root capability', async () => {
+        // the entire chain has the same expiration date in the past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() - 1);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:028731be-69ae-460a-a4c6-5175883358a2';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain('The root capability has expired.');
+      });
+
+      it('should fail invoking a capability with ' +
+        'root capability that expires on the Unix epoch', async () => {
+        // the entire chain has the same expiration date in the past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        // set the expires to the Unix epoch
+        let expires = new Date(0);
+        expires = expires.toISOString();
+
+        rootCapability.id = 'urn:zcap:cbddee5a-09fb-44db-a921-70c36436c253';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'root capability has expired');
+      });
+
+      it('should fail invoking a capability with expired ' +
+        'second delegated capability', async () => {
+        // the root capability specifies a date in the future, but
+        // the delegation from bob to carol specifies a date that is in the
+        // past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 10);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:3c034da3-8b5e-4fdc-b75d-8c37d73cd21e';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        // set expires for this delegation well in the past
+        expires = new Date();
+        expires.setHours(expires.getHours() - 10);
+        expires = expires.toISOString();
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'A capability in the delegation chain has expired.');
+      });
+
+      it('should fail invoking a capability with second delegated ' +
+        'capability that expires on the Unix epoch', async () => {
+        // the root capability specifies a date in the future, but
+        // the delegation from bob to carol specifies a date that is in the
+        // past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 10);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:6286a906-619b-4f5b-a8ae-af9fb774b070';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        // set expires for this delegation to the Unix epoch
+        expires = new Date(0);
+        expires = expires.toISOString();
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'capability in the delegation chain has expired');
+      });
+
+      it('should fail invoking a capability with ' +
+      'first delegated capability that expires after root', async () => {
+        // the root capability specifies a date in the future, but
+        // the delegation from bob to carol specifies a date that is in the
+        // past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 10);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:1e7dfae9-85a3-40d7-97ea-20105f0b9d99';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        // set expires for this delegation beyond the expiration of the
+        // root capability, which is not allowed
+        expires = new Date();
+        expires.setHours(expires.getHours() + 100);
+        expires = expires.toISOString();
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should fail invoking a capability with ' +
+        'second delegated capability that expires after root', async () => {
+        // the root capability specifies a date in the future, but
+        // the delegation from bob to carol specifies a date that is in the
+        // past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 10);
+        expires = expires.toISOString();
+        rootCapability.id = 'urn:zcap:79eed455-ff71-4302-96b5-436de2ca9190';
+        rootCapability.expires = expires;
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        // set expires for this delegation beyond the expiration of the
+        // root capability, which is not allowed
+        expires = new Date();
+        expires.setHours(expires.getHours() + 100);
+        expires = expires.toISOString();
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'delegated capability must be equivalent or more restrictive');
+      });
+
+      it('should verify invoking a capability with only expires on ' +
+        'second delegated capability', async () => {
+        // only the second delegation has a valid future expiration
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        rootCapability.id = 'urn:zcap:a0d0360b-7e93-4c9c-8804-69ca426c60c3';
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        // set expires for this delegation well in the past
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 10);
+        expires = expires.toISOString();
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
+      it('should fail invoking a capability with only an expired ' +
+        'second delegated capability', async () => {
+        // only the second delegation has an expiration in the past
+
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = Object.assign({}, capabilities.root.beta);
+
+        rootCapability.id = 'urn:zcap:2c41869c-95bb-4e23-9bcd-2fbb320bb440';
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+
+        // set expires for this delegation well in the past
+        let expires = new Date();
+        expires.setHours(expires.getHours() - 10);
+        expires = expires.toISOString();
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id(),
+          expires
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [rootCapability.id, bobCap.id]
+        });
+        addToLoader({doc: carolDelCap});
+
+        //   7. Use Carol's invocation key that can be found in Carol's
+        //      controller document of keys
+        //   8. The controller should be Carol's ID
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolCap
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal(
+          'A capability in the delegation chain has expired.');
+      });
+    }); // end Expiration date
+
+    describe('Chain depth of 4', () => {
+      it('should verify chain w/inspectCapabilityChain', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+        });
+        addToLoader({doc: carolDelCap});
+
+        // Create a delegated capability for Diana
+        //   4. Parent capability should point to Carol's capability
+        //   5. The controller should be Diana's ID
+        const dianaCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: carolCap.id,
+          invocationTarget: carolCap.invocationTarget,
+          controller: diana.id()
+        };
+        //  6. Sign the delegated capability with Carol's delegation key
+        //     that was specified as the delegator in Carol's capability
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
+        });
+        addToLoader({doc: dianaDelCap});
+
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain, capabilityChainMeta
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(3);
+          capabilityChainMeta.should.be.an('array');
+          capabilityChainMeta.should.have.length(3);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, inspectCapabilityChain
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
+      });
+
+      it('should fail to verify chain exceeding maxChainLength', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+        });
+        addToLoader({doc: carolDelCap});
+
+        // Create a delegated capability for Diana
+        //   4. Parent capability should point to Carol's capability
+        //   5. The controller should be Diana's ID
+        const dianaCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: carolCap.id,
+          invocationTarget: carolCap.invocationTarget,
+          controller: diana.id()
+        };
+        //  6. Sign the delegated capability with Carol's delegation key
+        //     that was specified as the delegator in Carol's capability
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
+        });
+        addToLoader({doc: dianaDelCap});
+
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain, capabilityChainMeta
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(3);
+          capabilityChainMeta.should.be.an('array');
+          capabilityChainMeta.should.have.length(3);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, purposeOptions: {
+            inspectCapabilityChain,
+            maxChainLength: 2
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        should.exist(result.error.errors);
+        result.error.errors.should.have.length(1);
+        result.error.errors[0].message.should.equal(
+          'The capabability chain exceeds the maximum allowed length of 2.');
+        // should not get to check chain because of invalid chain length
+        checkedChain.should.be.false;
+      });
+
+      it('should verify chain ' +
+        'w/inspectCapabilityChain using embedded capabilities from ' +
+        'capabilityChain', async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
+          controller: bob.id()
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [capabilities.root.beta.id]
+        });
+
+        // Create a delegated capability for Carol
+        //   4. Parent capability should point to Bob's capability
+        //   5. The controller should be Carol's ID
+        const carolCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: bobCap.id,
+          invocationTarget: bobCap.invocationTarget,
+          controller: carol.id()
+        };
+        //  6. Sign the delegated capability with Bob's delegation key
+        //     that was specified as the delegator in Bob's capability
+        const carolDelCap = await _delegate({
+          newCapability: carolCap, delegator: bob,
+          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+        });
+
+        // Create a delegated capability for Diana
+        //   4. Parent capability should point to Carol's capability
+        //   5. The controller should be Diana's ID
+        const dianaCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: carolCap.id,
+          invocationTarget: carolCap.invocationTarget,
+          controller: diana.id()
+        };
+        //  6. Sign the delegated capability with Carol's delegation key
+        //     that was specified as the delegator in Carol's capability
+        const dianaDelCap = await _delegate({
+          newCapability: dianaCap, delegator: carol,
+          capabilityChain: [capabilities.root.beta.id, bobCap.id, carolDelCap]
+        });
+
+        let checkedChain = false;
+        const inspectCapabilityChain = async ({
+          capabilityChain, capabilityChainMeta
+        }) => {
+          checkedChain = true;
+          capabilityChain.should.be.an('array');
+          capabilityChain.should.have.length(3);
+          capabilityChainMeta.should.be.an('array');
+          capabilityChainMeta.should.have.length(3);
+          _checkCapabilityChain({capabilityChain});
+          // a real implementation would look for revocations here
+          return {valid: true};
+        };
+
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap, inspectCapabilityChain
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+        checkedChain.should.be.true;
+      });
+    }); // end Chain depth of 4
+
+    describe('Path-based hierarchical attenuation', () => {
+      it('should verify chain', async () => {
         const rootTarget =
           'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971';
         const rootCapability = {
@@ -3366,10 +3348,9 @@ describe('zcapld', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
-      it('should fail hierachical delegation that is more permissive ' +
-        'than the parent capability',
-        async () => {
 
+      it('should fail to verify chain with attenuation that is more ' +
+        'permissive than the parent capability', async () => {
         const rootTarget =
           'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e';
         const rootCapability = {
@@ -3453,10 +3434,8 @@ describe('zcapld', () => {
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
       });
-      it('should verify invocation of path-based hierachical delegation ' +
-        'when invoking at an exact-match target',
-        async () => {
 
+      it('should verify when invoking at an exact-match target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
@@ -3524,10 +3503,9 @@ describe('zcapld', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
-      it('should fail invocation of path-based hierachical delegation ' +
-        'when invoking at an unexpected target',
-        async () => {
 
+      it('should fail to verify when invoking at an unexpected ' +
+        'target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
@@ -3614,10 +3592,8 @@ describe('zcapld', () => {
           `Expected target (${expectedTarget}) does not match ` +
           `invocation target (${invalidTarget})`);
       });
-      it('should verify invocation of path-based hierachical delegation ' +
-        'when invoking at a valid sub target',
-        async () => {
 
+      it('should verify when invoking at a valid sub target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
@@ -3691,10 +3667,9 @@ describe('zcapld', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
-      it('should fail invocation of path-based hierachical delegation ' +
-        'when invoking at an invalid target',
-        async () => {
 
+      it('should fail to verify when invoking at an invalid ' +
+        'target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
@@ -3778,10 +3753,9 @@ describe('zcapld', () => {
           `Invocation target (${invalidTarget}) does not match capability ` +
           `target (${carolDelCap.invocationTarget})`);
       });
-      it('should fail hierachical delegation when ' +
-        'allowTargetAttenuation is not explicitly allowed',
-        async () => {
 
+      it('should fail to verify when allowTargetAttenuation is not ' +
+        'explicitly allowed', async () => {
         const rootTarget =
           'https://example.com/edvs/2c2fe4ab-ff54-4a82-b103-f806f50d364e';
         const rootCapability = {
@@ -3858,10 +3832,8 @@ describe('zcapld', () => {
         const [error] = result.error.errors;
         error.message.should.contain('must be equivalent to its parent');
       });
-      it('should verify a capability chain with hierachical delegation ' +
-        'and inspectCapabilityChain',
-        async () => {
 
+      it('should verify chain w/inspectCapabilityChain', async () => {
         const rootTarget =
           'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144';
         const rootCapability = {
@@ -3953,10 +3925,9 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
         checkedChain.should.be.true;
       });
-      it('should fail an increasingly permissive capability chain with ' +
-        'hierachical delegation and inspectCapabilityChain',
-        async () => {
 
+      it('should fail to verify an increasingly permissive chain ' +
+        'w/inspectCapabilityChain', async () => {
         const rootCapability = {
           id: 'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee',
           controller: alice.id(),
@@ -4053,7 +4024,7 @@ describe('zcapld', () => {
         // should not get to check chain because of invalid zcap
         checkedChain.should.be.false;
       });
-    }); // end Hierarchical Delegation
+    }); // end Path-based hierarchical attenuation
   });
 });
 

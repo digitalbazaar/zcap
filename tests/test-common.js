@@ -480,16 +480,8 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
@@ -504,35 +496,26 @@ describe('zcapld', () => {
         // TODO: assert more about result.error
       });
 
-      // FIXME: change all "self-invoked" root zcap language
-      it('should verify two self-invoked root capabilities', async () => {
+      it('should verify two invocation proofs on the same doc', async () => {
         const doc = {
           '@context': ZCAP_CONTEXT_URL,
           'example:foo': uuid()
         };
         const target1 = 'https://zcap.example/target1';
         const target2 = 'https://zcap.example/target2';
-        const invocation1 = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
+        const invocation1 = await _invoke({
+          doc, controller: alice,
+          purposeOptions: {
             capability: capabilities.root.restful.id,
             invocationTarget: target1
-          })
+          }
         });
-        const invocation2 = await jsigs.sign(invocation1, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
+        const invocation2 = await _invoke({
+          doc: invocation1, controller: alice,
+          purposeOptions: {
             capability: capabilities.root.restful.id,
             invocationTarget: target2
-          })
+          }
         });
         // verify both self-invoked capabilities for different targets
         const result = await jsigs.verify(invocation2, {
@@ -561,7 +544,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should verify a root capability w/ multiple controllers',
+      it('should verify an invoked root capability w/ multiple controllers',
         async () => {
         const root = {
           '@context': ZCAP_CONTEXT_URL,
@@ -571,16 +554,8 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
@@ -604,16 +579,8 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
@@ -689,16 +656,8 @@ describe('zcapld', () => {
         //      controller document of keys
         //   5. The controller should be Bob's ID
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id,
-            invocationTarget: delegatedCapability.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: delegatedCapability
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
@@ -743,16 +702,8 @@ describe('zcapld', () => {
         //      controller document of keys
         //   5. The controller should be Bob's ID
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id,
-            invocationTarget: delegatedCapability.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: delegatedCapability
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),

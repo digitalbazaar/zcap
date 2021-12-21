@@ -900,7 +900,8 @@ describe('zcapld', () => {
           'delegated capability must be equivalent or more restrictive');
       });
 
-      it('should fail to verify chain w/invalid allowedAction string vs array', async () => {
+      it('should fail to verify chain w/invalid allowedAction string ' +
+        'vs array', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID

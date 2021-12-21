@@ -10,9 +10,9 @@ module.exports = {
     "type": "Ed25519Signature2020",
     "created": "2018-02-13T21:26:08Z",
     "capability": "https://example.org/alice/caps#1",
-    "invocationTarget": "https://example.org/alice/caps#1",
+    "invocationTarget": "https://example.org/alice/targets/alpha",
     "proofPurpose": "capabilityInvocation",
-    "proofValue": "z2gV2N4UgLSYoVxS4SP6cAV9ZAW56kxfw5o6dPVRcpUjerXF8yZkWcEUyJJZCKswrCv4c4f4je9EMWMpCojg84HJb",
+    "proofValue": "z5iMZgKnF4EijBBqBVAobmJzZHRYWC3BEYDK3FrN2LABm9XRum1HegKGFvJBLpSwYFw1Ud77hGnSjNx2kiQhBz1hj",
     "verificationMethod": "https://example.com/i/alice/keys/1"
   }
 };

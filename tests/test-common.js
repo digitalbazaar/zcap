@@ -1,6 +1,7 @@
 /*!
  * Copyright (c) 2018-2021 Digital Bazaar, Inc. All rights reserved.
  */
+
 /* eslint-disable indent */
 module.exports = async function(options) {
 
@@ -13,7 +14,7 @@ const {
   CapabilityInvocation,
   CapabilityDelegation,
   ExpirationCaveat,
-  constants: {ZCAP_CONTEXT_URL}
+  constants: {ZCAP_CONTEXT_URL, ZCAP_ROOT_PREFIX}
 } = zcapld;
 
 const {Ed25519Signature2020} =
@@ -24,7 +25,6 @@ const {Ed25519VerificationKey2020} =
 
 const {
   controllers,
-  didDocs,
   privateDidDocs,
   capabilities,
   addToLoader,
@@ -54,34 +54,18 @@ describe('zcapld', () => {
     describe('sign with capabilityInvocation proof purpose', () => {
       it('should succeed w/key invoker', async () => {
         const doc = clone(mock.exampleDoc);
-        const signed = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityInvocation', 0)),
-            date: CONSTANT_DATE
-          }),
-          purpose: new CapabilityInvocation({
-            capability: capabilities.root.alpha.id,
-            invocationTarget: capabilities.root.alpha.id
-          })
+        const signed = await _invoke({
+          doc, controller: alice, date: CONSTANT_DATE,
+          capability: capabilities.root.alpha
         });
         expect(signed).to.deep.equal(mock.exampleDocWithInvocation.alpha);
       });
 
       it('should succeed w/controller invoker', async () => {
         const doc = clone(mock.exampleDoc);
-        const signed = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityInvocation', 0)),
-            date: CONSTANT_DATE
-          }),
-          purpose: new CapabilityInvocation({
-            capability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id
-          })
+        const signed = await _invoke({
+          doc, controller: alice, date: CONSTANT_DATE,
+          capability: capabilities.root.beta
         });
         expect(signed).to.deep.equal(mock.exampleDocWithInvocation.beta);
       });
@@ -90,13 +74,9 @@ describe('zcapld', () => {
         let err;
         try {
           const doc = clone(mock.exampleDoc);
-          await jsigs.sign(doc, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                alice.get('capabilityInvocation', 0)),
-            }),
-            purpose: new CapabilityInvocation()
+          await _invoke({
+            doc, controller: alice,
+            purposeOptions: {}
           });
         } catch(e) {
           err = e;
@@ -109,15 +89,11 @@ describe('zcapld', () => {
         let err;
         try {
           const doc = clone(mock.exampleDoc);
-          await jsigs.sign(doc, {
-            documentLoader: testLoader,
-            suite: new Ed25519Signature2020({
-              key: new Ed25519VerificationKey2020(
-                alice.get('capabilityInvocation', 0)),
-            }),
-            purpose: new CapabilityInvocation({
+          await _invoke({
+            doc, controller: alice,
+            purposeOptions: {
               capability: 'urn:foo'
-            })
+            }
           });
         } catch(e) {
           err = e;
@@ -136,7 +112,8 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: 'urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41',
           parentCapability: capabilities.root.alpha.id,
-          controller: bob.get('capabilityInvocation', 0).id
+          controller: bob.get('capabilityInvocation', 0).id,
+          invocationTarget: capabilities.root.alpha.invocationTarget
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
@@ -162,7 +139,8 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
           parentCapability: capabilities.root.beta.id,
-          controller: bob.id()
+          controller: bob.id(),
+          invocationTarget: capabilities.root.beta.invocationTarget
         };
         //  3. Sign the delegated capability with Alice's delegation key
         //     that was specified as the delegator in the root capability
@@ -205,12 +183,13 @@ describe('zcapld', () => {
   });
 
   context('Verifying capability chains', () => {
-    describe('Invoker and Delegator as keys', () => {
-      it('should verify a self-invoked root capability', async () => {
+    describe('Controller is verification method', () => {
+      it('should verify an invoked root capability', async () => {
         const result = await jsigs.verify(mock.exampleDocWithInvocation.alpha, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.alpha.id
+            expectedRootCapability: capabilities.root.alpha.id,
+            expectedTarget: capabilities.root.alpha.invocationTarget
           }),
           documentLoader: testLoader
         });
@@ -222,7 +201,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(mock.exampleDocWithInvocation.alpha, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: [capabilities.root.alpha.id]
+            expectedRootCapability: capabilities.root.alpha.id,
+            expectedTarget: [capabilities.root.alpha.invocationTarget]
           }),
           documentLoader: testLoader
         });
@@ -238,7 +218,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
-          invocationTarget: capabilities.root.alpha.id,
+          invocationTarget: capabilities.root.alpha.invocationTarget,
           controller: bob.get('capabilityInvocation', 0).id
         };
         //  3. Sign the delegated capability with Alice's delegation key
@@ -311,7 +291,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.alpha.id,
-          invocationTarget: capabilities.root.alpha.id,
+          invocationTarget: capabilities.root.alpha.invocationTarget,
           controller: bob.get('capabilityInvocation', 0).id
         };
         //  3. Sign the delegated capability with Alice's delegation key
@@ -331,21 +311,14 @@ describe('zcapld', () => {
         //      the delegated capability
         //   5. The controller should be Bob's invocation key
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id,
-            invocationTarget: delegatedCapability.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: delegatedCapability
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.alpha.id,
+            expectedRootCapability: capabilities.root.alpha.id,
+            expectedTarget: capabilities.root.alpha.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -355,12 +328,13 @@ describe('zcapld', () => {
       });
     });
 
-    describe('Invoker and Delegator as controllers', () => {
-      it('should verify a self-invoked root capability', async () => {
+    describe('Controller uses verification method', () => {
+      it('should verify an invoked root capability', async () => {
         const result = await jsigs.verify(mock.exampleDocWithInvocation.beta, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget
           }),
           documentLoader: testLoader
         });
@@ -383,29 +357,26 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
       });
 
-      it('should fail to verify a self-invoked root ' +
-        'capability with missing controller', async () => {
-        // invoke the root capability using the invoker key
+      it('should fail to invoke a root zcap with no controller', async () => {
         const root = {
           '@context': ZCAP_CONTEXT_URL,
-          id: uuid()
+          id: uuid(),
+          invocationTarget: uuid()
         };
-        const invocation = await jsigs.sign(root, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alpha.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: didDocs.alpha.id,
-            invocationTarget: didDocs.alpha.id
-          })
+        addToLoader({doc: root});
+        const doc = {
+          '@context': ZCAP_CONTEXT_URL,
+          'example:foo': uuid()
+        };
+        const invocation = await _invoke({
+          doc, controller: alpha, capability: root
         });
         // try to verify a self invoked capability
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: didDocs.alpha.id
+            expectedRootCapability: root.id,
+            expectedTarget: root.invocationTarget
           }),
           documentLoader: testLoader
         });
@@ -428,22 +399,14 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: root.invocationTarget,
             expectedRootCapability: root.id,
+            expectedTarget: root.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -462,22 +425,14 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: root.invocationTarget,
             expectedRootCapability: [root.id],
+            expectedTarget: root.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -496,16 +451,8 @@ describe('zcapld', () => {
         };
         addToLoader({doc: root});
         const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: root.id,
-            invocationTarget: root.invocationTarget
-          })
+        const invocation = await _invoke({
+          doc, controller: bob, capability: root
         });
         // truncate the urn from the start of the root id
         // this will make it an invalid expectedRootCapability
@@ -513,8 +460,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: root.invocationTarget,
             expectedRootCapability,
+            expectedTarget: root.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -689,7 +636,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -722,7 +669,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -756,7 +703,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -766,6 +714,8 @@ describe('zcapld', () => {
       });
 
       it('should fail if expectedRootCapability does not match', async () => {
+        // FIXME: create helper to create delegated zcap w/ uuid(), etc.
+
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
@@ -773,7 +723,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -807,8 +757,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
             expectedRootCapability: 'urn:this-should-matter',
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -819,65 +769,6 @@ describe('zcapld', () => {
         const [error] = result.error.errors;
         error.message.should.contain(
           'does not match actual root capability');
-      });
-
-      it('should fail if target does not match root ID', async () => {
-        const mockRootCapability = clone(capabilities.root.beta);
-        mockRootCapability.id = 'urn:bar';
-        mockRootCapability.invocationTarget = 'urn:foo';
-        addToLoader({doc: mockRootCapability});
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const newCapability = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: mockRootCapability.id,
-          invocationTarget: mockRootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root capability
-        const delegatedCapability = await jsigs.sign(newCapability, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              alice.get('capabilityDelegation', 0))
-          }),
-          purpose: new CapabilityDelegation({
-            capabilityChain: [mockRootCapability.id]
-          })
-        });
-        addToLoader({doc: delegatedCapability});
-        //   4. Use Bob's invocation key that can be found in Bob's
-        //      controller document of keys
-        //   5. The controller should be Bob's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await jsigs.sign(doc, {
-          documentLoader: testLoader,
-          suite: new Ed25519Signature2020({
-            key: new Ed25519VerificationKey2020(
-              bob.get('capabilityInvocation', 0))
-          }),
-          purpose: new CapabilityInvocation({
-            capability: delegatedCapability.id,
-            invocationTarget: mockRootCapability.invocationTarget
-          })
-        });
-        const result = await jsigs.verify(invocation, {
-          suite: new Ed25519Signature2020(),
-          purpose: new CapabilityInvocation({
-            expectedTarget: mockRootCapability.invocationTarget,
-            suite: new Ed25519Signature2020()
-          }),
-          documentLoader: testLoader
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.contain(
-          'root capability must not specify a different invocation target.');
       });
 
       it('should verify a capability chain of depth 2 and a ' +
@@ -893,7 +784,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         new ExpirationCaveat({expires}).update(newCapability);
@@ -928,7 +819,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020(),
             caveat: new ExpirationCaveat()
           }),
@@ -951,7 +843,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         new ExpirationCaveat({expires}).update(newCapability);
@@ -986,7 +878,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020(),
             caveat: new ExpirationCaveat()
           }),
@@ -1007,7 +900,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
           allowedAction: 'write'
         };
@@ -1043,7 +936,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             expectedAction: 'write',
             suite: new Ed25519Signature2020()
           }),
@@ -1064,7 +958,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
           allowedAction: 'write'
         };
@@ -1123,7 +1017,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
           allowedAction: 'write'
         };
@@ -1159,7 +1053,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020()
           }),
           documentLoader: testLoader
@@ -1181,7 +1076,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1216,7 +1111,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020(),
             expectedAction: 'write'
           }),
@@ -1237,7 +1133,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1295,7 +1191,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.id,
+          invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id()
         };
         //  4. Sign the delegated capability with Alice's delegation key;
@@ -1330,7 +1226,8 @@ describe('zcapld', () => {
         const result = await jsigs.verify(invocation, {
           suite: new Ed25519Signature2020(),
           purpose: new CapabilityInvocation({
-            expectedTarget: capabilities.root.beta.id,
+            expectedRootCapability: capabilities.root.beta.id,
+            expectedTarget: capabilities.root.beta.invocationTarget,
             suite: new Ed25519Signature2020(),
             expectedAction: 'read'
           }),
@@ -1352,7 +1249,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1413,7 +1310,7 @@ describe('zcapld', () => {
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1480,7 +1377,7 @@ describe('zcapld', () => {
             id: uuid(),
             allowedAction: 'read',
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1547,7 +1444,7 @@ describe('zcapld', () => {
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1614,7 +1511,7 @@ describe('zcapld', () => {
             id: uuid(),
             allowedAction: ['read', 'write'],
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1675,7 +1572,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1736,7 +1633,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1799,7 +1696,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1864,7 +1761,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -1938,7 +1835,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -2016,7 +1913,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.invocationTarget,
               controller: bob.id()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
@@ -2087,7 +1984,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.invocationTarget,
               controller: bob.id()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
@@ -2159,7 +2056,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.invocationTarget,
               controller: bob.id(),
               expires: new Date(delegated.getTime() + ttl / 2).toJSON()
             };
@@ -2232,7 +2129,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: capabilities.root.beta.id,
-              invocationTarget: capabilities.root.beta.id,
+              invocationTarget: capabilities.root.beta.invocationTarget,
               controller: bob.id(),
               expires: new Date(delegated.getTime() + ttl + 1).toJSON()
             };
@@ -2299,7 +2196,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -2357,7 +2254,8 @@ describe('zcapld', () => {
           const result = await jsigs.verify(invocation, {
             suite: new Ed25519Signature2020(),
             purpose: new CapabilityInvocation({
-              expectedTarget: capabilities.root.beta.id,
+              expectedRootCapability: capabilities.root.beta.id,
+              expectedTarget: capabilities.root.beta.invocationTarget,
               suite: new Ed25519Signature2020()
             }),
             documentLoader: testLoader
@@ -2375,7 +2273,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: ['urn:other', bob.id()]
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -2433,7 +2331,8 @@ describe('zcapld', () => {
           const result = await jsigs.verify(invocation, {
             suite: new Ed25519Signature2020(),
             purpose: new CapabilityInvocation({
-              expectedTarget: capabilities.root.beta.id,
+              expectedRootCapability: capabilities.root.beta.id,
+              expectedTarget: capabilities.root.beta.invocationTarget,
               suite: new Ed25519Signature2020()
             }),
             documentLoader: testLoader
@@ -2451,7 +2350,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -2519,7 +2418,8 @@ describe('zcapld', () => {
           const result = await jsigs.verify(invocation, {
             suite: new Ed25519Signature2020(),
             purpose: new CapabilityInvocation({
-              expectedTarget: capabilities.root.beta.id,
+              expectedRootCapability: capabilities.root.beta.id,
+              expectedTarget: capabilities.root.beta.invocationTarget,
               suite: new Ed25519Signature2020(),
               inspectCapabilityChain,
             }),
@@ -2542,7 +2442,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id(),
             expires: new Date(Date.now() + ttl / 2).toJSON()
           };
@@ -2612,7 +2512,8 @@ describe('zcapld', () => {
           const result = await jsigs.verify(invocation, {
             suite: new Ed25519Signature2020(),
             purpose: new CapabilityInvocation({
-              expectedTarget: capabilities.root.beta.id,
+              expectedRootCapability: capabilities.root.beta.id,
+              expectedTarget: capabilities.root.beta.invocationTarget,
               suite: new Ed25519Signature2020(),
               inspectCapabilityChain,
               maxDelegationTtl: ttl,
@@ -2634,7 +2535,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -2707,7 +2608,8 @@ describe('zcapld', () => {
           const result = await jsigs.verify(invocation, {
             suite: new Ed25519Signature2020(),
             purpose: new CapabilityInvocation({
-              expectedTarget: capabilities.root.beta.id,
+              expectedRootCapability: capabilities.root.beta.id,
+              expectedTarget: capabilities.root.beta.invocationTarget,
               suite: new Ed25519Signature2020(),
               inspectCapabilityChain,
             }),
@@ -2776,7 +2678,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -2836,7 +2738,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -2864,7 +2767,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -2928,7 +2831,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020(),
                 currentDate,
               }),
@@ -2957,7 +2861,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3021,7 +2925,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020(),
                 currentDate,
               }),
@@ -3054,7 +2959,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3118,7 +3023,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020(),
                 currentDate,
               }),
@@ -3153,7 +3059,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
@@ -3212,7 +3118,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3247,7 +3154,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3306,7 +3213,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3340,7 +3248,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3400,7 +3308,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3434,7 +3343,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3494,7 +3403,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3530,7 +3440,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3595,7 +3505,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3631,7 +3542,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3695,7 +3606,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3736,7 +3648,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3797,7 +3709,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3833,7 +3746,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id(),
               expires
             };
@@ -3899,7 +3812,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -3929,7 +3843,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
@@ -3993,7 +3907,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -4018,7 +3933,7 @@ describe('zcapld', () => {
               '@context': ZCAP_CONTEXT_URL,
               id: uuid(),
               parentCapability: rootCapability.id,
-              invocationTarget: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
               controller: bob.id()
             };
             //  3. Sign the delegated capability with Alice's delegation key;
@@ -4082,7 +3997,8 @@ describe('zcapld', () => {
             const result = await jsigs.verify(invocation, {
               suite: new Ed25519Signature2020(),
               purpose: new CapabilityInvocation({
-                expectedTarget: rootCapability.id,
+                expectedRootCapability: rootCapability.id,
+                expectedTarget: rootCapability.invocationTarget,
                 suite: new Ed25519Signature2020()
               }),
               documentLoader: testLoader
@@ -4108,7 +4024,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -4207,7 +4123,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -4313,7 +4229,7 @@ describe('zcapld', () => {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
-            invocationTarget: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
             controller: bob.id()
           };
           //  3. Sign the delegated capability with Alice's delegation key;
@@ -4407,9 +4323,13 @@ describe('zcapld', () => {
       it('should verify a capability chain with hierachical delegation',
         async () => {
 
+        const rootTarget =
+          'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971';
         const rootCapability = {
-          id: 'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971',
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
+          invocationTarget: rootTarget
         };
         addToLoader({doc: rootCapability});
 
@@ -4420,7 +4340,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -4506,9 +4426,13 @@ describe('zcapld', () => {
         'than the parent capability',
         async () => {
 
+        const rootTarget =
+          'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e';
         const rootCapability = {
-          id: 'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e',
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
+          invocationTarget: rootTarget
         };
         addToLoader({doc: rootCapability});
 
@@ -4519,7 +4443,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -4615,7 +4539,8 @@ describe('zcapld', () => {
 
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
-          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
         };
@@ -4709,7 +4634,8 @@ describe('zcapld', () => {
 
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
-          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
         };
@@ -4815,7 +4741,8 @@ describe('zcapld', () => {
 
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
-          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
         };
@@ -4911,7 +4838,8 @@ describe('zcapld', () => {
 
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
-          id: `urn:zcap:root:${encodeURIComponent(rootTarget)}`,
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
         };
@@ -5015,9 +4943,13 @@ describe('zcapld', () => {
         'allowTargetAttenuation is not explicitly allowed',
         async () => {
 
+        const rootTarget =
+          'https://example.com/edvs/2c2fe4ab-ff54-4a82-b103-f806f50d364e';
         const rootCapability = {
-          id: 'https://example.com/edvs/2c2fe4ab-ff54-4a82-b103-f806f50d364e',
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
+          invocationTarget: rootTarget
         };
         addToLoader({doc: rootCapability});
 
@@ -5028,7 +4960,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -5119,9 +5051,13 @@ describe('zcapld', () => {
         'and inspectCapabilityChain',
         async () => {
 
+        const rootTarget =
+          'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144';
         const rootCapability = {
-          id: 'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144',
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
+          invocationTarget: rootTarget
         };
         addToLoader({doc: rootCapability});
 
@@ -5132,7 +5068,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -5244,7 +5180,7 @@ describe('zcapld', () => {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
           parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
           controller: bob.id()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
@@ -5351,8 +5287,6 @@ describe('zcapld', () => {
   });
 });
 
-};
-
 function _checkCapabilityChain({capabilityChain}) {
   for(const c of capabilityChain) {
     c.should.be.an('object');
@@ -5360,3 +5294,46 @@ function _checkCapabilityChain({capabilityChain}) {
     c.should.have.property('controller');
   }
 }
+
+// helper for creating invocations
+// pass `key` OR `controller` (not both)
+// pass `capability` OR `purposeOptions` (not both)
+async function _invoke({
+  doc, key, controller, date, capability, purposeOptions
+}) {
+  if(controller) {
+    key = controller.get('capabilityInvocation', 0);
+  }
+  let purpose;
+  if(capability) {
+    // common case
+    purpose = new CapabilityInvocation({
+      capability: capability.id,
+      invocationTarget: capability.invocationTarget
+    });
+  } else {
+    // custom case
+    purpose = new CapabilityInvocation(purposeOptions);
+  }
+  return jsigs.sign(doc, {
+    documentLoader: testLoader,
+    suite: new Ed25519Signature2020({
+      key: new Ed25519VerificationKey2020(key),
+      date
+    }),
+    purpose
+  });
+}
+
+async function _delegate({newCapability, key, suiteOptions, purposeOptions}) {
+  return jsigs.sign(newCapability, {
+    documentLoader: testLoader,
+    suite: new Ed25519Signature2020({
+      key: new Ed25519VerificationKey2020(key),
+      ...suiteOptions
+    }),
+    purpose: new CapabilityDelegation(purposeOptions)
+  });
+}
+
+};

@@ -15,6 +15,18 @@
   actually be restricted -- a system can only force users to use data model
   and protocol-external mechanisms to delegate. This change keeps all
   delegation within the data model/protocol for improved auditability.
+- **BREAKING**: Removed support for vocab-modeled custom caveats. Custom
+  caveats should instead be modeled a combination of capability actions
+  and path-based attenuation of invocation targets. This approach provides
+  the flexibility required to model custom caveats without the overhead of
+  building and maintaining custom contexts and vocabularies. The common case
+  is that custom caveats are specific to particular APIs rather than shared
+  commonly across many different standardized APIs -- so it is unnecessarily
+  burdensome to require the creation ofLinked Data vocabularies and contexts
+  to represent them when using localized API-specific capability actions and
+  invocation target paths will suffice. Common caveats such as expiration
+  dates are provided as a part of the core model -- and should any other
+  common caveats become evident, they can be added to the core model over time.
 
 ## 5.2.0 - 2021-12-20
 

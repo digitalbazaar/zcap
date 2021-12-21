@@ -27,6 +27,16 @@
   invocation target paths will suffice. Common caveats such as expiration
   dates are provided as a part of the core model -- and should any other
   common caveats become evident, they can be added to the core model over time.
+- **BREAKING**: Removed support for allowing the last delegated zcap in a
+  capability chain to be expressed by reference. Instead, if the last zcap in
+  the chain is delegated, it MUST be fully embedded. All other zcaps MUST be
+  expressed via reference to their ID. Therefore, a capability chain MUST
+  always consist of: the root zcap ID, any non-last delegated zcap IDs, and,
+  for chains longer than 1 (excluding the final zcap or 2 if inclusive), the
+  fully embedded last delegated zcap. This simplifies implementations, removes
+  any concerns around mutability in dereferenced zcaps, and guarantees that all
+  zcaps in a chain are available in an invocation. It does require that the
+  invoker send the entire chain, however, this considered the best trade off.
 
 ## 5.2.0 - 2021-12-20
 

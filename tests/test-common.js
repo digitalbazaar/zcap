@@ -199,7 +199,7 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
-      addToLoader({doc: delegatedCapability});
+
       // verify the delegation chain
       const result = await _verifyDelegation({
         delegation: delegatedCapability
@@ -226,7 +226,7 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
-      addToLoader({doc: delegatedCapability});
+
       // verify the delegation chain
       const result = await _verifyDelegation({
         delegation: delegatedCapability, purposeOptions: {
@@ -258,6 +258,7 @@ describe('zcapld', () => {
         capabilityChain: [capabilities.root.alpha.id]
       });
       addToLoader({doc: delegatedCapability});
+
       //   4. Use Bob's invocation key that was assigned as invoker in
       //      the delegated capability
       //   5. The controller should be Bob's invocation key
@@ -4026,9 +4027,13 @@ describe('zcapld', () => {
 
       it('should fail to verify an increasingly permissive chain ' +
         'w/inspectCapabilityChain', async () => {
+        const rootTarget =
+          'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee';
         const rootCapability = {
-          id: 'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee',
+          // FIXME: add zcapld helper for creating root zcaps from a target
+          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
+          invocationTarget: rootTarget
         };
         addToLoader({doc: rootCapability});
 

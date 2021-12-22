@@ -3523,13 +3523,14 @@ describe('zcapld', () => {
 
         const result = await _verifyDelegation({
           delegation: dianaDelCap, purposeOptions: {
-            allowTargetAttenuation: true
+            allowTargetAttenuation: true,
+            inspectCapabilityChain() {return {valid: true};}
           }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        const [error] = result.error.errors;
+        const [error] = result.error.errors[0].errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
       });
@@ -3928,7 +3929,7 @@ describe('zcapld', () => {
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        const [error] = result.error.errors;
+        const [error] = result.error.errors[0].errors;
         error.message.should.contain('must be equivalent to its parent');
       });
 

@@ -3649,8 +3649,7 @@ describe('zcapld', () => {
             // the `invalidTarget` -- it's just that the zcap being used
             // is not authorized for that target.
             expectedTarget: [rootTarget, invalidTarget],
-            expectedRootCapability: rootCapability.id,
-            invocationTarget: invalidTarget
+            expectedRootCapability: rootCapability.id
           }
         });
         expect(result).to.exist;

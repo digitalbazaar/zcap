@@ -37,6 +37,8 @@
   any concerns around mutability in dereferenced zcaps, and guarantees that all
   zcaps in a chain are available in an invocation. It does require that the
   invoker send the entire chain, however, this considered the best trade off.
+- **BREAKING**: Removed ability to expire a root capability. There is no
+  use case for this, so the complexity has been removed.
 
 ## 5.2.0 - 2021-12-20
 

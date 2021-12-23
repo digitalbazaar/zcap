@@ -3,7 +3,6 @@
  */
 'use strict';
 
-const {SECURITY_CONTEXT_URL} = require('jsonld-signatures');
 const zcapld = require('../lib');
 const {constants: {ZCAP_CONTEXT_URL}} = zcapld;
 
@@ -88,10 +87,6 @@ mock.addToLoader = ({doc}) => {
   if(_loaderData.has(doc.id)) {
     throw new Error(
       `ID of document has already been registered in the loader: ${doc.id}`);
-  }
-  // FIXME: remove this hack
-  if(!('@context' in doc)) {
-    doc = {'@context': SECURITY_CONTEXT_URL, ...doc};
   }
   _loaderData.set(doc.id, doc);
 };

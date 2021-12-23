@@ -3285,7 +3285,7 @@ describe('zcapld', () => {
         should.exist(result.error.errors);
         result.error.errors.should.have.length(1);
         result.error.errors[0].message.should.equal(
-          'The capabability chain exceeds the maximum allowed length of 2.');
+          'The capability chain exceeds the maximum allowed length of 2.');
         // should not get to check chain because of invalid chain length
         checkedChain.should.be.false;
       });
@@ -3376,6 +3376,7 @@ describe('zcapld', () => {
           'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971';
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
           invocationTarget: rootTarget
@@ -3454,6 +3455,7 @@ describe('zcapld', () => {
           'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e';
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
           invocationTarget: rootTarget
@@ -3539,6 +3541,7 @@ describe('zcapld', () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
@@ -3609,6 +3612,7 @@ describe('zcapld', () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
@@ -3697,6 +3701,7 @@ describe('zcapld', () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
@@ -3773,6 +3778,7 @@ describe('zcapld', () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           invocationTarget: rootTarget,
           controller: alice.id()
@@ -3860,6 +3866,7 @@ describe('zcapld', () => {
           'https://example.com/edvs/2c2fe4ab-ff54-4a82-b103-f806f50d364e';
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
           invocationTarget: rootTarget
@@ -3938,6 +3945,7 @@ describe('zcapld', () => {
           'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144';
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
           invocationTarget: rootTarget
@@ -4032,6 +4040,7 @@ describe('zcapld', () => {
           'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee';
         const rootCapability = {
           // FIXME: add zcapld helper for creating root zcaps from a target
+          '@context': ZCAP_CONTEXT_URL,
           id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
           controller: alice.id(),
           invocationTarget: rootTarget

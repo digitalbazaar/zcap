@@ -3944,7 +3944,8 @@ async function _invoke({
   if(capability) {
     // common case
     purpose = new CapabilityInvocation({
-      capability: capability.id,
+      // MUST pass root zcap as a string, delegated zcap as an object
+      capability: capability.parentCapability ? capability : capability.id,
       capabilityAction,
       invocationTarget: capability.invocationTarget
     });

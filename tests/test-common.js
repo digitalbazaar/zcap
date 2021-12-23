@@ -3328,8 +3328,7 @@ describe('zcapld', () => {
 
         const result = await _verifyDelegation({
           delegation: dianaDelCap, purposeOptions: {
-            allowTargetAttenuation: true,
-            inspectCapabilityChain() {return {valid: true};}
+            allowTargetAttenuation: true
           }
         });
         expect(result).to.exist;

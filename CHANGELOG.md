@@ -5,6 +5,10 @@
 ### Changed
 - **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates
   optionality, simplifying implementations.
+- **BREAKING**: Root zcaps MUST be passed by reference to their ID when invoking
+  and they will be expressed by reference (just their ID) in a capability
+  invocation proof. Delegated zcaps MUST be fully embedded (pass full object)
+  when invoking and they will be fully embedded in a capability invocation proof.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

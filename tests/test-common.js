@@ -2015,10 +2015,7 @@ describe('zcapld', () => {
         let err;
         try {
           result = new CapabilityDelegation({
-            capabilityChain: [
-              'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
-            ],
-            currentDate: null,
+            currentDate: null
           });
         } catch(e) {
           err = e;

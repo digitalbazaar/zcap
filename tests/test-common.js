@@ -1549,7 +1549,7 @@ describe('zcapld', () => {
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
-          expires: new Date(delegated.getTime() + ttl / 2).toJSON()
+          expires: new Date(delegated.getTime() + ttl / 2).toISOString()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root
@@ -1606,7 +1606,7 @@ describe('zcapld', () => {
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
-          expires: new Date(delegated.getTime() + ttl + 1).toJSON()
+          expires: new Date(delegated.getTime() + ttl + 1).toISOString()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root
@@ -1831,7 +1831,7 @@ describe('zcapld', () => {
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
           controller: bob.id(),
-          expires: new Date(Date.now() + ttl / 2).toJSON()
+          expires: new Date(Date.now() + ttl / 2).toISOString()
         };
         //  3. Sign the delegated capability with Alice's delegation key;
         //     Alice's ID was specified as the delegator in the root
@@ -2007,20 +2007,40 @@ describe('zcapld', () => {
         err.should.be.instanceof(TypeError);
         err.message.should.contain('must be a Date');
       });
+      it('should fail to verify root capability with `expires`',
+        async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:d3e905ba-6430-11ec-beae-10bf48838a41';
+        rootCapability.expires = (new Date()).toISOString();
+        addToLoader({doc: rootCapability});
+
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: alice, capability: rootCapability
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain(
+          'Root capability must not have an "expires" field.');
+      });
       it('should verify invoking a capability with `expires`',
         async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:9ff561b8-0b3f-4bbc-af00-03ba785a7fc6';
+        addToLoader({doc: rootCapability});
 
         let expires = new Date();
         expires.setHours(expires.getHours() + 1);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:9ff561b8-0b3f-4bbc-af00-03ba785a7fc6';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2076,16 +2096,14 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:1c919b19-baab-45ee-b0ef-24309dfb355d';
+        addToLoader({doc: rootCapability});
 
         // the capability is presently expired
         let expires = new Date();
         expires.setHours(expires.getHours() - 10);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:1c919b19-baab-45ee-b0ef-24309dfb355d';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2147,16 +2165,14 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
+        addToLoader({doc: rootCapability});
 
         // the capability is presently expired
         let expires = new Date();
         expires.setHours(expires.getHours() - 50);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2215,7 +2231,8 @@ describe('zcapld', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.equal('The root capability has expired.');
+        error.message.should.equal(
+          'A capability in the delegation chain has expired.');
       });
 
       it('should fail invoking a capability with `expires` ' +
@@ -2223,16 +2240,14 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
+        addToLoader({doc: rootCapability});
 
         // the capability is presently valid
         let expires = new Date();
         expires.setHours(expires.getHours() + 50);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2292,78 +2307,8 @@ describe('zcapld', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.equal('The root capability has expired.');
-      });
-
-      it('should fail invoking a capability with missing `expires` ' +
-        'in the first delegated capability',
-        async () => {
-        // the root capability has expires, but the delegation does not
-
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
-
-        let expires = new Date();
-        expires.setHours(expires.getHours() + 1);
-        expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:7c496483-8e82-4c7c-867d-66874ca356f6';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
-        const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
-        });
-        addToLoader({doc: bobDelCap});
-
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
-          controller: carol.id(),
-          expires
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
-        const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [rootCapability.id, bobDelCap]
-        });
-        addToLoader({doc: carolDelCap});
-
-        //   7. Use Carol's invocation key that can be found in Carol's
-        //      controller document of keys
-        //   8. The controller should be Carol's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        should.exist(result.error);
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.include(
-          'delegated capability must be equivalent or more restrictive');
+        error.message.should.equal(
+          'A capability in the delegation chain has expired.');
       });
 
       it('should fail invoking a capability with missing `expires` in ' +
@@ -2374,15 +2319,13 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
+        addToLoader({doc: rootCapability});
 
         let expires = new Date();
         expires.setHours(expires.getHours() + 1);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2437,93 +2380,20 @@ describe('zcapld', () => {
           'delegated capability must be equivalent or more restrictive');
       });
 
-      it('should fail invoking a capability with expired ' +
-        'root capability', async () => {
-        // the entire chain has the same expiration date in the past
-
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
-
-        let expires = new Date();
-        expires.setHours(expires.getHours() - 1);
-        expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:028731be-69ae-460a-a4c6-5175883358a2';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id(),
-          expires
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
-        const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
-        });
-        addToLoader({doc: bobDelCap});
-
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
-          controller: carol.id(),
-          expires
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
-        const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [rootCapability.id, bobDelCap]
-        });
-        addToLoader({doc: carolDelCap});
-
-        //   7. Use Carol's invocation key that can be found in Carol's
-        //      controller document of keys
-        //   8. The controller should be Carol's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        should.exist(result.error);
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.contain('The root capability has expired.');
-      });
-
       it('should fail invoking a capability with ' +
-        'root capability that expires on the Unix epoch', async () => {
-        // the entire chain has the same expiration date in the past
+        'capability that expires on the Unix epoch', async () => {
+        // the delegated chain has expiration date in the past
 
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:cbddee5a-09fb-44db-a921-70c36436c253';
+        addToLoader({doc: rootCapability});
 
         // set the expires to the Unix epoch
         let expires = new Date(0);
         expires = expires.toISOString();
-
-        rootCapability.id = 'urn:zcap:cbddee5a-09fb-44db-a921-70c36436c253';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2575,28 +2445,26 @@ describe('zcapld', () => {
         should.exist(result.error);
         result.error.errors.should.have.length(1);
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'root capability has expired');
+        error.message.should.equal(
+          'A capability in the delegation chain has expired.');
       });
 
       it('should fail invoking a capability with expired ' +
         'second delegated capability', async () => {
-        // the root capability specifies a date in the future, but
+        // bob's capability specifies a date in the future, but
         // the delegation from bob to carol specifies a date that is in the
         // past
 
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:3c034da3-8b5e-4fdc-b75d-8c37d73cd21e';
+        addToLoader({doc: rootCapability});
 
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:3c034da3-8b5e-4fdc-b75d-8c37d73cd21e';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2659,22 +2527,19 @@ describe('zcapld', () => {
 
       it('should fail invoking a capability with second delegated ' +
         'capability that expires on the Unix epoch', async () => {
-        // the root capability specifies a date in the future, but
-        // the delegation from bob to carol specifies a date that is in the
-        // past
+        // bob's capability specifies a date in the future, but
+        // the delegation from bob to carol specifies unix epoch date
 
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:6286a906-619b-4f5b-a8ae-af9fb774b070';
+        addToLoader({doc: rootCapability});
 
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:6286a906-619b-4f5b-a8ae-af9fb774b070';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2735,102 +2600,21 @@ describe('zcapld', () => {
       });
 
       it('should fail invoking a capability with ' +
-      'first delegated capability that expires after root', async () => {
-        // the root capability specifies a date in the future, but
-        // the delegation from bob to carol specifies a date that is in the
-        // past
+        'second delegated capability that expires after first', async () => {
+        // bob's capability specifies a date in the future, but
+        // the delegation from bob to carol specifies a date that is even
+        // further into the future
 
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
-
-        let expires = new Date();
-        expires.setHours(expires.getHours() + 10);
-        expires = expires.toISOString();
+        const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:1e7dfae9-85a3-40d7-97ea-20105f0b9d99';
-        rootCapability.expires = expires;
         addToLoader({doc: rootCapability});
-
-        // set expires for this delegation beyond the expiration of the
-        // root capability, which is not allowed
-        expires = new Date();
-        expires.setHours(expires.getHours() + 100);
-        expires = expires.toISOString();
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id(),
-          expires
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
-        const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
-        });
-        addToLoader({doc: bobDelCap});
-
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
-          controller: carol.id(),
-          expires
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
-        const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [rootCapability.id, bobDelCap]
-        });
-        addToLoader({doc: carolDelCap});
-
-        //   7. Use Carol's invocation key that can be found in Carol's
-        //      controller document of keys
-        //   8. The controller should be Carol's ID
-        const doc = clone(mock.exampleDoc);
-        const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
-        });
-        const result = await _verifyInvocation({
-          invocation, rootCapability
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.false;
-        should.exist(result.error);
-        result.error.name.should.equal('VerificationError');
-        const [error] = result.error.errors;
-        error.message.should.contain(
-          'delegated capability must be equivalent or more restrictive');
-      });
-
-      it('should fail invoking a capability with ' +
-        'second delegated capability that expires after root', async () => {
-        // the root capability specifies a date in the future, but
-        // the delegation from bob to carol specifies a date that is in the
-        // past
-
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
 
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        rootCapability.id = 'urn:zcap:79eed455-ff71-4302-96b5-436de2ca9190';
-        rootCapability.expires = expires;
-        addToLoader({doc: rootCapability});
-
         const bobCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
@@ -2853,7 +2637,7 @@ describe('zcapld', () => {
         //   5. The controller should be Carol's ID
 
         // set expires for this delegation beyond the expiration of the
-        // root capability, which is not allowed
+        // parent capability, which is not allowed
         expires = new Date();
         expires.setHours(expires.getHours() + 100);
         expires = expires.toISOString();
@@ -2899,8 +2683,7 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
-
+        const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:a0d0360b-7e93-4c9c-8804-69ca426c60c3';
         addToLoader({doc: rootCapability});
 
@@ -2965,8 +2748,7 @@ describe('zcapld', () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
-        const rootCapability = Object.assign({}, capabilities.root.beta);
-
+        const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:2c41869c-95bb-4e23-9bcd-2fbb320bb440';
         addToLoader({doc: rootCapability});
 

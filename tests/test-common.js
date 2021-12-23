@@ -155,8 +155,29 @@ describe('zcapld', () => {
       }
       expect(err).to.exist;
       expect(err.message).to.equal(
-        'Cannot compute capability chain; capability has no ' +
-        '"parentCapability".');
+        'Cannot compute capability chain; no "parentCapability" passed.');
+    });
+
+    it('should success when passing only "parentCapability"', async () => {
+      // Create a delegated capability
+      //   1. Parent capability should point to the root capability
+      //   2. The controller should be Bob's invocation key
+      const newCapability = {
+        '@context': ZCAP_CONTEXT_URL,
+        id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
+        parentCapability: capabilities.root.beta.id,
+        controller: bob.id(),
+        invocationTarget: capabilities.root.beta.invocationTarget
+      };
+      //  3. Sign the delegated capability with Alice's delegation key
+      //     that was specified as the delegator in the root capability
+      const delegatedCapability = await _delegate({
+        newCapability, delegator: alice, date: CONSTANT_DATE,
+        purposeOptions: {
+          parentCapability: capabilities.root.beta
+        }
+      });
+      expect(delegatedCapability).to.deep.equal(capabilities.delegated.beta);
     });
   });
 

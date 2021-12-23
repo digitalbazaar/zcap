@@ -80,7 +80,7 @@ describe('zcapld', () => {
         err = e;
       }
       expect(err).to.exist;
-      expect(err.message).to.equal('"capability" is required.');
+      expect(err.message).to.equal('"capability" must be a string or object.');
     });
 
     it('should fail when missing "invocationTarget"', async () => {
@@ -97,7 +97,7 @@ describe('zcapld', () => {
         err = e;
       }
       expect(err).to.exist;
-      expect(err.message).to.equal('"invocationTarget" is required.');
+      expect(err.message).to.equal('"invocationTarget" must be a string.');
     });
   });
 
@@ -2015,6 +2015,7 @@ describe('zcapld', () => {
         let err;
         try {
           result = new CapabilityDelegation({
+            expectedTarget: 'urn: foo',
             currentDate: null
           });
         } catch(e) {

@@ -301,7 +301,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       //   4. Use Bob's invocation key that was assigned as invoker in
       //      the delegated capability
@@ -571,7 +570,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
       const result = await _verifyDelegation({
         delegation: delegatedCapability
       });
@@ -596,7 +594,7 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
+
       //   4. Use Bob's invocation key that can be found in Bob's
       //      controller document of keys
       //   5. The controller should be Bob's ID
@@ -632,7 +630,7 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
+
       //   4. Use Bob's invocation key that can be found in Bob's
       //      controller document of keys
       //   5. The controller should be Bob's ID
@@ -676,7 +674,7 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
+
       //   5. Use Bob's invocation key that can be found in Bob's
       //      controller document of keys
       //   6. The controller should be Bob's ID
@@ -710,7 +708,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       // bob tries to invoke without setting any `capabilityAction`, so
       // an invocation proof that matches the expected action is not found
@@ -750,7 +747,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       // bob tries to invoke and sets `capabilityAction` to something other
       // an invocation proof that matches the expected action is not found
@@ -784,7 +780,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       // bob invokes using `capabilityAction` of 'write' -- and since that
       // is an expected action by the verifier, it is allowed
@@ -815,7 +810,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       // bob invokes using no specified capability action but the verifier
       // is expecting one, so no matching invocation proof should be found
@@ -852,7 +846,6 @@ describe('zcapld', () => {
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
-      addToLoader({doc: delegatedCapability});
 
       // bob tries to invoke using the 'write' capability action, but since
       // the verifier is expecting 'read', no matching invocation proof is
@@ -892,8 +885,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        // FIXME: remove all `addToLoader` calls for delegated zcaps
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -911,7 +902,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
@@ -937,8 +927,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        // FIXME: remove all `addToLoader` calls for delegated zcaps
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -977,7 +965,6 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobDelCap.id]
           }
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
@@ -1008,8 +995,6 @@ describe('zcapld', () => {
           // intentionally reference `alpha` instead of `beta` to trigger error
           capabilityChain: [capabilities.root.alpha.id]
         });
-        // FIXME: remove all `addToLoader` calls for delegated zcaps
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1027,7 +1012,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
@@ -1058,7 +1042,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1077,7 +1060,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
         result.verified.should.be.false;
@@ -1108,7 +1091,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1127,7 +1109,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
         result.verified.should.be.false;
@@ -1158,7 +1140,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1177,7 +1158,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
         result.verified.should.be.false;
@@ -1208,7 +1189,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1227,7 +1207,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
         result.verified.should.be.true;
@@ -1252,7 +1232,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1271,7 +1250,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         should.exist(result);
         result.verified.should.be.true;
@@ -1297,7 +1276,6 @@ describe('zcapld', () => {
         });
         // change ID to something else (breaking signature)
         bobDelCap.id = uuid();
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1315,7 +1293,7 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -1340,7 +1318,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1360,7 +1337,7 @@ describe('zcapld', () => {
         });
         // change ID to something else (breaking signature)
         carolDelCap.id = uuid();
-        addToLoader({doc: carolDelCap});
+
         const result = await _verifyDelegation({delegation: carolDelCap});
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -1387,7 +1364,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1405,7 +1381,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1447,7 +1422,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1465,7 +1439,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1511,7 +1484,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1531,7 +1503,6 @@ describe('zcapld', () => {
           date: new Date(0),
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({
           delegation: carolDelCap, purposeOptions: {
@@ -1567,7 +1538,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1585,7 +1555,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({
           delegation: carolDelCap, purposeOptions: {
@@ -1625,7 +1594,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice, date: delegated,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1644,7 +1612,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({
           delegation: carolDelCap, purposeOptions: {
@@ -1682,7 +1649,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice, date: delegated,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1701,7 +1667,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         const result = await _verifyDelegation({
           delegation: carolDelCap, purposeOptions: {
@@ -1733,7 +1698,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1751,14 +1715,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap,
+          doc, invoker: carol, capability: carolDelCap,
           capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
@@ -1787,7 +1750,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1805,14 +1767,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap,
+          doc, invoker: carol, capability: carolDelCap,
           capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
@@ -1841,7 +1802,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1859,14 +1819,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1912,7 +1871,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -1931,14 +1889,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1986,7 +1943,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2004,14 +1960,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -2135,7 +2090,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2154,14 +2108,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2194,7 +2147,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
@@ -2240,7 +2192,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2259,13 +2210,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
+
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         // the capability was still valid 20 hours ago
         const currentDate = new Date();
@@ -2310,7 +2261,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2329,14 +2279,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         // the capability was also expired 20 hours ago
         const currentDate = new Date();
@@ -2386,7 +2335,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2405,14 +2353,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         // the capability will have expired in 100 hours
         const currentDate = new Date();
@@ -2465,7 +2412,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2483,14 +2429,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2533,7 +2478,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2552,14 +2496,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2604,7 +2547,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2628,14 +2570,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2679,7 +2620,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2702,14 +2642,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2754,7 +2693,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2779,14 +2717,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2825,7 +2762,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2849,14 +2785,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2890,7 +2825,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2914,14 +2848,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2955,7 +2888,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -2973,7 +2905,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         // Create a delegated capability for Diana
         //   4. Parent capability should point to Carol's capability
@@ -2993,7 +2924,6 @@ describe('zcapld', () => {
             capabilities.root.beta.id, bobDelCap.id, carolDelCap
           ]
         });
-        addToLoader({doc: dianaDelCap});
 
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -3035,7 +2965,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3053,7 +2982,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         // Create a delegated capability for Diana
         //   4. Parent capability should point to Carol's capability
@@ -3092,7 +3020,6 @@ describe('zcapld', () => {
             capabilityChain: [capabilities.root.beta.id, bobDelCap, carolDelCap]
           }
         });
-        addToLoader({doc: dianaDelCap});
 
         const result = await _verifyDelegation({
           delegation: dianaDelCap
@@ -3125,7 +3052,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [capabilities.root.beta.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3143,7 +3069,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         // Create a delegated capability for Diana
         //   4. Parent capability should point to Carol's capability
@@ -3163,7 +3088,6 @@ describe('zcapld', () => {
             capabilities.root.beta.id, bobDelCap.id, carolDelCap
           ]
         });
-        addToLoader({doc: dianaDelCap});
 
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -3470,7 +3394,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3492,14 +3415,13 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
@@ -3542,7 +3464,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3564,7 +3485,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
@@ -3576,7 +3496,7 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol,
           purposeOptions: {
-            capability: carolCap,
+            capability: carolDelCap,
             capabilityAction: 'read',
             invocationTarget: invalidTarget
           }
@@ -3633,7 +3553,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3655,7 +3574,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys
@@ -3712,7 +3630,6 @@ describe('zcapld', () => {
           newCapability: bobCap, delegator: alice,
           capabilityChain: [rootCapability.id]
         });
-        addToLoader({doc: bobDelCap});
 
         // Create a delegated capability for Carol
         //   4. Parent capability should point to Bob's capability
@@ -3734,7 +3651,6 @@ describe('zcapld', () => {
           newCapability: carolCap, delegator: bob,
           capabilityChain: [rootCapability.id, bobDelCap]
         });
-        addToLoader({doc: carolDelCap});
 
         //   7. Use Carol's invocation key that can be found in Carol's
         //      controller document of keys

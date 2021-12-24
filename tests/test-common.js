@@ -2344,6 +2344,35 @@ describe('zcapld', () => {
     }); // end Expiration date
 
     describe('Chain depth of 4', () => {
+      it('should verify chain', async () => {
+        // alice delegates to bob
+        const bobDelCap = await _delegate({
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol
+        const carolDelCap = await _delegate({
+          parentCapability: bobDelCap,
+          controller: carol,
+          delegator: bob
+        });
+
+        // carol delegates to diana
+        const dianaDelCap = await _delegate({
+          parentCapability: carolDelCap,
+          controller: diana,
+          delegator: carol
+        });
+
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
       it('should verify chain w/inspectCapabilityChain', async () => {
         // alice delegates to bob
         const bobDelCap = await _delegate({
@@ -2352,40 +2381,18 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobDelCap.id,
-          invocationTarget: bobDelCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
+        // bob delegates to carol
         const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          parentCapability: bobDelCap,
+          controller: carol,
+          delegator: bob
         });
 
-        // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The controller should be Diana's ID
-        const dianaCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: carolCap.id,
-          invocationTarget: carolCap.invocationTarget,
-          controller: diana.id()
-        };
-        //  6. Sign the delegated capability with Carol's delegation key
-        //     that was specified as the delegator in Carol's capability
+        // carol delegates to diana
         const dianaDelCap = await _delegate({
-          newCapability: dianaCap, delegator: carol,
-          capabilityChain: [
-            capabilities.root.beta.id, bobDelCap.id, carolDelCap
-          ]
+          parentCapability: carolDelCap,
+          controller: diana,
+          delegator: carol
         });
 
         let checkedChain = false;
@@ -2418,42 +2425,24 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobDelCap.id,
-          invocationTarget: bobDelCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
+        // bob delegates to carol
         const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          parentCapability: bobDelCap,
+          controller: carol,
+          delegator: bob
         });
-
-        // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The controller should be Diana's ID
-        const dianaCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: carolCap.id,
-          invocationTarget: carolCap.invocationTarget,
-          controller: diana.id()
-        };
-        //  6. Sign the delegated capability with Carol's delegation key
-        //     that was specified as the delegator in Carol's capability
 
         // first check to ensure that delegation fails "client side"
         let dianaDelCap;
         let localError;
         try {
+          // carol delegates to diana
           dianaDelCap = await _delegate({
-            newCapability: dianaCap, delegator: carol,
+            parentCapability: carolDelCap,
+            controller: diana,
+            delegator: carol,
+            // bad capability chain entry w/ bob's zcap embedded when it should
+            // just have its ID here
             capabilityChain: [capabilities.root.beta.id, bobDelCap, carolDelCap]
           });
         } catch(e) {
@@ -2464,11 +2453,16 @@ describe('zcapld', () => {
         localError.message.should.contain(
           'consist of strings of capability IDs');
 
-        // now skip client-side validation
+        // now skip client-side validation...
+        // carol delegates to diana
         dianaDelCap = await _delegate({
-          newCapability: dianaCap, delegator: carol,
+          parentCapability: carolDelCap,
+          controller: diana,
+          delegator: carol,
           purposeOptions: {
             _skipLocalValidationForTesting: true,
+            // bad capability chain entry w/ bob's zcap embedded when it should
+            // just have its ID here
             capabilityChain: [capabilities.root.beta.id, bobDelCap, carolDelCap]
           }
         });
@@ -2494,40 +2488,18 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobDelCap.id,
-          invocationTarget: bobDelCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
+        // bob delegates to carol
         const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          parentCapability: bobDelCap,
+          controller: carol,
+          delegator: bob
         });
 
-        // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The controller should be Diana's ID
-        const dianaCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: carolCap.id,
-          invocationTarget: carolCap.invocationTarget,
-          controller: diana.id()
-        };
-        //  6. Sign the delegated capability with Carol's delegation key
-        //     that was specified as the delegator in Carol's capability
+        // carol delegates to diana
         const dianaDelCap = await _delegate({
-          newCapability: dianaCap, delegator: carol,
-          capabilityChain: [
-            capabilities.root.beta.id, bobDelCap.id, carolDelCap
-          ]
+          parentCapability: carolDelCap,
+          controller: diana,
+          delegator: carol
         });
 
         let checkedChain = false;
@@ -2559,74 +2531,6 @@ describe('zcapld', () => {
           'The capability chain exceeds the maximum allowed length of 2.');
         // should not get to check chain because of invalid chain length
         checkedChain.should.be.false;
-      });
-
-      it('should verify chain ' +
-        'w/inspectCapabilityChain using embedded capabilities from ' +
-        'capabilityChain', async () => {
-        // alice delegates to bob
-        const bobDelCap = await _delegate({
-          parentCapability: capabilities.root.beta,
-          controller: bob,
-          delegator: alice
-        });
-
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobDelCap.id,
-          invocationTarget: bobDelCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
-        const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
-        });
-
-        // Create a delegated capability for Diana
-        //   4. Parent capability should point to Carol's capability
-        //   5. The controller should be Diana's ID
-        const dianaCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: carolCap.id,
-          invocationTarget: carolCap.invocationTarget,
-          controller: diana.id()
-        };
-        //  6. Sign the delegated capability with Carol's delegation key
-        //     that was specified as the delegator in Carol's capability
-        const dianaDelCap = await _delegate({
-          newCapability: dianaCap, delegator: carol,
-          capabilityChain: [
-            capabilities.root.beta.id, bobDelCap.id, carolDelCap
-          ]
-        });
-
-        let checkedChain = false;
-        const inspectCapabilityChain = async ({
-          capabilityChain, capabilityChainMeta
-        }) => {
-          checkedChain = true;
-          capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(3);
-          capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(3);
-          _checkCapabilityChain({capabilityChain});
-          // a real implementation would look for revocations here
-          return {valid: true};
-        };
-
-        const result = await _verifyDelegation({
-          delegation: dianaDelCap, inspectCapabilityChain
-        });
-        expect(result).to.exist;
-        expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
       });
     }); // end Chain depth of 4
 

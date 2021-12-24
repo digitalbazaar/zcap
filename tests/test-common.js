@@ -227,24 +227,12 @@ describe('zcapld', () => {
     });
 
     it('should verify a capability chain of depth 2', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.alpha.id,
-        invocationTarget: capabilities.root.alpha.invocationTarget,
-        controller: bob.get('capabilityInvocation', 0).id
-      };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.alpha,
+        controller: bob.get('capabilityInvocation', 0).id,
+        delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
-
-      // verify the delegation chain
       const result = await _verifyDelegation({
         delegation: delegatedCapability
       });
@@ -254,24 +242,12 @@ describe('zcapld', () => {
 
     it('should fail to verify a capability chain of depth 2 ' +
       'when the expectedRootCapability does not match', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.alpha.id,
-        invocationTarget: capabilities.root.alpha.id,
-        controller: bob.get('capabilityInvocation', 0).id
-      };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.alpha,
+        controller: bob.get('capabilityInvocation', 0).id,
+        delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
-
-      // verify the delegation chain
       const result = await _verifyDelegation({
         delegation: delegatedCapability, purposeOptions: {
           expectedRootCapability: 'urn:uuid:fake'
@@ -285,26 +261,15 @@ describe('zcapld', () => {
     });
 
     it('should verify invoking a capability chain of depth 2', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.alpha.id,
-        invocationTarget: capabilities.root.alpha.invocationTarget,
-        controller: bob.get('capabilityInvocation', 0).id
-      };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
+      // delegate from alice to bob
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.alpha,
+        controller: bob.get('capabilityInvocation', 0).id,
+        delegator: alice,
         capabilityChain: [capabilities.root.alpha.id]
       });
 
-      //   4. Use Bob's invocation key that was assigned as invoker in
-      //      the delegated capability
-      //   5. The controller should be Bob's invocation key
+      // bob invokes the delegated zcap
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
         doc, invoker: bob, capability: delegatedCapability,
@@ -331,11 +296,13 @@ describe('zcapld', () => {
     });
 
     it('should fail to verify a root capability as delegated', async () => {
-      // root has no invoker and no keys
+      // root zcaps have no delegation proof to verify
       const root = {
         '@context': ZCAP_CONTEXT_URL,
-        id: uuid()
+        id: uuid(),
+        controller: 'some:root:id'
       };
+      addToLoader({doc: root});
       const result = await _verifyDelegation({delegation: root});
       expect(result).to.exist;
       expect(result.verified).to.be.false;
@@ -365,8 +332,6 @@ describe('zcapld', () => {
       error.message.should.contain('Capability controller not found');
     });
 
-    // FIXME: require `invocationTarget` to be declared in root zcap;
-    // update CHANGELOG with this requirement
     it('should verify a invoking root capability w/ separate target when ' +
       'a matching `expectedRootCapability` is given', async () => {
       const root = {
@@ -424,18 +389,27 @@ describe('zcapld', () => {
       const invocation = await _invoke({
         doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
-      // truncate the urn from the start of the root id
-      // this will make it an invalid expectedRootCapability
+      // truncate the URN from the start of the root id
+      // this will make it an invalid `expectedRootCapability` because
+      // it is not an absolute URI
       const expectedRootCapability = [root.id.replace('urn:uuid:', '')];
-      const result = await _verifyInvocation({
-        invocation, purposeOptions: {
-          expectedAction: 'read',
-          expectedRootCapability,
-          expectedTarget: root.invocationTarget
-        }
-      });
-      expect(result).to.exist;
-      expect(result.verified).to.be.false;
+      let result;
+      let error;
+      try {
+        result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedRootCapability,
+            expectedTarget: root.invocationTarget
+          }
+        });
+      } catch(e) {
+        error = e;
+      }
+      expect(result).to.not.exist;
+      expect(error).to.exist;
+      error.message.should.contain(
+        '"expectedRootCapability" values must be absolute URI strings.');
     });
 
     it('should fail to verify a root capability w/ separate target when ' +
@@ -451,15 +425,23 @@ describe('zcapld', () => {
       const invocation = await _invoke({
         doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
-      const result = await _verifyInvocation({
-        invocation, purposeOptions: {
-          expectedAction: 'read',
-          expectedTarget: root.invocationTarget
-        }
-      });
-      expect(result).to.exist;
-      expect(result.verified).to.be.false;
-      // TODO: assert more about result.error
+      let error;
+      let result;
+      try {
+        result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedTarget: root.invocationTarget
+          }
+        });
+      } catch(e) {
+        error = e;
+      }
+      expect(result).to.not.exist;
+      expect(error).to.exist;
+      error.name.should.equal('TypeError');
+      error.message.should.contain(
+        '"expectedRootCapability" must be a string or array.');
     });
 
     it('should verify two invocation proofs on the same doc', async () => {
@@ -693,7 +675,7 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should fail to verify a capability chain of depth 2 when' +
+    it('should fail to verify a capability chain of depth 2 when ' +
       'matching "capabilityAction" not found', async () => {
       // alice delegates to bob with `allowedAction: 'write'`
       const newCapability = {
@@ -721,8 +703,9 @@ describe('zcapld', () => {
       delete invocation.proof.capabilityAction;
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
-          expectedTarget: capabilities.root.beta.id,
-          expectedAction: 'write'
+          expectedAction: 'write',
+          expectedRootCapability: capabilities.root.beta.id,
+          expectedTarget: capabilities.root.beta.invocationTarget
         }
       });
       expect(result).to.exist;
@@ -4037,7 +4020,8 @@ async function _verifyInvocation({
 }
 
 async function _delegate({
-  newCapability, key, delegator, date, capabilityChain, purposeOptions
+  newCapability, parentCapability, controller, key, delegator, date,
+  capabilityChain, purposeOptions
 }) {
   if(delegator) {
     key = delegator.get('capabilityDelegation', 0);
@@ -4049,6 +4033,16 @@ async function _delegate({
   } else {
     // custom case
     purpose = new CapabilityDelegation(purposeOptions);
+  }
+  if(!newCapability) {
+    // use parent capability
+    newCapability = {
+      '@context': ZCAP_CONTEXT_URL,
+      id: uuid(),
+      controller: typeof controller === 'string' ? controller : controller.id(),
+      parentCapability: parentCapability.id,
+      invocationTarget: parentCapability.invocationTarget
+    };
   }
   return jsigs.sign(newCapability, {
     documentLoader: testLoader,

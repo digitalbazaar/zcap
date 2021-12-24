@@ -1069,40 +1069,25 @@ describe('zcapld', () => {
 
       it('should verify chain when child allowedAction is ' +
         'a valid subset of the undefined parent allowedAction', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob w/ no special action restrictions
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobCap.id,
-          allowedAction: 'read',
-          invocationTarget: bobCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
+        // bob delegates to carol and adds an allowed action restriction
         const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobDelCap.id,
+            invocationTarget: bobDelCap.invocationTarget,
+            allowedAction: 'read'
+          },
+          parentCapability: bobDelCap,
+          delegator: bob
         });
 
         const result = await _verifyDelegation({delegation: carolDelCap});
@@ -1111,41 +1096,20 @@ describe('zcapld', () => {
       });
 
       it('should fail to verify chain w/bad middle capability', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        ///    capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
         // change ID to something else (breaking signature)
         bobDelCap.id = uuid();
 
-        // Create a delegated capability for Carol
-        //   4. Parent capability should point to Bob's capability
-        //   5. The controller should be Carol's ID
-        const carolCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
-          controller: carol.id()
-        };
-        //  6. Sign the delegated capability with Bob's delegation key
-        //     that was specified as the delegator in Bob's capability
+        // bob delegates to carol
         const carolDelCap = await _delegate({
-          newCapability: carolCap, delegator: bob,
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          parentCapability: bobDelCap,
+          controller: carol,
+          delegator: bob
         });
 
         const result = await _verifyDelegation({delegation: carolDelCap});
@@ -1155,22 +1119,11 @@ describe('zcapld', () => {
       });
 
       it('should fail to verify chain w/bad last capability', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        ///    capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1179,8 +1132,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1201,22 +1154,11 @@ describe('zcapld', () => {
       });
 
       it('should verify chain w/inspectCapabilityChain', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1225,8 +1167,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1257,24 +1199,13 @@ describe('zcapld', () => {
         checkedChain.should.be.true;
       });
 
-      it('should fail to verify w/inspectCapabilityChain w/revoked capability',
-        async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+      it('should fail to verify w/inspectCapabilityChain ' +
+        'w/revoked capability', async () => {
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1283,8 +1214,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1321,22 +1252,11 @@ describe('zcapld', () => {
 
       it('should fail to verify w/delegated zcap created before ' +
         'parent', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1345,8 +1265,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1535,22 +1455,11 @@ describe('zcapld', () => {
       });
 
       it('should verify invocation', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1559,8 +1468,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1639,22 +1548,11 @@ describe('zcapld', () => {
       });
 
       it('should verify invoking w/inspectCapabilityChain', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1663,8 +1561,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -1780,22 +1678,11 @@ describe('zcapld', () => {
 
       it('should fail invoking ' +
         'w/inspectCapabilityChain and a revoked capability', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -1804,8 +1691,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -2725,22 +2612,11 @@ describe('zcapld', () => {
 
     describe('Chain depth of 4', () => {
       it('should verify chain w/inspectCapabilityChain', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -2749,8 +2625,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -2802,22 +2678,11 @@ describe('zcapld', () => {
       });
 
       it('should fail to verify w/embedded middle zcap', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -2826,8 +2691,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -2889,22 +2754,11 @@ describe('zcapld', () => {
       });
 
       it('should fail to verify chain exceeding maxChainLength', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -2913,8 +2767,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -2977,22 +2831,11 @@ describe('zcapld', () => {
       it('should verify chain ' +
         'w/inspectCapabilityChain using embedded capabilities from ' +
         'capabilityChain', async () => {
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: capabilities.root.beta.id,
-          invocationTarget: capabilities.root.beta.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [capabilities.root.beta.id]
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3001,8 +2844,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -3067,22 +2910,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3091,8 +2923,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -3146,22 +2978,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3170,11 +2991,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3196,7 +3017,7 @@ describe('zcapld', () => {
           // NOTE: this is an invalid attempt to degate a capability to the
           // root of the EDV when carol's zcap has an invocationTarget that
           // is a specific EDV document
-          invocationTarget: bobCap.invocationTarget,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: diana.id()
         };
 
@@ -3231,22 +3052,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3255,11 +3065,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3301,22 +3111,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3325,11 +3124,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3390,22 +3189,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3414,11 +3202,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3467,22 +3255,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3491,11 +3268,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3554,22 +3331,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3578,8 +3344,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -3633,22 +3399,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3657,8 +3412,8 @@ describe('zcapld', () => {
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
-          invocationTarget: bobCap.invocationTarget,
+          parentCapability: bobDelCap.id,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: carol.id()
         };
         //  6. Sign the delegated capability with Bob's delegation key
@@ -3728,22 +3483,11 @@ describe('zcapld', () => {
         };
         addToLoader({doc: rootCapability});
 
-        // Create a delegated capability
-        //   1. Parent capability should point to the root capability
-        //   2. The controller should be Bob's ID
-        const bobCap = {
-          '@context': ZCAP_CONTEXT_URL,
-          id: uuid(),
-          parentCapability: rootCapability.id,
-          invocationTarget: rootCapability.invocationTarget,
-          controller: bob.id()
-        };
-        //  3. Sign the delegated capability with Alice's delegation key;
-        //     Alice's ID was specified as the delegator in the root
-        //     capability
+        // alice delegates to bob
         const bobDelCap = await _delegate({
-          newCapability: bobCap, delegator: alice,
-          capabilityChain: [rootCapability.id]
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
         });
 
         // Create a delegated capability for Carol
@@ -3752,11 +3496,11 @@ describe('zcapld', () => {
 
         // delegate access to a specific document under bob's capability
         const invocationTarget =
-          `${bobCap.invocationTarget}/a-specific-document`;
+          `${bobDelCap.invocationTarget}/a-specific-document`;
         const carolCap = {
           '@context': ZCAP_CONTEXT_URL,
           id: uuid(),
-          parentCapability: bobCap.id,
+          parentCapability: bobDelCap.id,
           invocationTarget,
           controller: carol.id()
         };
@@ -3777,7 +3521,7 @@ describe('zcapld', () => {
           // NOTE: this is an invalid attempt to degate a capability to the
           // root of the EDV when carol's zcap has an invocationTarget that
           // is a specific EDV document
-          invocationTarget: bobCap.invocationTarget,
+          invocationTarget: bobDelCap.invocationTarget,
           controller: diana.id()
         };
 

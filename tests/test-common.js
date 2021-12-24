@@ -2062,6 +2062,7 @@ describe('zcapld', () => {
         err.should.be.instanceof(TypeError);
         err.message.should.contain('must be a Date');
       });
+
       it('CapabilityDelegation throws TypeError on currentDate = null',
         async () => {
         let result;
@@ -2082,6 +2083,7 @@ describe('zcapld', () => {
         err.should.be.instanceof(TypeError);
         err.message.should.contain('must be a Date');
       });
+
       it('should fail to verify root capability with `expires`',
         async () => {
         const rootCapability = {...capabilities.root.beta};
@@ -2105,6 +2107,7 @@ describe('zcapld', () => {
         error.message.should.contain(
           'Root capability must not have an "expires" field.');
       });
+
       it('should verify invoking a capability with `expires`',
         async () => {
         // Create a delegated capability
@@ -2165,6 +2168,48 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
+      });
+
+      it('should fail to verify a capability with bad `expires` field',
+        async () => {
+        // Create a delegated capability
+        //   1. Parent capability should point to the root capability
+        //   2. The controller should be Bob's ID
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:0aee1dd6-646b-11ec-b975-10bf48838a41';
+        addToLoader({doc: rootCapability});
+
+        const bobCap = {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          parentCapability: rootCapability.id,
+          invocationTarget: rootCapability.invocationTarget,
+          controller: bob.id(),
+          expires: 'not a valid date'
+        };
+        //  3. Sign the delegated capability with Alice's delegation key;
+        //     Alice's ID was specified as the delegator in the root
+        //     capability
+        const bobDelCap = await _delegate({
+          newCapability: bobCap, delegator: alice,
+          capabilityChain: [rootCapability.id]
+        });
+        addToLoader({doc: bobDelCap});
+
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: bob, capability: bobDelCap, capabilityAction: 'read'
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability, expectedAction: 'read'
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal(
+          'Delegated capability must have a valid expires date.');
       });
 
       it('should verify invoking a capability with `expires` ' +

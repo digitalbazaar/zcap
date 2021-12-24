@@ -122,10 +122,11 @@ describe('zcapld', () => {
   });
 
   describe('Sign with capabilityDelegation proof purpose', () => {
-    it('should succeed w/key delegator', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
+    it('should succeed w/verification method as controller', async () => {
+      // create a delegated capability for special case where controller is
+      // a verification method itself (uncommon case)
+      // 1. Parent capability points to the root capability
+      // 2. The controller is Bob's invocation verification method (key)
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
         id: 'urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41',
@@ -133,8 +134,8 @@ describe('zcapld', () => {
         controller: bob.get('capabilityInvocation', 0).id,
         invocationTarget: capabilities.root.alpha.invocationTarget
       };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
+      // 3. Sign the delegated capability with Alice's delegation key
+      // (this works because Alice is the root capability's controller)
       const delegatedCapability = await _delegate({
         newCapability, delegator: alice, date: CONSTANT_DATE,
         capabilityChain: [capabilities.root.alpha.id]
@@ -142,10 +143,11 @@ describe('zcapld', () => {
       expect(delegatedCapability).to.deep.equal(capabilities.delegated.alpha);
     });
 
-    it('should succeed w/controller delegator', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
+    it('should succeed', async () => {
+      // create a delegated capability  where controller is an entity that uses
+      // verification methods (common case)
+      // 1. Parent capability points to the root capability
+      // 2. The controller is Bob
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
         id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
@@ -153,8 +155,8 @@ describe('zcapld', () => {
         controller: bob.id(),
         invocationTarget: capabilities.root.beta.invocationTarget
       };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
+      // 3. Sign the delegated capability with Alice's delegation key
+      // (this works because Alice is the root capability's controller)
       const delegatedCapability = await _delegate({
         newCapability, delegator: alice, date: CONSTANT_DATE,
         capabilityChain: [capabilities.root.beta.id]
@@ -180,9 +182,8 @@ describe('zcapld', () => {
     });
 
     it('should success when passing only "parentCapability"', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's invocation key
+      // only pass `parentCapability` as a purpose option -- this will cause
+      // the `capabilityChain` to be auto-generated
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
         id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
@@ -190,8 +191,6 @@ describe('zcapld', () => {
         controller: bob.id(),
         invocationTarget: capabilities.root.beta.invocationTarget
       };
-      //  3. Sign the delegated capability with Alice's delegation key
-      //     that was specified as the delegator in the root capability
       const delegatedCapability = await _delegate({
         newCapability, delegator: alice, date: CONSTANT_DATE,
         purposeOptions: {
@@ -300,7 +299,7 @@ describe('zcapld', () => {
       const root = {
         '@context': ZCAP_CONTEXT_URL,
         id: uuid(),
-        controller: 'some:root:id'
+        controller: 'urn:some:root:id'
       };
       addToLoader({doc: root});
       const result = await _verifyDelegation({delegation: root});

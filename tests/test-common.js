@@ -760,7 +760,8 @@ describe('zcapld', () => {
         capabilityAction: 'invalid'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: capabilities.root.beta
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'write'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.false;

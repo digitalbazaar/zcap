@@ -12,7 +12,9 @@
 - **BREAKING**: When creating a capability delegation proof, if the
   `capabilityChain` is not passed, then a new parameter `parentCapability`
   MUST be passed so that the chain can be auto-computed.
-- **BREAKING**: Require `capabilityAction` in capability invocation proofs.
+- **BREAKING**: Require `capabilityAction` when creating capability invocation
+  proofs and `expectedAction` when verifying proofs; removing previous
+  optionality simplifies implementations.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

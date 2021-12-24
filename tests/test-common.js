@@ -534,21 +534,43 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should verify a capability chain of depth 2', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's ID
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget,
-        controller: bob.id()
-      };
-      //  3. Sign the delegated capability with Alice's delegation key;
-      //     Alice's ID was specified as the delegator in the root capability
+    it('should fail if expectedRootCapability does not match', async () => {
+      // alice delegates to bob
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.beta,
+        controller: bob,
+        delegator: alice,
+        capabilityChain: [capabilities.root.beta.id]
+      });
+
+      // bob invokes
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'read'
+      });
+
+      // should fail verification because of `expectedRootCapability`
+      // does not match the root capability for bob's zcap
+      const result = await _verifyInvocation({
+        invocation, purposeOptions: {
+          expectedAction: 'read',
+          expectedRootCapability: 'urn:this-should-matter',
+          expectedTarget: capabilities.root.beta.invocationTarget
+        }
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain('does not match actual root capability');
+    });
+
+    it('should verify a capability chain of depth 2', async () => {
+      const delegatedCapability = await _delegate({
+        parentCapability: capabilities.root.beta,
+        controller: bob,
+        delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
       const result = await _verifyDelegation({
@@ -558,27 +580,17 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should verify invoking a capability chain of depth 2', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's ID
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget,
-        controller: bob.id()
-      };
-      //  3. Sign the delegated capability with Alice's delegation key;
-      //     Alice's ID was specified as the delegator in the root capability
+    it('should verify invoking a capability chain of depth 2 and a ' +
+      '"read" expected action', async () => {
+      // alice delegates to bob
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.beta,
+        controller: bob,
+        delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
 
-      //   4. Use Bob's invocation key that can be found in Bob's
-      //      controller document of keys
-      //   5. The controller should be Bob's ID
+      // bob invokes
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
         doc, invoker: bob, capability: delegatedCapability,
@@ -592,55 +604,34 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should fail if expectedRootCapability does not match', async () => {
-      // FIXME: create helper to create delegated zcap w/ uuid(), etc.
-
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's ID
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget,
-        controller: bob.id()
-      };
-      //  3. Sign the delegated capability with Alice's delegation key;
-      //     Alice's ID was specified as the delegator in the root capability
+    it('should verify invoking a capability chain of depth 2 and a ' +
+      '"write" expected action', async () => {
+      // alice delegates to bob w/o any action restriction
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
+        parentCapability: capabilities.root.beta,
+        controller: bob,
+        delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
 
-      //   4. Use Bob's invocation key that can be found in Bob's
-      //      controller document of keys
-      //   5. The controller should be Bob's ID
+      // bob invokes using `capabilityAction` of 'write' -- and since that
+      // is an expected action by the verifier, it is allowed
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
         doc, invoker: bob, capability: delegatedCapability,
-        capabilityAction: 'read'
+        capabilityAction: 'write'
       });
       const result = await _verifyInvocation({
-        invocation, purposeOptions: {
-          expectedAction: 'read',
-          expectedRootCapability: 'urn:this-should-matter',
-          expectedTarget: capabilities.root.beta.invocationTarget
-        }
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'write'
       });
       expect(result).to.exist;
-      expect(result.verified).to.be.false;
-      result.error.name.should.equal('VerificationError');
-      const [error] = result.error.errors;
-      error.message.should.contain(
-        'does not match actual root capability');
+      expect(result.verified).to.be.true;
     });
 
     it('should verify a capability chain of depth 2 and an ' +
       'allowed action on one capability', async () => {
-      // Create a delegated capability
-      //   1. Parent capability should point to the root capability
-      //   2. The controller should be Bob's ID
-      //   3. Add an allowed action of `write`
+      // alice delegates to bob and adds an allowed action restriction
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
         id: uuid(),
@@ -649,23 +640,20 @@ describe('zcapld', () => {
         controller: bob.id(),
         allowedAction: 'write'
       };
-      //  4. Sign the delegated capability with Alice's delegation key;
-      //     Alice's ID was specified as the delegator in the root capability
       const delegatedCapability = await _delegate({
         newCapability, delegator: alice,
         capabilityChain: [capabilities.root.beta.id]
       });
 
-      //   5. Use Bob's invocation key that can be found in Bob's
-      //      controller document of keys
-      //   6. The controller should be Bob's ID
+      // bob invokes
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
         doc, invoker: bob, capability: delegatedCapability,
         capabilityAction: 'write'
       });
-      // FIXME: require a capability action for all invocations and
-      // require `expectedAction` be passed
+
+      // should verify because bob's specified capability action is one he
+      // is allowed to use
       const result = await _verifyInvocation({
         invocation, rootCapability: capabilities.root.beta,
         expectedAction: 'write'
@@ -746,36 +734,6 @@ describe('zcapld', () => {
       result.error.name.should.equal('VerificationError');
       const [error] = result.error.errors;
       error.name.should.equal('NotFoundError');
-    });
-
-    it('should verify a capability chain of depth 2 and a ' +
-      'specific expected capability action', async () => {
-      // alice delegates to bob w/o any action restriction
-      const newCapability = {
-        '@context': ZCAP_CONTEXT_URL,
-        id: uuid(),
-        parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget,
-        controller: bob.id()
-      };
-      const delegatedCapability = await _delegate({
-        newCapability, delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
-      });
-
-      // bob invokes using `capabilityAction` of 'write' -- and since that
-      // is an expected action by the verifier, it is allowed
-      const doc = clone(mock.exampleDoc);
-      const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability,
-        capabilityAction: 'write'
-      });
-      const result = await _verifyInvocation({
-        invocation, rootCapability: capabilities.root.beta,
-        expectedAction: 'write'
-      });
-      expect(result).to.exist;
-      expect(result.verified).to.be.true;
     });
 
     it('should fail to verify a capability chain of depth 2 when ' +

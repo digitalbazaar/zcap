@@ -155,7 +155,8 @@ describe('zcapld', () => {
       }
       expect(err).to.exist;
       expect(err.message).to.equal(
-        'Cannot compute capability chain; no "parentCapability" passed.');
+        'Either "capabilityChain" or "parentCapability" is required to ' +
+        'create a capability delegation proof.');
     });
 
     it('should success when passing only "parentCapability"', async () => {
@@ -2015,7 +2016,10 @@ describe('zcapld', () => {
         let err;
         try {
           result = new CapabilityDelegation({
-            expectedTarget: 'urn: foo',
+            // `expectedRootCapability` must be present to signal this purpose
+            // instance is for verifying a proof; otherwise different missing
+            // param errors will be raised for creating a proof
+            expectedRootCapability: 'urn:foo',
             currentDate: null
           });
         } catch(e) {

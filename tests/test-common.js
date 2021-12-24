@@ -3198,7 +3198,7 @@ async function _delegate({
     purpose = new CapabilityDelegation({capabilityChain, parentCapability});
   }
   if(!newCapability) {
-    // use parent capability
+    // generate default delegated zcap via `controller` and `parentCapability`
     newCapability = {
       '@context': ZCAP_CONTEXT_URL,
       id: uuid(),

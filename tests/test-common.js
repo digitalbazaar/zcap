@@ -54,7 +54,8 @@ describe('zcapld', () => {
       const doc = clone(mock.exampleDoc);
       const signed = await _invoke({
         doc, invoker: alice, date: CONSTANT_DATE,
-        capability: capabilities.root.alpha
+        capability: capabilities.root.alpha,
+        capabilityAction: 'read'
       });
       expect(signed).to.deep.equal(mock.exampleDocWithInvocation.alpha);
     });
@@ -63,7 +64,8 @@ describe('zcapld', () => {
       const doc = clone(mock.exampleDoc);
       const signed = await _invoke({
         doc, invoker: alice, date: CONSTANT_DATE,
-        capability: capabilities.root.beta
+        capability: capabilities.root.beta,
+        capabilityAction: 'read'
       });
       expect(signed).to.deep.equal(mock.exampleDocWithInvocation.beta);
     });
@@ -83,7 +85,7 @@ describe('zcapld', () => {
       expect(err.message).to.equal('"capability" must be a string or object.');
     });
 
-    it('should fail when missing "invocationTarget"', async () => {
+    it('should fail when missing "capabilityAction"', async () => {
       let err;
       try {
         const doc = clone(mock.exampleDoc);
@@ -91,6 +93,24 @@ describe('zcapld', () => {
           doc, invoker: alice,
           purposeOptions: {
             capability: 'urn:foo'
+          }
+        });
+      } catch(e) {
+        err = e;
+      }
+      expect(err).to.exist;
+      expect(err.message).to.equal('"capabilityAction" must be a string.');
+    });
+
+    it('should fail when missing "invocationTarget"', async () => {
+      let err;
+      try {
+        const doc = clone(mock.exampleDoc);
+        await _invoke({
+          doc, invoker: alice,
+          purposeOptions: {
+            capability: 'urn:foo',
+            capabilityAction: 'read'
           }
         });
       } catch(e) {
@@ -186,7 +206,8 @@ describe('zcapld', () => {
     it('should verify an invoked root capability', async () => {
       const result = await _verifyInvocation({
         invocation: mock.exampleDocWithInvocation.alpha,
-        rootCapability: capabilities.root.alpha
+        rootCapability: capabilities.root.alpha,
+        expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -196,6 +217,7 @@ describe('zcapld', () => {
       const result = await _verifyInvocation({
         invocation: mock.exampleDocWithInvocation.alpha,
         purposeOptions: {
+          expectedAction: 'read',
           expectedRootCapability: capabilities.root.alpha.id,
           expectedTarget: [capabilities.root.alpha.invocationTarget]
         }
@@ -286,10 +308,12 @@ describe('zcapld', () => {
       //   5. The controller should be Bob's invocation key
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: capabilities.root.alpha
+        invocation, rootCapability: capabilities.root.alpha,
+        expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -300,7 +324,8 @@ describe('zcapld', () => {
     it('should verify an invoked root capability', async () => {
       const result = await _verifyInvocation({
         invocation: mock.exampleDocWithInvocation.beta,
-        rootCapability: capabilities.root.beta
+        rootCapability: capabilities.root.beta,
+        expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -329,10 +354,10 @@ describe('zcapld', () => {
         'example:foo': uuid()
       };
       const invocation = await _invoke({
-        doc, invoker: alpha, capability: root
+        doc, invoker: alpha, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: root
+        invocation, rootCapability: root, expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.false;
@@ -354,10 +379,10 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: root
+        invocation, rootCapability: root, expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -374,10 +399,11 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
+          expectedAction: 'read',
           expectedRootCapability: [root.id],
           expectedTarget: root.invocationTarget
         }
@@ -397,13 +423,14 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       // truncate the urn from the start of the root id
       // this will make it an invalid expectedRootCapability
       const expectedRootCapability = [root.id.replace('urn:uuid:', '')];
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
+          expectedAction: 'read',
           expectedRootCapability,
           expectedTarget: root.invocationTarget
         }
@@ -423,10 +450,11 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
+          expectedAction: 'read',
           expectedTarget: root.invocationTarget
         }
       });
@@ -446,6 +474,7 @@ describe('zcapld', () => {
         doc, invoker: alice,
         purposeOptions: {
           capability: capabilities.root.restful.id,
+          capabilityAction: 'read',
           invocationTarget: target1
         }
       });
@@ -453,6 +482,7 @@ describe('zcapld', () => {
         doc: invocation1, invoker: alice,
         purposeOptions: {
           capability: capabilities.root.restful.id,
+          capabilityAction: 'read',
           invocationTarget: target2
         }
       });
@@ -462,6 +492,7 @@ describe('zcapld', () => {
         purpose: [
           new CapabilityInvocation({
             allowTargetAttenuation: true,
+            expectedAction: 'read',
             expectedRootCapability: capabilities.root.restful.id,
             expectedTarget: [
               capabilities.root.restful.invocationTarget,
@@ -470,6 +501,7 @@ describe('zcapld', () => {
           }),
           new CapabilityInvocation({
             allowTargetAttenuation: true,
+            expectedAction: 'read',
             expectedRootCapability: capabilities.root.restful.id,
             expectedTarget: [
               capabilities.root.restful.invocationTarget,
@@ -494,10 +526,10 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: root
+        invocation, rootCapability: root, expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -513,10 +545,10 @@ describe('zcapld', () => {
       addToLoader({doc: root});
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: root
+        doc, invoker: bob, capability: root, capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: root
+        invocation, rootCapability: root, expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -570,10 +602,12 @@ describe('zcapld', () => {
       //   5. The controller should be Bob's ID
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
-        invocation, rootCapability: capabilities.root.beta
+        invocation, rootCapability: capabilities.root.beta,
+        expectedAction: 'read'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -604,10 +638,12 @@ describe('zcapld', () => {
       //   5. The controller should be Bob's ID
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'read'
       });
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
+          expectedAction: 'read',
           expectedRootCapability: 'urn:this-should-matter',
           expectedTarget: capabilities.root.beta.invocationTarget
         }
@@ -659,8 +695,8 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should fail to verify a capability chain of depth 2 when a ' +
-      '"capabilityAction" is required but missing', async () => {
+    it('should fail to verify a capability chain of depth 2 when' +
+      'matching "capabilityAction" not found', async () => {
       // alice delegates to bob with `allowedAction: 'write'`
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
@@ -680,8 +716,12 @@ describe('zcapld', () => {
       // an invocation proof that matches the expected action is not found
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability
+        doc, invoker: bob, capability: delegatedCapability,
+        // this will be deleted below as the API does not allow
+        // `capabilityAction` to be missing
+        capabilityAction: ''
       });
+      delete invocation.proof.capabilityAction;
       const result = await _verifyInvocation({
         invocation, purposeOptions: {
           expectedTarget: capabilities.root.beta.id,
@@ -760,8 +800,8 @@ describe('zcapld', () => {
       expect(result.verified).to.be.true;
     });
 
-    it('should fail to verify a capability chain of depth 2 when an ' +
-      'expected "capabilityAction" is required but missing', async () => {
+    it('should fail to verify a capability chain of depth 2 when ' +
+      'required "capabilityAction" is missing', async () => {
       // alice delegates to bob w/o any action restrictions
       const newCapability = {
         '@context': ZCAP_CONTEXT_URL,
@@ -780,8 +820,12 @@ describe('zcapld', () => {
       // is expecting one, so no matching invocation proof should be found
       const doc = clone(mock.exampleDoc);
       const invocation = await _invoke({
-        doc, invoker: bob, capability: delegatedCapability
+        doc, invoker: bob, capability: delegatedCapability,
+        // this will be deleted below as the API does not allow
+        // `capabilityAction` to be missing
+        capabilityAction: ''
       });
+      delete invocation.proof.capabilityAction;
       const result = await _verifyInvocation({
         invocation, rootCapability: capabilities.root.beta,
         expectedAction: 'write'
@@ -1670,7 +1714,7 @@ describe('zcapld', () => {
           'time to live that is too long');
       });
 
-      it('should verify invoking', async () => {
+      it('should verify invocation', async () => {
         // Create a delegated capability
         //   1. Parent capability should point to the root capability
         //   2. The controller should be Bob's ID
@@ -1713,10 +1757,12 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap,
+          capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.beta
+          invocation, rootCapability: capabilities.root.beta,
+          expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -1765,10 +1811,12 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap,
+          capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability: capabilities.root.beta
+          invocation, rootCapability: capabilities.root.beta,
+          expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -1817,7 +1865,7 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1832,6 +1880,7 @@ describe('zcapld', () => {
         };
         const result = await _verifyInvocation({
           invocation, rootCapability: capabilities.root.beta,
+          expectedAction: 'read',
           inspectCapabilityChain
         });
         expect(result).to.exist;
@@ -1888,7 +1937,7 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1904,6 +1953,7 @@ describe('zcapld', () => {
         const result = await _verifyInvocation({
           invocation,
           purposeOptions: {
+            expectedAction: 'read',
             expectedRootCapability: capabilities.root.beta.id,
             expectedTarget: capabilities.root.beta.invocationTarget,
             inspectCapabilityChain,
@@ -1960,7 +2010,7 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1980,6 +2030,7 @@ describe('zcapld', () => {
         };
         const result = await _verifyInvocation({
           invocation, rootCapability: capabilities.root.beta,
+          expectedAction: 'read',
           inspectCapabilityChain
         });
         expect(result).to.exist;
@@ -2039,10 +2090,11 @@ describe('zcapld', () => {
 
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: alice, capability: rootCapability
+          doc, invoker: alice, capability: rootCapability,
+          capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2105,10 +2157,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -2167,13 +2219,14 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         // the capability was still valid 20 hours ago
         const currentDate = new Date();
         currentDate.setHours(currentDate.getHours() - 20);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
+            expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
             currentDate
@@ -2237,13 +2290,14 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         // the capability was also expired 20 hours ago
         const currentDate = new Date();
         currentDate.setHours(currentDate.getHours() - 20);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
+            expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
             currentDate
@@ -2312,13 +2366,14 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         // the capability will have expired in 100 hours
         const currentDate = new Date();
         currentDate.setHours(currentDate.getHours() + 100);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
+            expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
             suite: new Ed25519Signature2020(),
@@ -2389,10 +2444,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2458,10 +2513,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2534,10 +2589,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2608,10 +2663,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2685,10 +2740,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2755,10 +2810,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -2820,10 +2875,10 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
-          invocation, rootCapability
+          invocation, rootCapability, expectedAction: 'read'
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -3398,11 +3453,12 @@ describe('zcapld', () => {
         //   8. The controller should be Carol's ID
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolCap
+          doc, invoker: carol, capability: carolCap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             allowTargetAttenuation: true,
+            expectedAction: 'read',
             expectedTarget: [rootTarget, invocationTarget],
             expectedRootCapability: rootCapability.id
           }
@@ -3475,12 +3531,14 @@ describe('zcapld', () => {
           doc, invoker: carol,
           purposeOptions: {
             capability: carolCap,
+            capabilityAction: 'read',
             invocationTarget: invalidTarget
           }
         });
         const expectedTarget = [rootTarget, invocationTarget];
         const purpose = new CapabilityInvocation({
           allowTargetAttenuation: true,
+          expectedAction: 'read',
           expectedTarget,
           expectedRootCapability: rootCapability.id,
           suite: new Ed25519Signature2020()
@@ -3563,12 +3621,14 @@ describe('zcapld', () => {
           doc, invoker: carol,
           purposeOptions: {
             capability: carolCap,
+            capabilityAction: 'read',
             invocationTarget: validSubTarget
           }
         });
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             allowTargetAttenuation: true,
+            expectedAction: 'read',
             expectedTarget: [rootTarget, validSubTarget],
             expectedRootCapability: rootCapability.id
           }
@@ -3641,12 +3701,14 @@ describe('zcapld', () => {
           doc, invoker: carol,
           purposeOptions: {
             capability: carolCap,
+            capabilityAction: 'read',
             invocationTarget: invalidTarget
           }
         });
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             allowTargetAttenuation: true,
+            expectedAction: 'read',
             // Note: Here we are simulating an endpoint that is expecting
             // the `invalidTarget` -- it's just that the zcap being used
             // is not authorized for that target.

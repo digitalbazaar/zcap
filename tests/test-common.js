@@ -886,7 +886,7 @@ describe('zcapld', () => {
       });
 
       it('should fail to verify chain with misreferenced parent ' +
-        'zcap', async () => {
+        'zcap in middle of chain', async () => {
         // alice delegates to bob but with bad root reference in chain
         const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
@@ -903,6 +903,44 @@ describe('zcapld', () => {
           delegator: bob,
           // proper capability chain
           capabilityChain: [capabilities.root.beta.id, bobZcap]
+        });
+
+        const result = await _verifyDelegation({
+          delegation: carolZcap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
+        should.exist(result);
+        result.verified.should.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain('does not match the parent');
+      });
+
+      it('should fail to verify chain with misreferenced parent ' +
+        'zcap at end of chain', async () => {
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
+        });
+
+        // alice delegates to diana (this zcap will be misreferenced as
+        // the parent zcap of carol's below)
+        const dianaZcap = await _delegate({
+          parentCapability: capabilities.root.beta,
+          controller: diana,
+          delegator: alice
+        });
+
+        // bob delegates to carol
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
+          controller: carol,
+          delegator: bob,
+          // intentionally reference diana's zcap instead of bob's
+          capabilityChain: [capabilities.root.alpha.id, dianaZcap]
         });
 
         const result = await _verifyDelegation({

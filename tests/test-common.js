@@ -233,7 +233,8 @@ describe('zcapld', () => {
         capabilityChain: [capabilities.root.alpha.id]
       });
       const result = await _verifyDelegation({
-        delegation: delegatedCapability
+        delegation: delegatedCapability,
+        expectedRootCapability: capabilities.root.alpha.id
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -248,9 +249,8 @@ describe('zcapld', () => {
         capabilityChain: [capabilities.root.alpha.id]
       });
       const result = await _verifyDelegation({
-        delegation: delegatedCapability, purposeOptions: {
-          expectedRootCapability: 'urn:uuid:fake'
-        }
+        delegation: delegatedCapability,
+        expectedRootCapability: 'urn:uuid:fake'
       });
       expect(result).to.exist;
       expect(result.verified).to.be.false;
@@ -303,7 +303,10 @@ describe('zcapld', () => {
         invocationTarget: 'urn:some:invocation:target'
       };
       addToLoader({doc: root});
-      const result = await _verifyDelegation({delegation: root});
+      const result = await _verifyDelegation({
+        delegation: root,
+        expectedRootCapability: root.id
+      });
       expect(result).to.exist;
       expect(result.verified).to.be.false;
     });
@@ -576,7 +579,8 @@ describe('zcapld', () => {
         capabilityChain: [capabilities.root.beta.id]
       });
       const result = await _verifyDelegation({
-        delegation: delegatedCapability
+        delegation: delegatedCapability,
+        expectedRootCapability: capabilities.root.beta.id
       });
       expect(result).to.exist;
       expect(result.verified).to.be.true;
@@ -812,7 +816,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
       });
@@ -866,7 +873,10 @@ describe('zcapld', () => {
           }
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.false;
         should.exist(result.error);
@@ -895,7 +905,10 @@ describe('zcapld', () => {
           capabilityChain: [capabilities.root.beta.id, bobDelCap]
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.false;
         should.exist(result.error);
@@ -939,7 +952,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.false;
         should.exist(result.error);
@@ -980,7 +996,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.false;
         should.exist(result.error);
@@ -1021,7 +1040,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.false;
         should.exist(result.error);
@@ -1062,7 +1084,10 @@ describe('zcapld', () => {
           parentCapability: bobDelCap
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.true;
       });
@@ -1090,7 +1115,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         should.exist(result);
         result.verified.should.be.true;
       });
@@ -1112,7 +1140,10 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
@@ -1135,7 +1166,10 @@ describe('zcapld', () => {
         // change ID to something else (breaking signature)
         carolDelCap.id = uuid();
 
-        const result = await _verifyDelegation({delegation: carolDelCap});
+        const result = await _verifyDelegation({
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.name.should.equal('VerificationError');
@@ -1172,7 +1206,9 @@ describe('zcapld', () => {
           return {valid: true};
         };
         const result = await _verifyDelegation({
-          delegation: carolDelCap, inspectCapabilityChain
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          inspectCapabilityChain
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -1211,7 +1247,9 @@ describe('zcapld', () => {
           };
         };
         const result = await _verifyDelegation({
-          delegation: carolDelCap, inspectCapabilityChain
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          inspectCapabilityChain
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -1239,7 +1277,9 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap, purposeOptions: {
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          purposeOptions: {
             requireChainDateMonotonicity: true
           }
         });
@@ -1272,7 +1312,9 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap, purposeOptions: {
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          purposeOptions: {
             // max TTL of 1 day
             maxDelegationTtl: ttl
           }
@@ -1321,7 +1363,9 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap, purposeOptions: {
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          purposeOptions: {
             maxDelegationTtl: ttl
           }
         });
@@ -1368,7 +1412,9 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap, purposeOptions: {
+          delegation: carolDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          purposeOptions: {
             maxDelegationTtl: ttl
           }
         });
@@ -2367,7 +2413,8 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap
+          delegation: dianaDelCap,
+          expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -2410,7 +2457,9 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, inspectCapabilityChain
+          delegation: dianaDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          inspectCapabilityChain
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
@@ -2468,7 +2517,8 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap
+          delegation: dianaDelCap,
+          expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -2517,7 +2567,9 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, purposeOptions: {
+          delegation: dianaDelCap,
+          expectedRootCapability: capabilities.root.beta.id,
+          purposeOptions: {
             inspectCapabilityChain,
             maxChainLength: 2
           }
@@ -2578,7 +2630,9 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, purposeOptions: {
+          delegation: dianaDelCap,
+          expectedRootCapability: rootCapability.id,
+          purposeOptions: {
             allowTargetAttenuation: true
           }
         });
@@ -2640,14 +2694,16 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, purposeOptions: {
+          delegation: dianaDelCap,
+          expectedRootCapability: rootCapability.id,
+          purposeOptions: {
             allowTargetAttenuation: true
           }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        const [error] = result.error.errors[0].errors;
+        const [error] = result.error.errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
       });
@@ -2773,8 +2829,8 @@ describe('zcapld', () => {
         result.error.errors.should.have.length(1);
         const [error] = result.error.errors;
         error.message.should.include(
-          `Expected target (${expectedTarget}) does not match ` +
-          `invocation target (${invalidTarget})`);
+          `Invocation target (${invalidTarget}) does not match capability ` +
+          `target (${carolDelCap.invocationTarget}).`);
       });
 
       it('should verify when invoking at a valid sub target', async () => {
@@ -2952,11 +3008,14 @@ describe('zcapld', () => {
 
         // NOTE: allowTargetAttenuation is intentionally not set
         // here, the default is false
-        const result = await _verifyDelegation({delegation: dianaDelCap});
+        const result = await _verifyDelegation({
+          delegation: dianaDelCap,
+          expectedRootCapability: rootCapability.id,
+        });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        const [error] = result.error.errors[0].errors;
+        const [error] = result.error.errors;
         error.message.should.contain('must be equivalent to its parent');
       });
 
@@ -3017,9 +3076,11 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, purposeOptions: {
-            allowTargetAttenuation: true,
-            inspectCapabilityChain
+          delegation: dianaDelCap,
+          expectedRootCapability: rootCapability.id,
+          inspectCapabilityChain,
+          purposeOptions: {
+            allowTargetAttenuation: true
           }
         });
         expect(result).to.exist;
@@ -3095,16 +3156,17 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap, purposeOptions: {
-            allowTargetAttenuation: true,
-            inspectCapabilityChain
+          delegation: dianaDelCap,
+          expectedRootCapability: rootCapability.id,
+          inspectCapabilityChain,
+          purposeOptions: {
+            allowTargetAttenuation: true
           }
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
         result.error.errors.should.have.length(1);
-        result.error.errors[0].errors.should.have.length(1);
-        const [error] = result.error.errors[0].errors;
+        const [error] = result.error.errors;
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
         // should not get to check chain because of invalid zcap
@@ -3218,13 +3280,15 @@ async function _delegate({
 }
 
 async function _verifyDelegation({
-  delegation, inspectCapabilityChain, purposeOptions = {}
+  delegation, expectedRootCapability, inspectCapabilityChain,
+  purposeOptions = {}
 }) {
   return jsigs.verify(delegation, {
     documentLoader: testLoader,
     suite: new Ed25519Signature2020(),
     purpose: new CapabilityDelegation({
       suite: new Ed25519Signature2020(),
+      expectedRootCapability,
       inspectCapabilityChain,
       ...purposeOptions
     })

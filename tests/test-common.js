@@ -803,21 +803,21 @@ describe('zcapld', () => {
     describe('Chain depth of 3', () => {
       it('should verify chain', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
@@ -827,7 +827,7 @@ describe('zcapld', () => {
       it('should fail to verify chain with non-embedded last ' +
         'delegated zcap', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
@@ -838,16 +838,16 @@ describe('zcapld', () => {
         // instead it is erroneously just the ID of it...
 
         // first check to ensure that delegation fails "client side"
-        let carolDelCap;
+        let carolZcap;
         let localError;
         try {
           // bob attempts to delegate to carol
-          carolDelCap = await _delegate({
-            parentCapability: bobDelCap,
+          carolZcap = await _delegate({
+            parentCapability: bobZcap,
             controller: carol,
             delegator: bob,
             // bad last entry of an ID instead of an object here
-            capabilityChain: [capabilities.root.beta.id, bobDelCap.id]
+            capabilityChain: [capabilities.root.beta.id, bobZcap.id]
           });
         } catch(e) {
           localError = e;
@@ -860,8 +860,8 @@ describe('zcapld', () => {
         // now skip client-side validation
         // bob delegates to carol (erroneously and the API allows it because
         // of the special `_skipLocalValidationForTesting` flag)
-        carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob,
           purposeOptions: {
@@ -869,12 +869,12 @@ describe('zcapld', () => {
             // when verifying
             _skipLocalValidationForTesting: true,
             // bad last chain entry
-            capabilityChain: [capabilities.root.beta.id, bobDelCap.id]
+            capabilityChain: [capabilities.root.beta.id, bobZcap.id]
           }
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -888,7 +888,7 @@ describe('zcapld', () => {
       it('should fail to verify chain with misreferenced parent ' +
         'zcap', async () => {
         // alice delegates to bob but with bad root reference in chain
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice,
@@ -897,16 +897,16 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob,
           // proper capability chain
-          capabilityChain: [capabilities.root.beta.id, bobDelCap]
+          capabilityChain: [capabilities.root.beta.id, bobZcap]
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -920,7 +920,7 @@ describe('zcapld', () => {
       it('should fail to verify a chain ' +
         'w/invalid allowedAction strings', async () => {
         // alice delegates to bob w/ allowed action restriction
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -939,21 +939,21 @@ describe('zcapld', () => {
 
         // bob tries to delegate to carol with an allowed action restriction
         // that bob is not allowed to set (bob can't let carol "write")
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             allowedAction: 'write'
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -968,7 +968,7 @@ describe('zcapld', () => {
       it('should fail to verify chain w/invalid allowedAction string ' +
         'vs array', async () => {
         // alice delegates to bob w/ allow action restriction
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -983,21 +983,21 @@ describe('zcapld', () => {
 
         // bob delegates to carol with less restrictive allowed action rule
         // that he is not allowed to make
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             allowedAction: ['read', 'write']
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -1012,7 +1012,7 @@ describe('zcapld', () => {
       it('should fail to verify chain ' +
         'w/invalid allowedAction arrays', async () => {
         // alice delegates to bob w/ allowed action restriction array
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1027,21 +1027,21 @@ describe('zcapld', () => {
 
         // bob delegates to carol with a different allowed action restriction
         // array that he is not allowed to use
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             allowedAction: ['foo', 'bar']
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -1056,7 +1056,7 @@ describe('zcapld', () => {
       it('should verify chain when child allowedAction is ' +
         'a valid subset of the parent allowedAction array', async () => {
         // alice delegates to bob w/ allowed action restriction array
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1071,21 +1071,21 @@ describe('zcapld', () => {
 
         // bob delegates to carol and further restricts which actions she is
         // allowed to take
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             allowedAction: ['read']
           },
           delegator: bob,
-          parentCapability: bobDelCap
+          parentCapability: bobZcap
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -1095,28 +1095,28 @@ describe('zcapld', () => {
       it('should verify chain when child allowedAction is ' +
         'a valid subset of the undefined parent allowedAction', async () => {
         // alice delegates to bob w/ no special action restrictions
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol and adds an allowed action restriction
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             allowedAction: 'read'
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         should.exist(result);
@@ -1125,23 +1125,23 @@ describe('zcapld', () => {
 
       it('should fail to verify chain w/bad middle capability', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
         // change ID to something else (breaking signature)
-        bobDelCap.id = uuid();
+        bobZcap.id = uuid();
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
@@ -1151,23 +1151,23 @@ describe('zcapld', () => {
 
       it('should fail to verify chain w/bad last capability', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
         // change ID to something else (breaking signature)
-        carolDelCap.id = uuid();
+        carolZcap.id = uuid();
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
@@ -1179,15 +1179,15 @@ describe('zcapld', () => {
 
       it('should verify chain w/inspectCapabilityChain', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1206,7 +1206,7 @@ describe('zcapld', () => {
           return {valid: true};
         };
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           inspectCapabilityChain
         });
@@ -1218,15 +1218,15 @@ describe('zcapld', () => {
       it('should fail to verify w/inspectCapabilityChain ' +
         'w/revoked capability', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1247,7 +1247,7 @@ describe('zcapld', () => {
           };
         };
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           inspectCapabilityChain
         });
@@ -1261,15 +1261,15 @@ describe('zcapld', () => {
       it('should fail to verify w/delegated zcap created before ' +
         'parent', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob,
           // force proof creation date to be in the past
@@ -1277,7 +1277,7 @@ describe('zcapld', () => {
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           purposeOptions: {
             requireChainDateMonotonicity: true
@@ -1298,21 +1298,21 @@ describe('zcapld', () => {
         const ttl = 1000 * 60 * 60 * 24;
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           purposeOptions: {
             // max TTL of 1 day
@@ -1334,7 +1334,7 @@ describe('zcapld', () => {
         // force delegation into the future
         const delegated = new Date(Date.now() + ttl);
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1349,21 +1349,21 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
-            expires: bobDelCap.expires
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires: bobZcap.expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           purposeOptions: {
             maxDelegationTtl: ttl
@@ -1384,7 +1384,7 @@ describe('zcapld', () => {
         const now = new Date();
         // alice delegates to bob with an expiration date that's too far
         // into the future (TTL too long for bob's zcap)
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1398,21 +1398,21 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
-            expires: bobDelCap.expires
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires: bobZcap.expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         const result = await _verifyDelegation({
-          delegation: carolDelCap,
+          delegation: carolZcap,
           expectedRootCapability: capabilities.root.beta.id,
           purposeOptions: {
             maxDelegationTtl: ttl
@@ -1427,15 +1427,15 @@ describe('zcapld', () => {
 
       it('should verify invocation', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1443,7 +1443,7 @@ describe('zcapld', () => {
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap,
+          doc, invoker: carol, capability: carolZcap,
           capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
@@ -1456,7 +1456,7 @@ describe('zcapld', () => {
 
       it('should verify chain w/ multiple controllers', async () => {
         // alice delegates the same zcap to both bob and another party
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1469,8 +1469,8 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1478,7 +1478,7 @@ describe('zcapld', () => {
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap,
+          doc, invoker: carol, capability: carolZcap,
           capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
@@ -1491,15 +1491,15 @@ describe('zcapld', () => {
 
       it('should verify invoking w/inspectCapabilityChain', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1507,7 +1507,7 @@ describe('zcapld', () => {
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1536,7 +1536,7 @@ describe('zcapld', () => {
         const ttl = 1000 * 60 * 60 * 24;
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1550,23 +1550,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
-            expires: bobDelCap.expires
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires: bobZcap.expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1598,15 +1598,15 @@ describe('zcapld', () => {
       it('should fail invoking ' +
         'w/inspectCapabilityChain and a revoked capability', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -1614,7 +1614,7 @@ describe('zcapld', () => {
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         let checkedChain = false;
         const inspectCapabilityChain = async ({
@@ -1722,7 +1722,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 1);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1736,23 +1736,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -1772,7 +1772,7 @@ describe('zcapld', () => {
         // verifier side
 
         // alice delegates to bob with an invalid `expires` date
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1788,7 +1788,7 @@ describe('zcapld', () => {
         // bob invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: bob, capability: bobDelCap, capabilityAction: 'read'
+          doc, invoker: bob, capability: bobZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -1814,7 +1814,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() - 10);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1828,23 +1828,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         // the capability was still valid 20 hours ago, use that as the
         // verification date
@@ -1872,7 +1872,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() - 50);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1886,23 +1886,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         // the capability was also expired 20 hours ago
         const currentDate = new Date();
@@ -1934,7 +1934,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 50);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1948,23 +1948,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         // the capability will have expired in 100 hours, so pass that future
         // time in as the verification date to trigger an error
@@ -2000,7 +2000,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 1);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2018,22 +2018,22 @@ describe('zcapld', () => {
         // checks it
 
         // bob delegates to carol (but it is missing `expires`)
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2057,7 +2057,7 @@ describe('zcapld', () => {
         // (which is in the past)
         let expires = new Date(0);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2071,23 +2071,23 @@ describe('zcapld', () => {
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2115,7 +2115,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2133,23 +2133,23 @@ describe('zcapld', () => {
         expires = new Date();
         expires.setHours(expires.getHours() - 10);
         expires = expires.toISOString();
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2176,7 +2176,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2193,23 +2193,23 @@ describe('zcapld', () => {
         // set expires for this delegation to the Unix epoch
         expires = new Date(0);
         expires = expires.toISOString();
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2237,7 +2237,7 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2261,23 +2261,23 @@ describe('zcapld', () => {
         expires = new Date();
         expires.setHours(expires.getHours() + 100);
         expires = expires.toISOString();
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2302,7 +2302,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2313,23 +2313,23 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() + 10);
         expires = expires.toISOString();
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2347,7 +2347,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2358,23 +2358,23 @@ describe('zcapld', () => {
         let expires = new Date();
         expires.setHours(expires.getHours() - 10);
         expires = expires.toISOString();
-        const carolDelCap = await _delegate({
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
-            invocationTarget: bobDelCap.invocationTarget,
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
             expires
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read'
@@ -2392,28 +2392,28 @@ describe('zcapld', () => {
     describe('Chain depth of 4', () => {
       it('should verify chain', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         // carol delegates to diana
-        const dianaDelCap = await _delegate({
-          parentCapability: carolDelCap,
+        const dianaZcap = await _delegate({
+          parentCapability: carolZcap,
           controller: diana,
           delegator: carol
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
@@ -2422,22 +2422,22 @@ describe('zcapld', () => {
 
       it('should verify chain w/inspectCapabilityChain', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         // carol delegates to diana
-        const dianaDelCap = await _delegate({
-          parentCapability: carolDelCap,
+        const dianaZcap = await _delegate({
+          parentCapability: carolZcap,
           controller: diana,
           delegator: carol
         });
@@ -2457,7 +2457,7 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: capabilities.root.beta.id,
           inspectCapabilityChain
         });
@@ -2468,31 +2468,31 @@ describe('zcapld', () => {
 
       it('should fail to verify w/embedded middle zcap', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         // first check to ensure that delegation fails "client side"
-        let dianaDelCap;
+        let dianaZcap;
         let localError;
         try {
           // carol delegates to diana
-          dianaDelCap = await _delegate({
-            parentCapability: carolDelCap,
+          dianaZcap = await _delegate({
+            parentCapability: carolZcap,
             controller: diana,
             delegator: carol,
             // bad capability chain entry w/ bob's zcap embedded when it should
             // just have its ID here
-            capabilityChain: [capabilities.root.beta.id, bobDelCap, carolDelCap]
+            capabilityChain: [capabilities.root.beta.id, bobZcap, carolZcap]
           });
         } catch(e) {
           localError = e;
@@ -2504,20 +2504,20 @@ describe('zcapld', () => {
 
         // now skip client-side validation...
         // carol delegates to diana
-        dianaDelCap = await _delegate({
-          parentCapability: carolDelCap,
+        dianaZcap = await _delegate({
+          parentCapability: carolZcap,
           controller: diana,
           delegator: carol,
           purposeOptions: {
             _skipLocalValidationForTesting: true,
             // bad capability chain entry w/ bob's zcap embedded when it should
             // just have its ID here
-            capabilityChain: [capabilities.root.beta.id, bobDelCap, carolDelCap]
+            capabilityChain: [capabilities.root.beta.id, bobZcap, carolZcap]
           }
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
@@ -2532,22 +2532,22 @@ describe('zcapld', () => {
 
       it('should fail to verify chain exceeding maxChainLength', async () => {
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
 
         // carol delegates to diana
-        const dianaDelCap = await _delegate({
-          parentCapability: carolDelCap,
+        const dianaZcap = await _delegate({
+          parentCapability: carolZcap,
           controller: diana,
           delegator: carol
         });
@@ -2567,7 +2567,7 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: capabilities.root.beta.id,
           purposeOptions: {
             inspectCapabilityChain,
@@ -2600,15 +2600,15 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -2616,21 +2616,21 @@ describe('zcapld', () => {
         // carol delegates to diana w/ restriction to access to a specific
         // document under carol's capability
         const invocationTarget =
-          `${carolDelCap.invocationTarget}/a-specific-document`;
-        const dianaDelCap = await _delegate({
+          `${carolZcap.invocationTarget}/a-specific-document`;
+        const dianaZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: diana.id(),
-            parentCapability: carolDelCap.id,
+            parentCapability: carolZcap.id,
             invocationTarget
           },
-          parentCapability: carolDelCap,
+          parentCapability: carolZcap,
           delegator: carol
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: rootCapability.id,
           purposeOptions: {
             allowTargetAttenuation: true
@@ -2654,7 +2654,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2663,38 +2663,38 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol delegates to diana erroneously expanding her access beyond
         // what bob restricted carol's to
-        const dianaDelCap = await _delegate({
+        const dianaZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: diana.id(),
-            parentCapability: carolDelCap.id,
+            parentCapability: carolZcap.id,
             // NOTE: this is an invalid attempt to degate a capability to the
             // root of the EDV when carol's zcap has an invocationTarget that
             // is a specific EDV document
-            invocationTarget: bobDelCap.invocationTarget
+            invocationTarget: bobZcap.invocationTarget
           },
-          parentCapability: carolDelCap,
+          parentCapability: carolZcap,
           delegator: carol
         });
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: rootCapability.id,
           purposeOptions: {
             allowTargetAttenuation: true
@@ -2720,7 +2720,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2729,23 +2729,23 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol invokes
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolDelCap, capabilityAction: 'read'
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
@@ -2772,7 +2772,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2781,16 +2781,16 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
@@ -2804,7 +2804,7 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol,
           purposeOptions: {
-            capability: carolDelCap,
+            capability: carolZcap,
             capabilityAction: 'read',
             invocationTarget: invalidTarget
           }
@@ -2830,7 +2830,7 @@ describe('zcapld', () => {
         const [error] = result.error.errors;
         error.message.should.include(
           `Invocation target (${invalidTarget}) does not match capability ` +
-          `target (${carolDelCap.invocationTarget}).`);
+          `target (${carolZcap.invocationTarget}).`);
       });
 
       it('should verify when invoking at a valid sub target', async () => {
@@ -2845,7 +2845,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2854,16 +2854,16 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
@@ -2872,11 +2872,11 @@ describe('zcapld', () => {
         // the verifier when `allowTargetAttenuation = true`
         const doc = clone(mock.exampleDoc);
         // Note: This is an attenuated path off of carol's zcap's target
-        const validSubTarget = `${carolDelCap.invocationTarget}/sub-path`;
+        const validSubTarget = `${carolZcap.invocationTarget}/sub-path`;
         const invocation = await _invoke({
           doc, invoker: carol,
           purposeOptions: {
-            capability: carolDelCap,
+            capability: carolZcap,
             capabilityAction: 'read',
             invocationTarget: validSubTarget
           }
@@ -2906,7 +2906,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -2915,16 +2915,16 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
@@ -2938,7 +2938,7 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol,
           purposeOptions: {
-            capability: carolDelCap,
+            capability: carolZcap,
             capabilityAction: 'read',
             invocationTarget: invalidTarget
           }
@@ -2960,7 +2960,7 @@ describe('zcapld', () => {
         const [error] = result.error.errors;
         error.message.should.include(
           `Invocation target (${invalidTarget}) does not match capability ` +
-          `target (${carolDelCap.invocationTarget})`);
+          `target (${carolZcap.invocationTarget})`);
       });
 
       it('should fail to verify when allowTargetAttenuation is not ' +
@@ -2977,15 +2977,15 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -2993,23 +2993,23 @@ describe('zcapld', () => {
         // carol delegates to diana w/ restriction to access to a specific
         // document under carol's capability
         const invocationTarget =
-          `${carolDelCap.invocationTarget}/a-specific-document`;
-        const dianaDelCap = await _delegate({
+          `${carolZcap.invocationTarget}/a-specific-document`;
+        const dianaZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: diana.id(),
-            parentCapability: carolDelCap.id,
+            parentCapability: carolZcap.id,
             invocationTarget
           },
-          parentCapability: carolDelCap,
+          parentCapability: carolZcap,
           delegator: carol
         });
 
         // NOTE: allowTargetAttenuation is intentionally not set
         // here, the default is false
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: rootCapability.id,
         });
         expect(result).to.exist;
@@ -3032,15 +3032,15 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
         });
 
         // bob delegates to carol
-        const carolDelCap = await _delegate({
-          parentCapability: bobDelCap,
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
           controller: carol,
           delegator: bob
         });
@@ -3048,16 +3048,16 @@ describe('zcapld', () => {
         // carol delegates to diana w/ restriction to access to a specific
         // document under carol's capability
         const invocationTarget =
-          `${carolDelCap.invocationTarget}/a-specific-document`;
-        const dianaDelCap = await _delegate({
+          `${carolZcap.invocationTarget}/a-specific-document`;
+        const dianaZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: diana.id(),
-            parentCapability: carolDelCap.id,
+            parentCapability: carolZcap.id,
             invocationTarget
           },
-          parentCapability: carolDelCap,
+          parentCapability: carolZcap,
           delegator: carol
         });
 
@@ -3076,7 +3076,7 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: rootCapability.id,
           inspectCapabilityChain,
           purposeOptions: {
@@ -3102,7 +3102,7 @@ describe('zcapld', () => {
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
-        const bobDelCap = await _delegate({
+        const bobZcap = await _delegate({
           parentCapability: rootCapability,
           controller: bob,
           delegator: alice
@@ -3111,33 +3111,33 @@ describe('zcapld', () => {
         // bob delegates to carol w/ restriction to access to a specific
         // document under bob's capability
         const invocationTarget =
-          `${bobDelCap.invocationTarget}/a-specific-document`;
-        const carolDelCap = await _delegate({
+          `${bobZcap.invocationTarget}/a-specific-document`;
+        const carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
-            parentCapability: bobDelCap.id,
+            parentCapability: bobZcap.id,
             invocationTarget
           },
-          parentCapability: bobDelCap,
+          parentCapability: bobZcap,
           delegator: bob
         });
 
         // carol delegates to diana erroneously expanding her access beyond
         // what bob restricted carol's to
-        const dianaDelCap = await _delegate({
+        const dianaZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: diana.id(),
-            parentCapability: carolDelCap.id,
+            parentCapability: carolZcap.id,
             // NOTE: this is an invalid attempt to degate a capability to the
             // root of the EDV when carol's zcap has an invocationTarget that
             // is a specific EDV document
-            invocationTarget: bobDelCap.invocationTarget
+            invocationTarget: bobZcap.invocationTarget
           },
-          parentCapability: carolDelCap,
+          parentCapability: carolZcap,
           delegator: carol
         });
 
@@ -3156,7 +3156,7 @@ describe('zcapld', () => {
         };
 
         const result = await _verifyDelegation({
-          delegation: dianaDelCap,
+          delegation: dianaZcap,
           expectedRootCapability: rootCapability.id,
           inspectCapabilityChain,
           purposeOptions: {

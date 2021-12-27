@@ -1230,11 +1230,11 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(2);
           capabilityChainMeta.should.be.an('array');
@@ -1250,7 +1250,7 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should fail to verify w/inspectCapabilityChain ' +
@@ -1269,11 +1269,11 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(2);
           _checkCapabilityChain({capabilityChain});
@@ -1293,7 +1293,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         expect(result.error.errors[0]).to.exist;
         result.error.errors[0].message.should.contain('revoked');
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should fail to verify w/delegated zcap created before ' +
@@ -1547,11 +1547,11 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(2);
           _checkCapabilityChain({capabilityChain});
@@ -1565,7 +1565,7 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should verify invoking ' +
@@ -1606,11 +1606,11 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(2);
           _checkCapabilityChain({capabilityChain});
@@ -1630,7 +1630,7 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should fail invoking ' +
@@ -1654,11 +1654,11 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain
         }) => {
-          checkedChain = true;
+          checkedChain++;
           should.exist(capabilityChain);
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(2);
@@ -1680,7 +1680,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         expect(result.error.errors[0]).to.exist;
         result.error.errors[0].message.should.contain('has been revoked');
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
     }); // end Chain depth of 3
 
@@ -2480,11 +2480,11 @@ describe('zcapld', () => {
           delegator: carol
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -2501,7 +2501,7 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should fail to verify w/embedded middle zcap', async () => {
@@ -2590,11 +2590,11 @@ describe('zcapld', () => {
           delegator: carol
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -2620,7 +2620,7 @@ describe('zcapld', () => {
         result.error.errors[0].message.should.equal(
           'The capability chain exceeds the maximum allowed length of 2.');
         // should not get to check chain because of invalid chain length
-        checkedChain.should.be.false;
+        checkedChain.should.equal(0);
       });
     }); // end Chain depth of 4
 
@@ -3099,11 +3099,11 @@ describe('zcapld', () => {
           delegator: carol
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -3123,7 +3123,7 @@ describe('zcapld', () => {
         });
         expect(result).to.exist;
         expect(result.verified).to.be.true;
-        checkedChain.should.be.true;
+        checkedChain.should.equal(1);
       });
 
       it('should fail to verify an increasingly permissive chain ' +
@@ -3179,11 +3179,11 @@ describe('zcapld', () => {
           delegator: carol
         });
 
-        let checkedChain = false;
+        let checkedChain = 0;
         const inspectCapabilityChain = async ({
           capabilityChain, capabilityChainMeta
         }) => {
-          checkedChain = true;
+          checkedChain++;
           capabilityChain.should.be.an('array');
           capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
@@ -3208,7 +3208,7 @@ describe('zcapld', () => {
         error.message.should.include(
           'delegated capability must be equivalent or more restrictive');
         // should not get to check chain because of invalid zcap
-        checkedChain.should.be.false;
+        checkedChain.should.equal(0);
       });
     }); // end Path-based hierarchical attenuation
   });

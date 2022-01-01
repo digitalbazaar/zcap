@@ -139,8 +139,10 @@ describe('zcapld', () => {
       // 3. Sign the delegated capability with Alice's delegation key
       // (this works because Alice is the root capability's controller)
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice, date: CONSTANT_DATE,
-        capabilityChain: [capabilities.root.alpha.id]
+        newCapability,
+        parentCapability: capabilities.root.alpha,
+        delegator: alice,
+        date: CONSTANT_DATE
       });
       expect(delegatedCapability).to.deep.equal(capabilities.delegated.alpha);
     });
@@ -161,13 +163,15 @@ describe('zcapld', () => {
       // 3. Sign the delegated capability with Alice's delegation key
       // (this works because Alice is the root capability's controller)
       const delegatedCapability = await _delegate({
-        newCapability, delegator: alice, date: CONSTANT_DATE,
-        capabilityChain: [capabilities.root.beta.id]
+        newCapability,
+        parentCapability: capabilities.root.beta,
+        delegator: alice,
+        date: CONSTANT_DATE
       });
       expect(delegatedCapability).to.deep.equal(capabilities.delegated.beta);
     });
 
-    it('should fail when missing "capabilityChain" and "parentCapability"',
+    it('should fail when missing "parentCapability"',
       async () => {
       let err;
       try {
@@ -180,8 +184,8 @@ describe('zcapld', () => {
       }
       expect(err).to.exist;
       expect(err.message).to.equal(
-        'Either "capabilityChain" or "parentCapability" is required to ' +
-        'create a capability delegation proof.');
+        '"parentCapability" must be a string expressing the ID of a root ' +
+        'capability or an object expressing the full parent capability.');
     });
 
     it('should succeed when passing only "parentCapability"', async () => {
@@ -233,8 +237,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.alpha,
         controller: bob.get('capabilityInvocation', 0).id,
-        delegator: alice,
-        capabilityChain: [capabilities.root.alpha.id]
+        delegator: alice
       });
       const result = await _verifyDelegation({
         delegation: delegatedCapability,
@@ -249,8 +252,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.alpha,
         controller: bob.get('capabilityInvocation', 0).id,
-        delegator: alice,
-        capabilityChain: [capabilities.root.alpha.id]
+        delegator: alice
       });
       const result = await _verifyDelegation({
         delegation: delegatedCapability,
@@ -268,8 +270,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.alpha,
         controller: bob.get('capabilityInvocation', 0).id,
-        delegator: alice,
-        capabilityChain: [capabilities.root.alpha.id]
+        delegator: alice
       });
 
       // bob invokes the delegated zcap
@@ -548,8 +549,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.beta,
         controller: bob,
-        delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
+        delegator: alice
       });
 
       // bob invokes
@@ -579,8 +579,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.beta,
         controller: bob,
-        delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
+        delegator: alice
       });
       const result = await _verifyDelegation({
         delegation: delegatedCapability,
@@ -596,8 +595,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.beta,
         controller: bob,
-        delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
+        delegator: alice
       });
 
       // bob invokes
@@ -620,8 +618,7 @@ describe('zcapld', () => {
       const delegatedCapability = await _delegate({
         parentCapability: capabilities.root.beta,
         controller: bob,
-        delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
+        delegator: alice
       });
 
       // bob invokes using `capabilityAction` of 'write' -- and since that
@@ -727,8 +724,8 @@ describe('zcapld', () => {
           expires: EXPIRES_3000_DATE,
           allowedAction: 'write'
         },
-        delegator: alice,
-        capabilityChain: [capabilities.root.beta.id]
+        parentCapability: capabilities.root.beta,
+        delegator: alice
       });
 
       // bob tries to invoke and sets `capabilityAction` to something other
@@ -831,19 +828,19 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should fail to verify chain with non-embedded last ' +
-        'delegated zcap', async () => {
-        // alice delegates to bob
+      it('should fail to verify chain with embedded root ' +
+        'zcap in chain', async () => {
+        // alice attempts to delegate to bob w/bad chain
         const bobZcap = await _delegate({
           parentCapability: capabilities.root.beta,
           controller: bob,
-          delegator: alice
+          delegator: alice,
+          // override chain
+          // bad last entry of an embedded root zcap instead of an ID string
+          _capabilityChain: [capabilities.root.beta]
         });
 
-        // bob delegates to carol but with an invalid capability chain because
-        // the last entry in the chain MUST be bob's full delegated zcap and
-        // instead it is erroneously just the ID of it...
-
+        // bob delegates to carol...
         // first check to ensure that delegation fails "client side"
         let carolZcap;
         let localError;
@@ -852,9 +849,7 @@ describe('zcapld', () => {
           carolZcap = await _delegate({
             parentCapability: bobZcap,
             controller: carol,
-            delegator: bob,
-            // bad last entry of an ID instead of an object here
-            capabilityChain: [capabilities.root.beta.id, bobZcap.id]
+            delegator: bob
           });
         } catch(e) {
           localError = e;
@@ -874,9 +869,45 @@ describe('zcapld', () => {
           purposeOptions: {
             // do not throw on bad last chain entry to test catching it
             // when verifying
+            _skipLocalValidationForTesting: true
+          }
+        });
+
+        const result = await _verifyDelegation({
+          delegation: carolZcap,
+          expectedRootCapability: capabilities.root.beta.id
+        });
+        should.exist(result);
+        result.verified.should.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.contain('it must consist of strings');
+      });
+
+      it('should fail to verify chain with non-embedded last ' +
+        'delegated zcap', async () => {
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: capabilities.root.beta,
+          controller: bob,
+          delegator: alice
+        });
+
+        // now skip client-side validation
+        // bob delegates to carol (erroneously and the API allows it because
+        // of the special `_skipLocalValidationForTesting` flag)
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
+          controller: carol,
+          delegator: bob,
+          purposeOptions: {
+            // do not throw on bad last chain entry to test catching it
+            // when verifying
             _skipLocalValidationForTesting: true,
+            // override chain
             // bad last chain entry
-            capabilityChain: [capabilities.root.beta.id, bobZcap.id]
+            _capabilityChain: [capabilities.root.beta.id, bobZcap.id]
           }
         });
 
@@ -899,8 +930,9 @@ describe('zcapld', () => {
           parentCapability: capabilities.root.beta,
           controller: bob,
           delegator: alice,
+          // override chain
           // intentionally reference `alpha` instead of `beta` to trigger error
-          capabilityChain: [capabilities.root.alpha.id]
+          _capabilityChain: [capabilities.root.alpha.id]
         });
 
         // bob delegates to carol
@@ -908,8 +940,9 @@ describe('zcapld', () => {
           parentCapability: bobZcap,
           controller: carol,
           delegator: bob,
+          // override chain
           // proper capability chain
-          capabilityChain: [capabilities.root.beta.id, bobZcap]
+          _capabilityChain: [capabilities.root.beta.id, bobZcap]
         });
 
         const result = await _verifyDelegation({
@@ -946,8 +979,9 @@ describe('zcapld', () => {
           parentCapability: bobZcap,
           controller: carol,
           delegator: bob,
+          // override chain
           // intentionally reference diana's zcap instead of bob's
-          capabilityChain: [capabilities.root.alpha.id, dianaZcap]
+          _capabilityChain: [capabilities.root.alpha.id, dianaZcap]
         });
 
         const result = await _verifyDelegation({
@@ -2737,38 +2771,17 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        // first check to ensure that delegation fails "client side"
-        let dianaZcap;
-        let localError;
-        try {
-          // carol delegates to diana
-          dianaZcap = await _delegate({
-            parentCapability: carolZcap,
-            controller: diana,
-            delegator: carol,
-            // bad capability chain entry w/ bob's zcap embedded when it should
-            // just have its ID here
-            capabilityChain: [capabilities.root.beta.id, bobZcap, carolZcap]
-          });
-        } catch(e) {
-          localError = e;
-        }
-        expect(localError).to.exist;
-        localError.name.should.equal('TypeError');
-        localError.message.should.contain(
-          'consist of strings of capability IDs');
-
-        // now skip client-side validation...
         // carol delegates to diana
-        dianaZcap = await _delegate({
+        const dianaZcap = await _delegate({
           parentCapability: carolZcap,
           controller: diana,
           delegator: carol,
           purposeOptions: {
             _skipLocalValidationForTesting: true,
+            // override chain
             // bad capability chain entry w/ bob's zcap embedded when it should
             // just have its ID here
-            capabilityChain: [capabilities.root.beta.id, bobZcap, carolZcap]
+            _capabilityChain: [capabilities.root.beta.id, bobZcap, carolZcap]
           }
         });
 
@@ -3532,7 +3545,7 @@ async function _verifyInvocation({
 
 async function _delegate({
   newCapability, parentCapability, controller, key, delegator, date,
-  capabilityChain, purposeOptions
+  _capabilityChain, purposeOptions
 }) {
   if(delegator) {
     key = delegator.get('capabilityDelegation', 0);
@@ -3541,11 +3554,11 @@ async function _delegate({
   if(purposeOptions) {
     // custom case
     purpose = new CapabilityDelegation({
-      capabilityChain, parentCapability, ...purposeOptions
+      parentCapability, _capabilityChain, ...purposeOptions
     });
   } else {
     // common case
-    purpose = new CapabilityDelegation({capabilityChain, parentCapability});
+    purpose = new CapabilityDelegation({parentCapability, _capabilityChain});
   }
   if(!newCapability) {
     // generate default delegated zcap via `controller` and `parentCapability`

@@ -9,9 +9,9 @@
   and they will be expressed by reference (just their ID) in a capability
   invocation proof. Delegated zcaps MUST be fully embedded (pass full object)
   when invoking and they will be fully embedded in a capability invocation proof.
-- **BREAKING**: When creating a capability delegation proof, if the
-  `capabilityChain` is not passed, then a new parameter `parentCapability`
-  MUST be passed so that the chain can be auto-computed.
+- **BREAKING**: When creating a capability delegation proof, a new parameter
+  `parentCapability` MUST be passed so that the chain can be auto-computed.
+  Passing `capabilityChain` is no longer permitted.
 - **BREAKING**: Require `capabilityAction` when creating capability invocation
   proofs and `expectedAction` when verifying proofs; removing previous
   optionality simplifies implementations.

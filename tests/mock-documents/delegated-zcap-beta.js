@@ -6,6 +6,7 @@ module.exports = {
   "id": "urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41",
   "parentCapability": "https://example.org/alice/caps#0",
   "controller": "https://example.com/i/bob",
+  "expires": "3000-01-01T00:01Z",
   "invocationTarget": "https://example.org/alice/targets/beta",
   "proof": {
     "type": "Ed25519Signature2020",
@@ -14,7 +15,7 @@ module.exports = {
       "https://example.org/alice/caps#0"
     ],
     "proofPurpose": "capabilityDelegation",
-    "proofValue": "z28dbP4b1dJw1h9Maho7TJ5M7Ar53zJdFAa5sq2iVW4BiegBntZqKkmBkTSJesfxhv2PjHCo12VozW2v8sSJz1NCa",
+    "proofValue": "z5tBRPbzifdC69CWhF2Y9UZ3KCXDuRHG4GqVjMWf2nCZG6XCUXoiDV75Afy93wQQC8sQtYxmwfhzW5bAeaKjLJuH4",
     "verificationMethod": "https://example.com/i/alice/keys/1"
   }
 };

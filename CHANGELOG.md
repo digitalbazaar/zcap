@@ -5,6 +5,8 @@
 ### Added
 - Add `createRootCapability` helper function to construct root zcaps from
   a root invocation target and a root controller.
+- Add local validation during delegation to prevent accidental delegation of
+  zcaps that violate delegation rules that a verifier would always reject.
 
 ### Changed
 - **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates

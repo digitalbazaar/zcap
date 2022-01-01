@@ -1014,13 +1014,37 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // FIXME: add code to make API prevent bob from doing this delegation
-        // and add a flag to enable skipping the check on that so that the
-        // verify code can check it as well (as it does here)
+        // bob delegates to carol...
+        // first check to ensure that delegation fails "client side"
+        let carolZcap;
+        let localError;
+        try {
+          // bob attempts to delegate to carol
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget,
+              expires: EXPIRES_3000_DATE,
+              allowedAction: 'write'
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.equal(
+          'The "allowedAction" in a delegated capability ' +
+          'must not be less restrictive than its parent.');
 
         // bob tries to delegate to carol with an allowed action restriction
         // that bob is not allowed to set (bob can't let carol "write")
-        const carolZcap = await _delegate({
+        carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1029,6 +1053,11 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires: EXPIRES_3000_DATE,
             allowedAction: 'write'
+          },
+          purposeOptions: {
+            // skip local validation to allow the zcap to be delegated so it
+            // can be checked by the verifier
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -1064,9 +1093,37 @@ describe('zcapld', () => {
           delegator: alice
         });
 
+        // bob delegates to carol...
+        // first check to ensure that delegation fails "client side"
+        let carolZcap;
+        let localError;
+        try {
+          // bob attempts to delegate to carol
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget,
+              expires: EXPIRES_3000_DATE,
+              allowedAction: ['read', 'write']
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.equal(
+          'The "allowedAction" in a delegated capability ' +
+          'must not be less restrictive than its parent.');
+
         // bob delegates to carol with less restrictive allowed action rule
         // that he is not allowed to make
-        const carolZcap = await _delegate({
+        carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1075,6 +1132,11 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires: EXPIRES_3000_DATE,
             allowedAction: ['read', 'write']
+          },
+          purposeOptions: {
+            // skip local validation to allow the zcap to be delegated so it
+            // can be checked by the verifier
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -1110,9 +1172,37 @@ describe('zcapld', () => {
           delegator: alice
         });
 
+        // bob delegates to carol...
+        // first check to ensure that delegation fails "client side"
+        let carolZcap;
+        let localError;
+        try {
+          // bob attempts to delegate to carol
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget,
+              expires: EXPIRES_3000_DATE,
+              allowedAction: ['foo', 'bar']
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.equal(
+          'The "allowedAction" in a delegated capability ' +
+          'must not be less restrictive than its parent.');
+
         // bob delegates to carol with a different allowed action restriction
         // array that he is not allowed to use
-        const carolZcap = await _delegate({
+        carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -1121,6 +1211,11 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires: EXPIRES_3000_DATE,
             allowedAction: ['foo', 'bar']
+          },
+          purposeOptions: {
+            // skip local validation to allow the zcap to be delegated so it
+            // can be checked by the verifier
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob

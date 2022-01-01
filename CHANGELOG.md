@@ -23,6 +23,11 @@
   implementations and improves security by reducing surface and providing
   an "out" for zcaps that can not be easily revoked by causing them to
   always expire eventually.
+- **BREAKING**: Combine `currentDate` and `date` parameters that were serving
+  the same purpose. These params are only used for verification and the `date`
+  parameter is used by the base class provided by jsonld-signatures, so the
+  `currentDate` parameter has been removed; use `date` instead, it is only
+  used for verification of proofs, not creation of proofs.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

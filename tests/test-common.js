@@ -14,7 +14,7 @@ const {
   CapabilityInvocation,
   CapabilityDelegation,
   createRootCapability,
-  constants: {ZCAP_CONTEXT_URL, ZCAP_ROOT_PREFIX}
+  constants: {ZCAP_CONTEXT_URL}
 } = zcapld;
 
 const {Ed25519Signature2020} =

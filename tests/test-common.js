@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2018-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2018-2022 Digital Bazaar, Inc. All rights reserved.
  */
 
 /* eslint-disable indent */
@@ -13,6 +13,7 @@ const {expect, helpers, jsigs, mock, zcapld} = options;
 const {
   CapabilityInvocation,
   CapabilityDelegation,
+  createRootCapability,
   constants: {ZCAP_CONTEXT_URL, ZCAP_ROOT_PREFIX}
 } = zcapld;
 
@@ -2576,8 +2577,6 @@ describe('zcapld', () => {
           'delegated capability must be equivalent or more restrictive');
       });
 
-      // FIXME: in the future, `expires` will be required on all delegated
-      // zcaps, so this test will need to be changed or removed
       it('should verify invoking a capability with only expires on ' +
         'second delegated capability', async () => {
         // only the second delegation has a valid future expiration...
@@ -2860,13 +2859,10 @@ describe('zcapld', () => {
       it('should verify chain', async () => {
         const rootTarget =
           'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971';
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
+        const rootCapability = createRootCapability({
           controller: alice.id(),
           invocationTarget: rootTarget
-        };
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -2915,13 +2911,10 @@ describe('zcapld', () => {
         'permissive than the parent capability', async () => {
         const rootTarget =
           'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e';
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
+        const rootCapability = createRootCapability({
           controller: alice.id(),
           invocationTarget: rootTarget
-        };
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -2983,13 +2976,10 @@ describe('zcapld', () => {
 
       it('should verify when invoking at an exact-match target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
-          invocationTarget: rootTarget,
-          controller: alice.id()
-        };
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3036,13 +3026,10 @@ describe('zcapld', () => {
       it('should fail to verify when invoking at an unexpected ' +
         'target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
-          invocationTarget: rootTarget,
-          controller: alice.id()
-        };
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3110,13 +3097,10 @@ describe('zcapld', () => {
 
       it('should verify when invoking at a valid sub target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
-          invocationTarget: rootTarget,
-          controller: alice.id()
-        };
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3172,13 +3156,10 @@ describe('zcapld', () => {
       it('should fail to verify when invoking at an invalid ' +
         'target', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
-          invocationTarget: rootTarget,
-          controller: alice.id()
-        };
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3244,13 +3225,10 @@ describe('zcapld', () => {
         'explicitly allowed', async () => {
         const rootTarget =
           'https://example.com/edvs/2c2fe4ab-ff54-4a82-b103-f806f50d364e';
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
+        const rootCapability = createRootCapability({
           controller: alice.id(),
           invocationTarget: rootTarget
-        };
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3300,13 +3278,10 @@ describe('zcapld', () => {
       it('should verify chain w/inspectCapabilityChain', async () => {
         const rootTarget =
           'https://example.com/edvs/83d7e997-d742-4b1a-9033-968f222b9144';
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
+        const rootCapability = createRootCapability({
           controller: alice.id(),
           invocationTarget: rootTarget
-        };
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -3372,13 +3347,10 @@ describe('zcapld', () => {
         'w/inspectCapabilityChain', async () => {
         const rootTarget =
           'https://example.com/edvs/d9dd2093-0908-47ba-8db7-954ff1cd81ee';
-        const rootCapability = {
-          // FIXME: add zcapld helper for creating root zcaps from a target
-          '@context': ZCAP_CONTEXT_URL,
-          id: `${ZCAP_ROOT_PREFIX}${encodeURIComponent(rootTarget)}`,
+        const rootCapability = createRootCapability({
           controller: alice.id(),
           invocationTarget: rootTarget
-        };
+        });
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob

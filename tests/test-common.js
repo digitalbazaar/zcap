@@ -1723,7 +1723,7 @@ describe('zcapld', () => {
     }); // end Chain depth of 3
 
     describe('Expiration date', () => {
-      it('CapabilityInvocation throws TypeError on currentDate = null',
+      it('CapabilityInvocation throws TypeError on invalid date',
         async () => {
         let result;
         let err;
@@ -1732,7 +1732,7 @@ describe('zcapld', () => {
             expectedTarget:
               'urn:uuid:1aaec12f-bcf2-40d8-8192-cc4dde9bca96',
             suite: new Ed25519Signature2020(),
-            currentDate: null,
+            date: 'invalid date',
           });
         } catch(e) {
           err = e;
@@ -1740,10 +1740,10 @@ describe('zcapld', () => {
         should.exist(err);
         should.not.exist(result);
         err.should.be.instanceof(TypeError);
-        err.message.should.contain('must be a Date');
+        err.message.should.contain('is not a valid date.');
       });
 
-      it('CapabilityDelegation throws TypeError on currentDate = null',
+      it('CapabilityDelegation throws TypeError on invalid date',
         async () => {
         let result;
         let err;
@@ -1753,7 +1753,7 @@ describe('zcapld', () => {
             // instance is for verifying a proof; otherwise different missing
             // param errors will be raised for creating a proof
             expectedRootCapability: 'urn:foo',
-            currentDate: null
+            date: 'invalid date'
           });
         } catch(e) {
           err = e;
@@ -1761,7 +1761,7 @@ describe('zcapld', () => {
         should.exist(err);
         should.not.exist(result);
         err.should.be.instanceof(TypeError);
-        err.message.should.contain('must be a Date');
+        err.message.should.contain('is not a valid date.');
       });
 
       it('should fail to verify root capability with `expires`',
@@ -1911,14 +1911,18 @@ describe('zcapld', () => {
       });
 
       it('should verify invoking a capability with `expires` ' +
-        'and `currentDate` parameter in the past', async () => {
+        'and `date` parameter in the past', async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:1c919b19-baab-45ee-b0ef-24309dfb355d';
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob a capability that is already expired
         // using the current machine clock ... but we will pass a modified
-        // verification time via `currentDate` below
+        // verification time via `date` below
+        // the capability was still valid 20 hours ago, use that as the
+        // verification date
+        const date = new Date();
+        date.setHours(date.getHours() - 20);
         let expires = new Date();
         expires.setHours(expires.getHours() - 10);
         expires = expires.toISOString();
@@ -1931,6 +1935,7 @@ describe('zcapld', () => {
             invocationTarget: rootCapability.invocationTarget,
             expires
           },
+          date,
           parentCapability: rootCapability,
           delegator: alice
         });
@@ -1945,6 +1950,7 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires
           },
+          date,
           parentCapability: bobZcap,
           delegator: bob
         });
@@ -1954,16 +1960,12 @@ describe('zcapld', () => {
         const invocation = await _invoke({
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
-        // the capability was still valid 20 hours ago, use that as the
-        // verification date
-        const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours() - 20);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
-            currentDate
+            date
           }
         });
         expect(result).to.exist;
@@ -1971,7 +1973,7 @@ describe('zcapld', () => {
       });
 
       it('should fail invoking a capability with `expires` ' +
-        'and `currentDate` parameter in the past', async () => {
+        'and `date` parameter in the past', async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
         addToLoader({doc: rootCapability});
@@ -1989,6 +1991,10 @@ describe('zcapld', () => {
             invocationTarget: rootCapability.invocationTarget,
             expires
           },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
           parentCapability: rootCapability,
           delegator: alice
         });
@@ -2003,6 +2009,10 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires
           },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
           parentCapability: bobZcap,
           delegator: bob
         });
@@ -2013,14 +2023,14 @@ describe('zcapld', () => {
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         // the capability was also expired 20 hours ago
-        const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours() - 20);
+        const date = new Date();
+        date.setHours(date.getHours() - 20);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
-            currentDate
+            date
           }
         });
         expect(result).to.exist;
@@ -2033,7 +2043,7 @@ describe('zcapld', () => {
       });
 
       it('should fail invoking a capability with `expires` ' +
-        'and `currentDate` parameter in the future', async () => {
+        'and `date` parameter in the future', async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
         addToLoader({doc: rootCapability});
@@ -2076,15 +2086,15 @@ describe('zcapld', () => {
         });
         // the capability will have expired in 100 hours, so pass that future
         // time in as the verification date to trigger an error
-        const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours() + 100);
+        const date = new Date();
+        date.setHours(date.getHours() + 100);
         const result = await _verifyInvocation({
           invocation, purposeOptions: {
             expectedAction: 'read',
             expectedRootCapability: rootCapability.id,
             expectedTarget: rootCapability.invocationTarget,
             suite: new Ed25519Signature2020(),
-            currentDate,
+            date,
           }
         });
         expect(result).to.exist;
@@ -2181,11 +2191,11 @@ describe('zcapld', () => {
           'Delegated capability must have a valid expires date');
       });
 
-      it.only('should fail delegating an expired capability', async () => {
+      it('should fail delegating an expired capability', async () => {
         // the capability from alice to bob has proper expires, but the
         // capability from bob to carol does not...
         const rootCapability = {...capabilities.root.beta};
-        rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
+        rootCapability.id = 'urn:zcap:ef98a880-6b36-11ec-940f-10bf48838a41';
         addToLoader({doc: rootCapability});
 
         // alice delegates to bob
@@ -2206,7 +2216,7 @@ describe('zcapld', () => {
         });
 
         // first check to ensure that delegation fails "client side"
-        const afterExpired = new Date(Date.parse(expires) + 1);
+        const afterExpired = new Date(Date.parse(expires) + 1000);
         let carolZcap;
         let localError;
         try {
@@ -2220,9 +2230,7 @@ describe('zcapld', () => {
               invocationTarget: bobZcap.invocationTarget,
               expires
             },
-            purposeOptions: {
-              date: afterExpired
-            },
+            date: afterExpired,
             parentCapability: bobZcap,
             delegator: bob
           });
@@ -2245,8 +2253,8 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires
           },
+          date: afterExpired,
           purposeOptions: {
-            date: afterExpired,
             // must skip local validation to allow zcap w/o `expires`
             _skipLocalValidationForTesting: true
           },
@@ -2262,7 +2270,7 @@ describe('zcapld', () => {
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read',
           purposeOptions: {
-            currenDate: afterExpired
+            date: afterExpired
           }
         });
         expect(result).to.exist;
@@ -2270,8 +2278,8 @@ describe('zcapld', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.include(
-          'Expired');
+        error.message.should.equal(
+          'A capability in the delegation chain has expired.');
       });
 
       it('should fail invoking a capability with ' +
@@ -2293,6 +2301,10 @@ describe('zcapld', () => {
             invocationTarget: rootCapability.invocationTarget,
             expires
           },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
           parentCapability: rootCapability,
           delegator: alice
         });
@@ -2306,6 +2318,10 @@ describe('zcapld', () => {
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
             expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2369,6 +2385,10 @@ describe('zcapld', () => {
             invocationTarget: bobZcap.invocationTarget,
             expires
           },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
           parentCapability: bobZcap,
           delegator: bob
         });
@@ -2386,7 +2406,7 @@ describe('zcapld', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.contain(
+        error.message.should.equal(
           'A capability in the delegation chain has expired.');
       });
 
@@ -2428,6 +2448,10 @@ describe('zcapld', () => {
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
             expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2593,6 +2617,10 @@ describe('zcapld', () => {
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
             expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -3485,7 +3513,8 @@ async function _verifyInvocation({
       expectedRootCapability: rootCapability.id,
       expectedAction,
       inspectCapabilityChain,
-      suite: new Ed25519Signature2020()
+      suite: new Ed25519Signature2020(),
+      ...purposeOptions
     });
   } else {
     // custom case

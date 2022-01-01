@@ -2631,10 +2631,6 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // FIXME: API should prevent bob from delegating a zcap that expires
-        // after his own so we need to add code for that, but we still need
-        // to continue to check this on the verifier side too
-
         // bob delegates to carol but erroneously tries to give her a zcap
         // that expires after his own...
         // set expires for this delegation beyond the expiration of the
@@ -2642,7 +2638,35 @@ describe('zcapld', () => {
         expires = new Date();
         expires.setHours(expires.getHours() + 100);
         expires = expires.toISOString();
-        const carolZcap = await _delegate({
+        // first check to ensure that delegation fails "client side"
+        let carolZcap;
+        let localError;
+        try {
+          // bob attempts to delegate to carol
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget,
+              expires
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.equal(
+          'The `expires` property in a delegated ' +
+          'capability must not be less restrictive than its ' +
+          'parent.');
+
+        // bob delegates to carol
+        carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
@@ -2650,6 +2674,10 @@ describe('zcapld', () => {
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
             expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob

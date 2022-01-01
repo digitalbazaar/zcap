@@ -1044,7 +1044,7 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
       });
 
       it('should fail to verify chain w/invalid allowedAction string ' +
@@ -1090,7 +1090,7 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
       });
 
       it('should fail to verify chain ' +
@@ -1136,7 +1136,7 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
       });
 
       it('should verify chain when child allowedAction is ' +
@@ -2574,7 +2574,7 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.contain(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
       });
 
       it('should verify invoking a capability with only expires on ' +
@@ -2971,7 +2971,7 @@ describe('zcapld', () => {
         result.error.errors.should.have.length(1);
         const [error] = result.error.errors;
         error.message.should.include(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
       });
 
       it('should verify when invoking at an exact-match target', async () => {
@@ -3423,7 +3423,7 @@ describe('zcapld', () => {
         result.error.errors.should.have.length(1);
         const [error] = result.error.errors;
         error.message.should.include(
-          'delegated capability must be equivalent or more restrictive');
+          'delegated capability must not be less restrictive');
         // should not get to check chain because of invalid zcap
         checkedChain.should.equal(0);
       });

@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 6.0.0 - 2021-12-xx
+## 6.0.0 - 2022-01-xx
 
 ### Changed
 - **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates
@@ -18,6 +18,11 @@
 - **BREAKING**: Changed default to check for chain date monotonicity and
   removed the option to do otherwise. This was an expected change for the
   next major breaking release.
+- **BREAKING**: `expires` is not permitted on root capabilities and is
+  required on delegated capabilities. Removing optionality here simplifies
+  implementations and improves security by reducing surface and providing
+  an "out" for zcaps that can not be easily revoked by causing them to
+  always expire eventually.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

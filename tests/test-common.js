@@ -46,6 +46,7 @@ const alpha = new Controller(privateDidDocs.alpha);
 // const delta = new Controller(privateDidDocs.delta);
 
 const CONSTANT_DATE = '2018-02-13T21:26:08Z';
+const EXPIRES_3000_DATE = '3000-01-01T00:01Z';
 
 // run tests
 describe('zcapld', () => {
@@ -132,7 +133,8 @@ describe('zcapld', () => {
         id: 'urn:uuid:055f47a4-61d3-11ec-9144-10bf48838a41',
         controller: bob.get('capabilityInvocation', 0).id,
         parentCapability: capabilities.root.alpha.id,
-        invocationTarget: capabilities.root.alpha.invocationTarget
+        invocationTarget: capabilities.root.alpha.invocationTarget,
+        expires: EXPIRES_3000_DATE
       };
       // 3. Sign the delegated capability with Alice's delegation key
       // (this works because Alice is the root capability's controller)
@@ -153,7 +155,8 @@ describe('zcapld', () => {
         id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
         controller: bob.id(),
         parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        expires: EXPIRES_3000_DATE
       };
       // 3. Sign the delegated capability with Alice's delegation key
       // (this works because Alice is the root capability's controller)
@@ -181,7 +184,7 @@ describe('zcapld', () => {
         'create a capability delegation proof.');
     });
 
-    it('should success when passing only "parentCapability"', async () => {
+    it('should succeed when passing only "parentCapability"', async () => {
       // only pass `parentCapability` as a purpose option -- this will cause
       // the `capabilityChain` to be auto-generated
       const newCapability = {
@@ -189,7 +192,8 @@ describe('zcapld', () => {
         id: 'urn:uuid:710910c8-61e4-11ec-8739-10bf48838a41',
         controller: bob.id(),
         parentCapability: capabilities.root.beta.id,
-        invocationTarget: capabilities.root.beta.invocationTarget
+        invocationTarget: capabilities.root.beta.invocationTarget,
+        expires: EXPIRES_3000_DATE
       };
       const delegatedCapability = await _delegate({
         newCapability, delegator: alice, date: CONSTANT_DATE,
@@ -645,6 +649,7 @@ describe('zcapld', () => {
           controller: bob.id(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
+          expires: EXPIRES_3000_DATE,
           allowedAction: 'write'
         },
         parentCapability: capabilities.root.beta,
@@ -678,6 +683,7 @@ describe('zcapld', () => {
           controller: bob.id(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
+          expires: EXPIRES_3000_DATE,
           allowedAction: 'write'
         },
         parentCapability: capabilities.root.beta,
@@ -718,6 +724,7 @@ describe('zcapld', () => {
           controller: bob.id(),
           parentCapability: capabilities.root.beta.id,
           invocationTarget: capabilities.root.beta.invocationTarget,
+          expires: EXPIRES_3000_DATE,
           allowedAction: 'write'
         },
         delegator: alice,
@@ -965,6 +972,7 @@ describe('zcapld', () => {
             controller: bob.id(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: 'read'
           },
           parentCapability: capabilities.root.beta,
@@ -984,6 +992,7 @@ describe('zcapld', () => {
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: 'write'
           },
           parentCapability: bobZcap,
@@ -1013,6 +1022,7 @@ describe('zcapld', () => {
             controller: bob.id(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: 'read'
           },
           parentCapability: capabilities.root.beta,
@@ -1028,6 +1038,7 @@ describe('zcapld', () => {
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: ['read', 'write']
           },
           parentCapability: bobZcap,
@@ -1057,6 +1068,7 @@ describe('zcapld', () => {
             controller: bob.id(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: ['read', 'write']
           },
           parentCapability: capabilities.root.beta,
@@ -1072,6 +1084,7 @@ describe('zcapld', () => {
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: ['foo', 'bar']
           },
           parentCapability: bobZcap,
@@ -1101,6 +1114,7 @@ describe('zcapld', () => {
             controller: bob.id(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: ['read', 'write']
           },
           parentCapability: capabilities.root.beta,
@@ -1116,6 +1130,7 @@ describe('zcapld', () => {
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: ['read']
           },
           delegator: bob,
@@ -1147,6 +1162,7 @@ describe('zcapld', () => {
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             allowedAction: 'read'
           },
           parentCapability: bobZcap,
@@ -1327,24 +1343,44 @@ describe('zcapld', () => {
           'delegated before its parent');
       });
 
-      // FIXME: delegated zcaps will be required to have `expires` soon, so
-      // this test will need to change / be removed
       it('should fail to verify w/delegated zcap with no expiration ' +
         'date', async () => {
         // TTL of 1 day
         const ttl = 1000 * 60 * 60 * 24;
 
+        // expires within TTL
+        const expires = new Date(Date.now() + ttl);
+
         // alice delegates to bob
         const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: capabilities.root.beta.id,
+            invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: expires.toISOString()
+          },
           parentCapability: capabilities.root.beta,
-          controller: bob,
           delegator: alice
         });
 
-        // bob delegates to carol
+        // bob delegates to carol, erroneously without an expiration date
         const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget
+            // intentionally missing `expires` field
+          },
+          purposeOptions: {
+            // required to allow a zcap w/o expires to be created; goal is to
+            // only check via the verifier, not locally
+            _skipLocalValidationForTesting: true
+          },
           parentCapability: bobZcap,
-          controller: carol,
           delegator: bob
         });
 
@@ -1360,7 +1396,7 @@ describe('zcapld', () => {
         expect(result.verified).to.be.false;
         expect(result.error.errors[0]).to.exist;
         result.error.errors[0].message.should.contain(
-          'does not have an expiration date');
+          'Delegated capability must have a valid expires date');
       });
 
       it('should fail to verify chain w/delegated zcap in the ' +
@@ -1499,6 +1535,7 @@ describe('zcapld', () => {
             id: uuid(),
             parentCapability: capabilities.root.beta.id,
             invocationTarget: capabilities.root.beta.invocationTarget,
+            expires: EXPIRES_3000_DATE,
             controller: ['urn:other', bob.id()]
           },
           parentCapability: capabilities.root.beta,
@@ -1800,15 +1837,42 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should fail to delegate a capability with bad `expires` field',
+        async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:e843f3c4-6b2b-11ec-b87f-10bf48838a41';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob with an invalid `expires` date
+        let bobZcap;
+        let localError;
+        try {
+          bobZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: bob.id(),
+              parentCapability: rootCapability.id,
+              invocationTarget: rootCapability.invocationTarget,
+              expires: 'not a valid date'
+            },
+            parentCapability: rootCapability,
+            delegator: alice
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(bobZcap).to.not.exist;
+        expect(localError).to.exist;
+        localError.message.should.contain(
+          'Delegated capability must have a valid expires date.');
+      });
+
       it('should fail to verify a capability with bad `expires` field',
         async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:0aee1dd6-646b-11ec-b975-10bf48838a41';
         addToLoader({doc: rootCapability});
-
-        // FIXME: the API should prevent alice from using an invalid expires
-        // date -- so we need to add code for that and keep a check on the
-        // verifier side
 
         // alice delegates to bob with an invalid `expires` date
         const bobZcap = await _delegate({
@@ -1820,7 +1884,12 @@ describe('zcapld', () => {
             invocationTarget: rootCapability.invocationTarget,
             expires: 'not a valid date'
           },
-          parentCapability: rootCapability,
+          purposeOptions: {
+            parentCapability: rootCapability,
+            // skip checking zcap for bad `expires` date so it will only be
+            // checked by the verifier
+            _skipLocalValidationForTesting: true
+          },
           delegator: alice
         });
 
@@ -2052,18 +2121,44 @@ describe('zcapld', () => {
           delegator: alice
         });
 
-        // FIXME: the API should prevent bob from doing this, so we should
-        // add code for that but also ensure that the verifier side still
-        // checks it
+        // first check to ensure that delegation fails "client side"
+        let carolZcap;
+        let localError;
+        try {
+          // bob delegates to carol
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.contain(
+          'Delegated capability must have a valid expires date');
 
+        // now skip client-side validation...
         // bob delegates to carol (but it is missing `expires`)
-        const carolZcap = await _delegate({
+        carolZcap = await _delegate({
           newCapability: {
             '@context': ZCAP_CONTEXT_URL,
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
             invocationTarget: bobZcap.invocationTarget
+            // intentionally missing `expires`
+          },
+          purposeOptions: {
+            // must skip local validation to allow zcap w/o `expires`
+            _skipLocalValidationForTesting: true
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2083,7 +2178,100 @@ describe('zcapld', () => {
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
         error.message.should.include(
-          'delegated capability must be equivalent or more restrictive');
+          'Delegated capability must have a valid expires date');
+      });
+
+      it.only('should fail delegating an expired capability', async () => {
+        // the capability from alice to bob has proper expires, but the
+        // capability from bob to carol does not...
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:ae96f88e-6b8a-4445-9b4f-03f45c3d1685';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // first check to ensure that delegation fails "client side"
+        const afterExpired = new Date(Date.parse(expires) + 1);
+        let carolZcap;
+        let localError;
+        try {
+          // bob delegates to carol *after* his zcap has expired
+          carolZcap = await _delegate({
+            newCapability: {
+              '@context': ZCAP_CONTEXT_URL,
+              id: uuid(),
+              controller: carol.id(),
+              parentCapability: bobZcap.id,
+              invocationTarget: bobZcap.invocationTarget,
+              expires
+            },
+            purposeOptions: {
+              date: afterExpired
+            },
+            parentCapability: bobZcap,
+            delegator: bob
+          });
+        } catch(e) {
+          localError = e;
+        }
+        expect(localError).to.exist;
+        localError.name.should.equal('Error');
+        localError.message.should.contain(
+          'Cannot delegate an expired capability.');
+
+        // now skip client-side validation...
+        // bob delegates to carol (but it has expired)
+        carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires
+          },
+          purposeOptions: {
+            date: afterExpired,
+            // must skip local validation to allow zcap w/o `expires`
+            _skipLocalValidationForTesting: true
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes an expired zcap
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability, expectedAction: 'read',
+          purposeOptions: {
+            currenDate: afterExpired
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.include(
+          'Expired');
       });
 
       it('should fail invoking a capability with ' +
@@ -2664,7 +2852,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: diana.id(),
             parentCapability: carolZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: carolZcap,
           delegator: carol
@@ -2711,7 +2900,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2728,7 +2918,8 @@ describe('zcapld', () => {
             // NOTE: this is an invalid attempt to degate a capability to the
             // root of the EDV when carol's zcap has an invocationTarget that
             // is a specific EDV document
-            invocationTarget: bobZcap.invocationTarget
+            invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: carolZcap,
           delegator: carol
@@ -2777,7 +2968,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2829,7 +3021,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2902,7 +3095,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -2963,7 +3157,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -3041,7 +3236,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: diana.id(),
             parentCapability: carolZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: carolZcap,
           delegator: carol
@@ -3096,7 +3292,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: diana.id(),
             parentCapability: carolZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: carolZcap,
           delegator: carol
@@ -3160,7 +3357,8 @@ describe('zcapld', () => {
             id: uuid(),
             controller: carol.id(),
             parentCapability: bobZcap.id,
-            invocationTarget
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: bobZcap,
           delegator: bob
@@ -3177,7 +3375,8 @@ describe('zcapld', () => {
             // NOTE: this is an invalid attempt to degate a capability to the
             // root of the EDV when carol's zcap has an invocationTarget that
             // is a specific EDV document
-            invocationTarget: bobZcap.invocationTarget
+            invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE
           },
           parentCapability: carolZcap,
           delegator: carol
@@ -3312,7 +3511,9 @@ async function _delegate({
   let purpose;
   if(purposeOptions) {
     // custom case
-    purpose = new CapabilityDelegation(purposeOptions);
+    purpose = new CapabilityDelegation({
+      capabilityChain, parentCapability, ...purposeOptions
+    });
   } else {
     // common case
     purpose = new CapabilityDelegation({capabilityChain, parentCapability});
@@ -3324,7 +3525,8 @@ async function _delegate({
       id: uuid(),
       controller: typeof controller === 'string' ? controller : controller.id(),
       parentCapability: parentCapability.id,
-      invocationTarget: parentCapability.invocationTarget
+      invocationTarget: parentCapability.invocationTarget,
+      expires: EXPIRES_3000_DATE
     };
   }
   return jsigs.sign(newCapability, {

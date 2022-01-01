@@ -7,6 +7,7 @@ module.exports = {
   "parentCapability": "https://example.org/alice/caps#1",
   "controller": "https://example.com/i/bob/keys/1",
   "invocationTarget": "https://example.org/alice/targets/alpha",
+  "expires": "3000-01-01T00:01Z",
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2018-02-13T21:26:08Z",
@@ -14,7 +15,7 @@ module.exports = {
       "https://example.org/alice/caps#1"
     ],
     "proofPurpose": "capabilityDelegation",
-    "proofValue": "z2d7YqpGLPXw1afnzDiFez9vKSyLyUzg9j9Q9ijGRMbXQWCPdRv5wz8Za5rua2ejLpauUJWuXzCKgByy7jQu4EjRz",
+    "proofValue": "z4Hm6e5ziMoiG2eWpRyB1ozrnh65gikaVAZzkXpMUNFarzouKNYYXCc4YqLZch12JgcfCqpSmgYfV6JXL8FSyC4pW",
     "verificationMethod": "https://example.com/i/alice/keys/1"
   }
 };

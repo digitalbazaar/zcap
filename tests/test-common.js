@@ -1318,10 +1318,7 @@ describe('zcapld', () => {
 
         const result = await _verifyDelegation({
           delegation: carolZcap,
-          expectedRootCapability: capabilities.root.beta.id,
-          purposeOptions: {
-            requireChainDateMonotonicity: true
-          }
+          expectedRootCapability: capabilities.root.beta.id
         });
         expect(result).to.exist;
         expect(result.verified).to.be.false;
@@ -1628,8 +1625,7 @@ describe('zcapld', () => {
             expectedRootCapability: capabilities.root.beta.id,
             expectedTarget: capabilities.root.beta.invocationTarget,
             inspectCapabilityChain,
-            maxDelegationTtl: ttl,
-            requireChainDateMonotonicity: true
+            maxDelegationTtl: ttl
           }
         });
         expect(result).to.exist;

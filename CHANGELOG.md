@@ -15,6 +15,9 @@
 - **BREAKING**: Require `capabilityAction` when creating capability invocation
   proofs and `expectedAction` when verifying proofs; removing previous
   optionality simplifies implementations.
+- **BREAKING**: Changed default to check for chain date monotonicity and
+  removed the option to do otherwise. This was an expected change for the
+  next major breaking release.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

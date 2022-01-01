@@ -28,6 +28,9 @@
   parameter is used by the base class provided by jsonld-signatures, so the
   `currentDate` parameter has been removed; use `date` instead, it is only
   used for verification of proofs, not creation of proofs.
+- **BREAKING**: `invocationTarget` MUST be specified in capability invocation
+  proofs, it will not default to the `invocationTarget` specified in the
+  capability. Removing this optionality removes complexity in implementations.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

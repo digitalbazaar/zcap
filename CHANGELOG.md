@@ -2,6 +2,10 @@
 
 ## 6.0.0 - 2022-01-xx
 
+### Added
+- Add `createRootCapability` helper function to construct root zcaps from
+  a root invocation target and a root controller.
+
 ### Changed
 - **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates
   optionality, simplifying implementations.

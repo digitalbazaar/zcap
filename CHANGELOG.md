@@ -71,6 +71,12 @@
   invoker send the entire chain, however, this considered the best trade off.
 - **BREAKING**: Removed ability to expire a root capability. There is no
   use case for this, so the complexity has been removed.
+- **BREAKING**: Removed support for zcaps expressed using contexts other than
+  the zcap-ld v1 context. The zcap spec will be updated to describe zcaps as
+  JSON in a way that JSON-LD compatible, eliminating the need for supporting
+  and JSON-LD context transformations beyond those used to create and verify
+  proofs. This approach will not prohibit the future use of CBOR-LD to
+  represent zcaps over the wire to greatly reduce size.
 
 ## 5.2.0 - 2021-12-20
 

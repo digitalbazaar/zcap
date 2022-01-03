@@ -2321,6 +2321,71 @@ describe('zcapld', () => {
           'Delegated capability must have a valid expires date');
       });
 
+      it('should fail invoking a delegated capability before its ' +
+        'delegation proof "created" date', async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:b4840a74-6cc0-11ec-819f-10bf48838a41';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob using a specific date to trigger an error
+        // below
+        const date = new Date();
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          date,
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // bob delegates to carol
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires
+          },
+          date,
+          purposeOptions: {
+            // must skip local validation to allow zcap w/o `expires`
+            _skipLocalValidationForTesting: true
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes before her delegation
+        const beforeDelegation = new Date(date.getTime() - 1000);
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, date: beforeDelegation,
+          invoker: carol, capability: carolZcap, capabilityAction: 'read'
+        });
+        const result = await _verifyInvocation({
+          invocation, rootCapability, expectedAction: 'read'
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal(
+          'A delegated capability must not be invoked before the "created" ' +
+          'date in its delegation proof.');
+      });
+
       it('should fail delegating an expired capability', async () => {
         // the capability from alice to bob has proper expires, but the
         // capability from bob to carol does not...
@@ -2395,7 +2460,11 @@ describe('zcapld', () => {
         // carol invokes an expired zcap
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
-          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
+          doc,
+          // invocation date must not be before delegation date or a different
+          // error will be triggered
+          date: afterExpired,
+          invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
         const result = await _verifyInvocation({
           invocation, rootCapability, expectedAction: 'read',

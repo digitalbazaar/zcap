@@ -1382,9 +1382,9 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(2);
+          capabilityChain.should.have.length(3);
           capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(2);
+          capabilityChainMeta.should.have.length(3);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -1422,7 +1422,7 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(2);
+          capabilityChain.should.have.length(3);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -1719,7 +1719,7 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(2);
+          capabilityChain.should.have.length(3);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -1779,7 +1779,7 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(2);
+          capabilityChain.should.have.length(3);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -1828,7 +1828,7 @@ describe('zcapld', () => {
           checkedChain++;
           should.exist(capabilityChain);
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(2);
+          capabilityChain.should.have.length(3);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here (perhaps by
@@ -2859,9 +2859,9 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(3);
+          capabilityChain.should.have.length(4);
           capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(3);
+          capabilityChainMeta.should.have.length(4);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -2949,9 +2949,9 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(3);
+          capabilityChain.should.have.length(4);
           capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(3);
+          capabilityChainMeta.should.have.length(4);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -3444,9 +3444,9 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(3);
+          capabilityChain.should.have.length(4);
           capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(3);
+          capabilityChainMeta.should.have.length(4);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -3524,9 +3524,9 @@ describe('zcapld', () => {
         }) => {
           checkedChain++;
           capabilityChain.should.be.an('array');
-          capabilityChain.should.have.length(3);
+          capabilityChain.should.have.length(4);
           capabilityChainMeta.should.be.an('array');
-          capabilityChainMeta.should.have.length(3);
+          capabilityChainMeta.should.have.length(4);
           _checkCapabilityChain({capabilityChain});
           _checkCapabilityChainMeta({capabilityChainMeta});
           // a real implementation would look for revocations here
@@ -3559,13 +3559,19 @@ function _checkCapabilityChain({capabilityChain}) {
     c.should.be.an('object');
     c.should.have.property('id');
     c.should.have.property('controller');
+    c.should.have.property('invocationTarget');
   }
 }
 
 function _checkCapabilityChainMeta({capabilityChainMeta}) {
-  for(const m of capabilityChainMeta) {
+  for(const [i, m] of capabilityChainMeta.entries()) {
     m.should.be.an('object');
     m.should.have.property('verifyResult');
+    if(i === 0) {
+      // root zcap verify result is `null`
+      expect(m.verifyResult).to.be.null;
+      continue;
+    }
     m.verifyResult.should.have.property('verified');
     m.verifyResult.verified.should.be.true;
     m.verifyResult.should.have.property('results');

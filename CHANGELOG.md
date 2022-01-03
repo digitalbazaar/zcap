@@ -7,6 +7,11 @@
   a root invocation target and a root controller.
 - Add local validation during delegation to prevent accidental delegation of
   zcaps that violate delegation rules that a verifier would always reject.
+- Add `maxClockSkew` param that defaults to `300` seconds. This parameter
+  defines the maximum clock skew that will be accepted when comparing
+  capability expiration date-times against the current date (or other
+  specified date) and when comparing a capability invocation proof against
+  the capability's delegation proof.
 
 ### Changed
 - **BREAKING**: Root zcaps MUST specify an `invocationTarget`. This eliminates

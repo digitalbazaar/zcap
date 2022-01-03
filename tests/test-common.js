@@ -2366,8 +2366,25 @@ describe('zcapld', () => {
           delegator: bob
         });
 
-        // carol invokes before her delegation
-        const beforeDelegation = new Date(date.getTime() - 1000);
+        // carol invokes before her delegation (but not more than 300 seconds
+        // so it does not trigger an error)
+        {
+          const beforeDelegation = new Date(date.getTime() - 1000);
+          const doc = clone(mock.exampleDoc);
+          const invocation = await _invoke({
+            doc, date: beforeDelegation,
+            invoker: carol, capability: carolZcap, capabilityAction: 'read'
+          });
+          const result = await _verifyInvocation({
+            invocation, rootCapability, expectedAction: 'read'
+          });
+          expect(result).to.exist;
+          expect(result.verified).to.be.true;
+        }
+
+        // carol invokes before her delegation (by more than 300 second
+        // clock skew so it does trigger an error)
+        const beforeDelegation = new Date(date.getTime() - (301 * 1000));
         const doc = clone(mock.exampleDoc);
         const invocation = await _invoke({
           doc, date: beforeDelegation,
@@ -2411,7 +2428,8 @@ describe('zcapld', () => {
         });
 
         // first check to ensure that delegation fails "client side"
-        const afterExpired = new Date(Date.parse(expires) + 1000);
+        // note `afterExpired` has to be more than a clock skew of 300 seconds
+        const afterExpired = new Date(Date.parse(expires) + (301 * 1000));
         let carolZcap;
         let localError;
         try {

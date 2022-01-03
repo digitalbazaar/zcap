@@ -264,7 +264,7 @@ describe('zcapld', () => {
       expect(result.verified).to.be.false;
       result.error.name.should.equal('VerificationError');
       const [error] = result.error.errors;
-      error.message.should.contain('does not match actual root capability');
+      error.message.should.contain('does not match expected root capability');
     });
 
     it('should verify invoking a capability chain of depth 2', async () => {
@@ -574,7 +574,7 @@ describe('zcapld', () => {
       expect(result.verified).to.be.false;
       result.error.name.should.equal('VerificationError');
       const [error] = result.error.errors;
-      error.message.should.contain('does not match actual root capability');
+      error.message.should.contain('does not match expected root capability');
     });
 
     it('should verify a capability chain of depth 2', async () => {

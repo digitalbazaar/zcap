@@ -119,7 +119,8 @@ describe('zcapld', () => {
         err = e;
       }
       expect(err).to.exist;
-      expect(err.message).to.equal('"invocationTarget" must be a string.');
+      expect(err.message).to.equal(
+        '"invocationTarget" must be a string that expresses an absolute URI.');
     });
   });
 

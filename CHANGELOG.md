@@ -37,6 +37,9 @@
 - **BREAKING**: `invocationTarget` MUST be specified in capability invocation
   proofs, it will not default to the `invocationTarget` specified in the
   capability. Removing this optionality removes complexity in implementations.
+- **BREAKING**: `capabilityChain` and `capabilityChainMeta` that are passed
+  to `inspectCapabilityChain` include entries for the root capability. The
+  `verifyResult` is `null` for the root zcap.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.

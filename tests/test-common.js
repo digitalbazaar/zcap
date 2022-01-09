@@ -3066,8 +3066,8 @@ describe('zcapld', () => {
       });
     }); // end Chain depth of 4
 
-    describe('Path-based hierarchical attenuation', () => {
-      it('should verify chain', async () => {
+    describe('invocationTarget attenuation', () => {
+      it('should verify chain w/path attenuation', async () => {
         const rootTarget =
           'https://example.com/edvs/cc8b09fd-76e2-4fae-9bdd-2522b83a2971';
         const rootCapability = createRootCapability({
@@ -3118,8 +3118,110 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should verify chain w/query attenuation', async () => {
+        const rootTarget =
+          'https://example.com/edvs/0d3bd43c-719c-11ec-acdd-10bf48838a41';
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
+          controller: carol,
+          delegator: bob
+        });
+
+        // carol delegates to diana w/ restriction to access to a specific
+        // query under carol's capability
+        const invocationTarget =
+          `${carolZcap.invocationTarget}?foo=bar`;
+        const dianaZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: diana.id(),
+            parentCapability: carolZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: carolZcap,
+          delegator: carol
+        });
+
+        const result = await _verifyDelegation({
+          delegation: dianaZcap,
+          expectedRootCapability: rootCapability.id,
+          purposeOptions: {
+            allowTargetAttenuation: true
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
+      it('should verify chain w/path and query attenuation', async () => {
+        const rootTarget =
+          'https://example.com/edvs/1d7ab048-719c-11ec-b07a-10bf48838a41';
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol
+        const carolZcap = await _delegate({
+          parentCapability: bobZcap,
+          controller: carol,
+          delegator: bob
+        });
+
+        // carol delegates to diana w/ restriction to access to a specific
+        // document and query under carol's capability
+        const invocationTarget =
+          `${carolZcap.invocationTarget}/a-specific-document?foo=bar`;
+        const dianaZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: diana.id(),
+            parentCapability: carolZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: carolZcap,
+          delegator: carol
+        });
+
+        const result = await _verifyDelegation({
+          delegation: dianaZcap,
+          expectedRootCapability: rootCapability.id,
+          purposeOptions: {
+            allowTargetAttenuation: true
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
       it('should fail to verify chain with attenuation that is more ' +
-        'permissive than the parent capability', async () => {
+        'permissive than the parent capability w/path', async () => {
         const rootTarget =
           'https://example.com/edvs/357570f6-8df2-4e78-97dc-42260d64e78e';
         const rootCapability = createRootCapability({
@@ -3185,7 +3287,75 @@ describe('zcapld', () => {
           'delegated capability must not be less restrictive');
       });
 
-      it('should verify when invoking at an exact-match target', async () => {
+      it('should fail to verify chain with attenuation that is more ' +
+        'permissive than the parent capability w/query', async () => {
+        const rootTarget =
+          'https://example.com/edvs/3e209556-719c-11ec-9a7b-10bf48838a41';
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol w/ restriction to access to a specific
+        // query under bob's capability
+        const invocationTarget =
+          `${bobZcap.invocationTarget}?foo=bar`;
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol delegates to diana erroneously expanding her access beyond
+        // what bob restricted carol's to
+        const dianaZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: diana.id(),
+            parentCapability: carolZcap.id,
+            // NOTE: this is an invalid attempt to degate a capability to the
+            // root of the EDV when carol's zcap has an invocationTarget that
+            // is a specific EDV document
+            invocationTarget: bobZcap.invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: carolZcap,
+          delegator: carol
+        });
+
+        const result = await _verifyDelegation({
+          delegation: dianaZcap,
+          expectedRootCapability: rootCapability.id,
+          purposeOptions: {
+            allowTargetAttenuation: true
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.include(
+          'delegated capability must not be less restrictive');
+      });
+
+      it('should verify when invoking at an exact-match target ' +
+        'w/path', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = createRootCapability({
           controller: alice.id(),
@@ -3234,8 +3404,58 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should verify when invoking at an exact-match target ' +
+        'w/query', async () => {
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol w/ restriction to access to a specific
+        // document and query under bob's capability
+        const invocationTarget =
+          `${bobZcap.invocationTarget}?foo=bar`;
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
+        });
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            allowTargetAttenuation: true,
+            expectedAction: 'read',
+            expectedTarget: [rootTarget, invocationTarget],
+            expectedRootCapability: rootCapability.id
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
       it('should fail to verify when invoking at an unexpected ' +
-        'target', async () => {
+        'target w/path', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = createRootCapability({
           controller: alice.id(),
@@ -3306,7 +3526,81 @@ describe('zcapld', () => {
           `target (${carolZcap.invocationTarget}).`);
       });
 
-      it('should verify when invoking at a valid sub target', async () => {
+      it('should fail to verify when invoking at an unexpected ' +
+        'target w/query', async () => {
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol w/ restriction to access to a specific
+        // document under bob's capability
+        const invocationTarget =
+          `${bobZcap.invocationTarget}?foo=bar`;
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes but erroneously with an invocation target that is
+        // not permitted by her zcap *and* is not expected where she sends
+        // the invocation
+        const doc = clone(mock.exampleDoc);
+        // Note: This is intentionally an invalid target (a doc that
+        // carol should not have access to)
+        const invalidTarget =
+          `${rootTarget}/a-different-specific-document?foo=bar`;
+        const invocation = await _invoke({
+          doc, invoker: carol,
+          purposeOptions: {
+            capability: carolZcap,
+            capabilityAction: 'read',
+            invocationTarget: invalidTarget
+          }
+        });
+        const expectedTarget = [rootTarget, invocationTarget];
+        const purpose = new CapabilityInvocation({
+          allowTargetAttenuation: true,
+          expectedAction: 'read',
+          expectedTarget,
+          expectedRootCapability: rootCapability.id,
+          suite: new Ed25519Signature2020()
+        });
+        // force match to true to test expected target code path
+        purpose.match = () => true;
+        const result = await jsigs.verify(invocation, {
+          suite: new Ed25519Signature2020(),
+          purpose,
+          documentLoader: testLoader
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.include(
+          `Invocation target (${invalidTarget}) does not match capability ` +
+          `target (${carolZcap.invocationTarget}).`);
+      });
+
+      it('should verify when invoking at a valid sub target ' +
+        'w/path', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = createRootCapability({
           controller: alice.id(),
@@ -3364,8 +3658,67 @@ describe('zcapld', () => {
         expect(result.verified).to.be.true;
       });
 
+      it('should verify when invoking at a valid sub target ' +
+        'w/query', async () => {
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol w/ restriction to access to a specific
+        // query under bob's capability
+        const invocationTarget =
+          `${bobZcap.invocationTarget}?foo=bar`;
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes using an invocation target of a path that is a
+        // subpath of her zcap's invocation target (which is permitted by
+        // the verifier when `allowTargetAttenuation = true`
+        const doc = clone(mock.exampleDoc);
+        // Note: This is an attenuated path off of carol's zcap's target
+        const validSubTarget = `${carolZcap.invocationTarget}&baz=fuzz`;
+        const invocation = await _invoke({
+          doc, invoker: carol,
+          purposeOptions: {
+            capability: carolZcap,
+            capabilityAction: 'read',
+            invocationTarget: validSubTarget
+          }
+        });
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            allowTargetAttenuation: true,
+            expectedAction: 'read',
+            expectedTarget: [rootTarget, validSubTarget],
+            expectedRootCapability: rootCapability.id
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.true;
+      });
+
       it('should fail to verify when invoking at an invalid ' +
-        'target', async () => {
+        'target w/path', async () => {
         const rootTarget = `https://example.com/edvs/${uuid()}`;
         const rootCapability = createRootCapability({
           controller: alice.id(),
@@ -3404,6 +3757,75 @@ describe('zcapld', () => {
         // Note: This is intentionally an invalid target (a doc that
         // carol should not have access to)
         const invalidTarget = `${rootTarget}/a-different-specific-document`;
+        const invocation = await _invoke({
+          doc, invoker: carol,
+          purposeOptions: {
+            capability: carolZcap,
+            capabilityAction: 'read',
+            invocationTarget: invalidTarget
+          }
+        });
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            allowTargetAttenuation: true,
+            expectedAction: 'read',
+            // Note: Here we are simulating an endpoint that is expecting
+            // the `invalidTarget` -- it's just that the zcap being used
+            // is not authorized for that target.
+            expectedTarget: [rootTarget, invalidTarget],
+            expectedRootCapability: rootCapability.id
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        result.error.errors.should.have.length(1);
+        const [error] = result.error.errors;
+        error.message.should.include(
+          `Invocation target (${invalidTarget}) does not match capability ` +
+          `target (${carolZcap.invocationTarget})`);
+      });
+
+      it('should fail to verify when invoking at an invalid ' +
+        'target w/query', async () => {
+        const rootTarget = `https://example.com/edvs/${uuid()}`;
+        const rootCapability = createRootCapability({
+          controller: alice.id(),
+          invocationTarget: rootTarget
+        });
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob
+        const bobZcap = await _delegate({
+          parentCapability: rootCapability,
+          controller: bob,
+          delegator: alice
+        });
+
+        // bob delegates to carol w/ restriction to access to a specific
+        // query under bob's capability
+        const invocationTarget =
+          `${bobZcap.invocationTarget}?foo=bar`;
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget,
+            expires: EXPIRES_3000_DATE
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes erroneously using an invocation target that is
+        // not permitted by her zcap even though where she sends the invocation
+        // is expecting that target
+        const doc = clone(mock.exampleDoc);
+        // Note: This is intentionally an invalid target (a doc that
+        // carol should not have access to)
+        const invalidTarget =
+          `${rootTarget}/a-different-specific-document?foo=bar`;
         const invocation = await _invoke({
           doc, invoker: carol,
           purposeOptions: {

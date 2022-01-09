@@ -45,6 +45,12 @@
 - **BREAKING**: `capabilityChain` and `capabilityChainMeta` that are passed
   to `inspectCapabilityChain` include entries for the root capability. The
   `verifyResult` is `null` for the root zcap.
+- **BREAKING**: `allowTargetAttenuation=true` allows both path- or query-based
+  invocation target attenuation. Turning this on means a verifier will allow
+  accept delegations (and invocations) where a suffix has been added to the
+  parent zcap's invocation target (invoked zcap's invocation target). The
+  suffix must starts with `/` or `?` if the invocation target prefix has no `?`
+  and `&` otherwise.
 
 ### Removed
 - **BREAKING**: Removed support for using `invoker` and `delegator` properties.
@@ -57,16 +63,17 @@
   delegation within the data model/protocol for improved auditability.
 - **BREAKING**: Removed support for vocab-modeled custom caveats. Custom
   caveats should instead be modeled a combination of capability actions
-  and path-based attenuation of invocation targets. This approach provides
-  the flexibility required to model custom caveats without the overhead of
-  building and maintaining custom contexts and vocabularies. The common case
-  is that custom caveats are specific to particular APIs rather than shared
-  commonly across many different standardized APIs -- so it is unnecessarily
-  burdensome to require the creation ofLinked Data vocabularies and contexts
-  to represent them when using localized API-specific capability actions and
-  invocation target paths will suffice. Common caveats such as expiration
-  dates are provided as a part of the core model -- and should any other
-  common caveats become evident, they can be added to the core model over time.
+  and path- or query-based attenuation of invocation targets. This approach
+  provides the flexibility required to model custom caveats without the
+  overhead of building and maintaining custom contexts and vocabularies. The
+  common case is that custom caveats are specific to particular APIs rather
+  than shared commonly across many different standardized APIs -- so it is
+  unnecessarily burdensome to require the creation ofLinked Data vocabularies
+  and contexts to represent them when using localized API-specific capability
+  actions and invocation target paths will suffice. Common caveats such as
+  expiration dates are provided as a part of the core model -- and should any
+  other common caveats become evident, they can be added to the core model over
+  time.
 - **BREAKING**: Removed support for allowing the last delegated zcap in a
   capability chain to be expressed by reference. Instead, if the last zcap in
   the chain is delegated, it MUST be fully embedded. All other zcaps MUST be

@@ -22,8 +22,8 @@
     "lib/**/*.js"
   ],
   "dependencies": {
-    "jsonld-signatures": "^9.3.0",
-    "zcap-context": "^1.1.0"
+    "@digitalbazaar/zcap-context": "^2.0.0",
+    "jsonld-signatures": "^9.3.0"
   },
   "devDependencies": {
     "@digitalbazaar/ed25519-signature-2020": "^3.0.0",

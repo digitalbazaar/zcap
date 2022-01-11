@@ -1,5 +1,10 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 7.0.1 - 2022-01-xx
+
+### Changed
+- Update dependencies.
+
 ## 7.0.0 - 2022-01-11
 
 ### Changed

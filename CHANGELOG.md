@@ -1,6 +1,6 @@
 # @digitalbazaar/zcapld ChangeLog
 
-## 6.0.0 - 2022-01-xx
+## 6.0.0 - 2022-01-11
 
 ### Added
 - Add `createRootCapability` helper function to construct root zcaps from

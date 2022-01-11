@@ -1,10 +1,10 @@
 /*!
- * Copyright (c) 2018-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2018-2022 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 
-const zcapld = require('../lib');
-const {constants: {ZCAP_CONTEXT_URL}} = zcapld;
+const zcap = require('../lib');
+const {constants: {ZCAP_CONTEXT_URL}} = zcap;
 
 const mock = {};
 module.exports = mock;
@@ -91,7 +91,7 @@ mock.addToLoader = ({doc}) => {
   _loaderData.set(doc.id, doc);
 };
 
-mock.testLoader = zcapld.extendDocumentLoader(async url => {
+mock.testLoader = zcap.extendDocumentLoader(async url => {
   const document = _loaderData.get(url);
   if(document !== undefined) {
     return {

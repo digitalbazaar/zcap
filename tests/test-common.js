@@ -8,14 +8,14 @@ module.exports = async function(options) {
 'use strict';
 
 const should = require('chai').should();
-const {expect, helpers, jsigs, mock, zcapld} = options;
+const {expect, helpers, jsigs, mock, zcap} = options;
 
 const {
   CapabilityInvocation,
   CapabilityDelegation,
   createRootCapability,
   constants: {ZCAP_CONTEXT_URL}
-} = zcapld;
+} = zcap;
 
 const {Ed25519Signature2020} =
   require('@digitalbazaar/ed25519-signature-2020');
@@ -50,7 +50,7 @@ const CONSTANT_DATE = '2018-02-13T21:26:08Z';
 const EXPIRES_3000_DATE = '3000-01-01T00:01Z';
 
 // run tests
-describe('zcapld', () => {
+describe('zcap', () => {
   describe('Sign with capabilityInvocation proof purpose', () => {
     it('should succeed w/key invoker', async () => {
       const doc = clone(mock.exampleDoc);

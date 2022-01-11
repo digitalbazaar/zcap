@@ -1,4 +1,9 @@
-# @digitalbazaar/zcapld ChangeLog
+# @digitalbazaar/zcap ChangeLog
+
+## 7.0.0 - 2022-01-xx
+
+### Changed
+- **BREAKING**: Rename package to `@digitalbazaar/zcap`.
 
 ## 6.0.0 - 2022-01-11
 

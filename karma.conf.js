@@ -1,7 +1,7 @@
 /**
- * Karma configuration for zcapld.
+ * Karma configuration for zcap.
  *
- * Copyright (c) 2011-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2011-2022 Digital Bazaar, Inc. All rights reserved.
  */
 module.exports = function(config) {
   config.set({

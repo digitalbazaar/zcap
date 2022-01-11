@@ -1,12 +1,12 @@
-# zcapld _(@digitalbazaar/zcapld)_
+# zcap _(@digitalbazaar/zcap)_
 
-[![Build status](https://img.shields.io/github/workflow/status/digitalbazaar/zcapld/Node.js%20CI)](https://github.com/digitalbazaar/zcapld/actions?query=workflow%3A%22Node.js+CI%22)
-[![Coverage status](https://img.shields.io/codecov/c/github/digitalbazaar/zcapld)](https://codecov.io/gh/digitalbazaar/zcapld)
-[![Dependency Status](https://img.shields.io/david/digitalbazaar/zcapld.svg)](https://david-dm.org/digitalbazaar/zcapld)
-[![NPM Version](https://img.shields.io/npm/v/@digitalbazaar/zcapld.svg)](https://npm.im/@digitalbazaar/zcapld)
+[![Build status](https://img.shields.io/github/workflow/status/digitalbazaar/zcap/Node.js%20CI)](https://github.com/digitalbazaar/zcap/actions?query=workflow%3A%22Node.js+CI%22)
+[![Coverage status](https://img.shields.io/codecov/c/github/digitalbazaar/zcap)](https://codecov.io/gh/digitalbazaar/zcap)
+[![Dependency Status](https://img.shields.io/david/digitalbazaar/zcap.svg)](https://david-dm.org/digitalbazaar/zcap)
+[![NPM Version](https://img.shields.io/npm/v/@digitalbazaar/zcap.svg)](https://npm.im/@digitalbazaar/zcap)
 
-> Javascript reference implementation for
-[Authorization Capabilities for Linked Data](https://w3c-ccg.github.io/zcap-ld/).
+> JavaScript reference implementation for
+[Authorization Capabilities](https://w3c-ccg.github.io/zcap-ld/).
 
 ## Table of Contents
 
@@ -33,14 +33,14 @@ TBD
 To install from NPM:
 
 ```
-npm install @digitalbazaar/zcapld
+npm install @digitalbazaar/zcap
 ```
 
 To install locally (for development):
 
 ```
-git clone https://github.com/digitalbazaar/zcapld.git
-cd zcapld
+git clone https://github.com/digitalbazaar/zcap.git
+cd zcap
 npm install
 ```
 

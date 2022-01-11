@@ -1,14 +1,14 @@
 /**
- * Node.js test runner for zcapld.
+ * Node.js test runner for zcap.
  *
- * Copyright (c) 2011-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2011-2022 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 
 const common = require('./test-common');
 const expect = require('chai').expect;
 const jsigs = require('../node_modules/jsonld-signatures');
-const zcapld = require('../lib');
+const zcap = require('../lib');
 
 const mock = require('./mock-data');
 const helpers = require('./helpers');
@@ -18,7 +18,7 @@ const options = {
   helpers,
   jsigs,
   mock,
-  zcapld,
+  zcap,
   nodejs: true
 };
 

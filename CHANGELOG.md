@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 7.1.0 - 2022-01-xx
+## 7.1.0 - 2022-01-14
 
 ### Added
 - Include `dereferencedChain` in purpose result when verifying a

@@ -1,5 +1,11 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 7.1.0 - 2022-01-xx
+
+### Added
+- Include `dereferencedChain` in purpose result when verifying a
+  capability invocation or delegation proof.
+
 ## 7.0.1 - 2022-01-11
 
 ### Changed

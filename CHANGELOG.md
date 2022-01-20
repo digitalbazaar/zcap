@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 7.2.0 - 2022-01-xx
+## 7.2.0 - 2022-01-20
 
 ### Added
 - Include `capability` and `verificationMethod` as details when a zcap

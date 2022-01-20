@@ -1,5 +1,12 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 7.2.0 - 2022-01-xx
+
+### Added
+- Include `capability` and `verificationMethod` as details when a zcap
+  invocation/delegation fails verification because the capability
+  controller does not match the verification method (or its controller).
+
 ## 7.1.0 - 2022-01-14
 
 ### Added

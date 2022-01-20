@@ -1,6 +1,6 @@
 {
   "name": "@digitalbazaar/zcap",
-  "version": "7.1.1-0",
+  "version": "7.2.0",
   "description": "Authorization Capabilities reference implementation.",
   "homepage": "https://github.com/digitalbazaar/zcap",
   "author": {

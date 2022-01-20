@@ -5,7 +5,11 @@
 ### Added
 - Include `capability` and `verificationMethod` as details when a zcap
   invocation/delegation fails verification because the capability
-  controller does not match the verification method (or its controller).
+  controller does not match the verification method (or its controller). If
+  this information causes undesirable correlation, i.e., the controller
+  of a root zcap is private in some way, do not include it when transmitting
+  errors to a client. This information can be omitted by deleting `details`
+  from the error or constructing a new error that omits `details`.
 
 ## 7.1.0 - 2022-01-14
 

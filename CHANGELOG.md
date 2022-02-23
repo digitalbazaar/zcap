@@ -5,6 +5,8 @@
 ### Fixed
 - Ensure `maxClockSkew` is considered when checking `maxDelegationTtl`
   against current time.
+- Use `karma@6.3.16` to address reported vulnerability with dev
+  dependency `karma`.
 
 ## 7.2.0 - 2022-01-20
 

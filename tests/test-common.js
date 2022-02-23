@@ -1460,7 +1460,12 @@ describe('zcap', () => {
           controller: carol,
           delegator: bob,
           // force proof creation date to be in the past
-          date: new Date(0)
+          date: new Date(0),
+          purposeOptions: {
+            // required to allow a zcap w/o expires to be created; goal is to
+            // only check via the verifier, not locally
+            _skipLocalValidationForTesting: true
+          }
         });
 
         const result = await _verifyDelegation({
@@ -1563,7 +1568,12 @@ describe('zcap', () => {
             expires: bobZcap.expires
           },
           parentCapability: bobZcap,
-          delegator: bob
+          delegator: bob,
+          purposeOptions: {
+            // required to allow a zcap w/o expires to be created; goal is to
+            // only check via the verifier, not locally
+            _skipLocalValidationForTesting: true
+          }
         });
 
         const result = await _verifyDelegation({

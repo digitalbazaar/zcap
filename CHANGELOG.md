@@ -1,5 +1,11 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 7.2.2 - 2022-02-xx
+
+### Fixed
+- Ensure a zcap is not delegated after its parent (during
+  delegation proof generation).
+
 ## 7.2.1 - 2022-02-22
 
 ### Fixed

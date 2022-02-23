@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 7.2.1 - 2022-02-xx
+## 7.2.1 - 2022-02-22
 
 ### Fixed
 - Ensure `maxClockSkew` is considered when checking `maxDelegationTtl`

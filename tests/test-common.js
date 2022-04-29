@@ -2,12 +2,20 @@
  * Copyright (c) 2018-2022 Digital Bazaar, Inc. All rights reserved.
  */
 
+import chai from 'chai';
+
+import {
+  Ed25519Signature2020
+} from '@digitalbazaar/ed25519-signature-2020';
+import {
+  Ed25519VerificationKey2020
+} from '@digitalbazaar/ed25519-verification-key-2020';
+
+const should = chai.should();
+
 /* eslint-disable indent */
-module.exports = async function(options) {
+export default async function(options) {
 
-'use strict';
-
-const should = require('chai').should();
 const {expect, helpers, jsigs, mock, zcap} = options;
 
 const {
@@ -16,12 +24,6 @@ const {
   createRootCapability,
   constants: {ZCAP_CONTEXT_URL}
 } = zcap;
-
-const {Ed25519Signature2020} =
-  require('@digitalbazaar/ed25519-signature-2020');
-
-const {Ed25519VerificationKey2020} =
-  require('@digitalbazaar/ed25519-verification-key-2020');
 
 const {
   controllers,
@@ -4218,4 +4220,4 @@ async function _verifyDelegation({
   });
 }
 
-};
+}

@@ -3,15 +3,15 @@
  *
  * Copyright (c) 2011-2022 Digital Bazaar, Inc. All rights reserved.
  */
-'use strict';
+import chai from 'chai';
+import common from './test-common.js';
+import jsigs from 'jsonld-signatures';
+import * as zcap from '../lib/index.js';
 
-const common = require('./test-common');
-const expect = require('chai').expect;
-const jsigs = require('../node_modules/jsonld-signatures');
-const zcap = require('../lib');
+import * as mock from './mock-data.js';
+import * as helpers from './helpers.js';
 
-const mock = require('./mock-data');
-const helpers = require('./helpers');
+const expect = chai.expect;
 
 const options = {
   expect,

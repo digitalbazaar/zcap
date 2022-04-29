@@ -1,5 +1,13 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 8.0.0 - 2022-xx-xx
+
+### Changed
+- **BREAKING**: Convert to module (ESM).
+- **BREAKING**: Require Node.js >=14.
+- Update dependencies.
+- Lint module.
+
 ## 7.2.2 - 2022-02-23
 
 ### Fixed

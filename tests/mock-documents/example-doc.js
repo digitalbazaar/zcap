@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   '@context': [
     'https://w3id.org/security/v2',
     'https://w3id.org/zcap/v1'

@@ -1,24 +1,17 @@
 /**
  * Karma test runner for zcap.
  *
- * Use environment vars to control, set via karma.conf.js/webpack:
- *
- * Set dirs, manifests, or js to run:
- *   JSONLD_TESTS="r1 r2 ..."
- * Output an EARL report:
- *   EARL=filename
- * Bail with tests fail:
- *   BAIL=true
- *
  * Copyright (c) 2011-2022 Digital Bazaar, Inc. All rights reserved.
  */
-const common = require('./test-common');
-const expect = require('chai').expect;
-const jsigs = require('jsonld-signatures');
-const zcap = require('../lib');
+import chai from 'chai';
+import common from './test-common.js';
+import jsigs from 'jsonld-signatures';
+import * as zcap from '../lib/index.js';
 
-const mock = require('./mock-data');
-const helpers = require('./helpers');
+import * as mock from './mock-data.js';
+import * as helpers from './helpers.js';
+
+const expect = chai.expect;
 
 const options = {
   expect,

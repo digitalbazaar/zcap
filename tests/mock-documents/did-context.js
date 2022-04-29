@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   "@context": {
     "@protected": true,
     "id": "@id",

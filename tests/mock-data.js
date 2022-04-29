@@ -1,50 +1,55 @@
 /*!
  * Copyright (c) 2018-2022 Digital Bazaar, Inc. All rights reserved.
  */
-'use strict';
-
-const zcap = require('../lib');
+import * as zcap from '../lib/index.js';
 const {constants: {ZCAP_CONTEXT_URL}} = zcap;
 
-const mock = {};
-module.exports = mock;
-
-const capabilities = mock.capabilities = {};
-const didDocs = mock.didDocs = {};
-const privateDidDocs = mock.privateDidDocs = {};
-const controllers = mock.controllers = {};
+export const capabilities = {};
+export const didDocs = {};
+export const privateDidDocs = {};
+export const controllers = {};
 const _loaderData = new Map();
 
 const KEY_TYPES = [
   'capabilityDelegation', 'capabilityInvocation', 'verificationMethod'
 ];
 
-mock.exampleDoc = require('./mock-documents/example-doc');
-mock.exampleDocWithInvocation = {};
+export {default as exampleDoc} from './mock-documents/example-doc.js';
+export const exampleDocWithInvocation = {};
 
-mock.exampleDocWithInvocation.alpha =
-  require('./mock-documents/example-doc-with-alpha-invocation');
-mock.exampleDocWithInvocation.beta =
-  require('./mock-documents/example-doc-with-beta-invocation');
+import exampleDocWithInvocation_alpha from
+  './mock-documents/example-doc-with-alpha-invocation.js';
+exampleDocWithInvocation.alpha = exampleDocWithInvocation_alpha;
+import exampleDocWithInvocation_beta from
+  './mock-documents/example-doc-with-beta-invocation.js';
+exampleDocWithInvocation.beta = exampleDocWithInvocation_beta;
 
-const didContext = require('./mock-documents/did-context');
+import didContext from './mock-documents/did-context.js';
 _loaderData.set('https://www.w3.org/ns/did/v1', didContext);
 
-const v1Context = require('./mock-documents/veres-one-context');
+import v1Context from './mock-documents/veres-one-context.js';
 _loaderData.set('https://w3id.org/veres-one/v1', v1Context);
 
-const {suiteContext} = require('@digitalbazaar/ed25519-signature-2020');
+import {suiteContext} from '@digitalbazaar/ed25519-signature-2020';
 _loaderData.set(suiteContext.CONTEXT_URL, suiteContext.CONTEXT);
 
-controllers.alice = require('./mock-documents/ed25519-alice-keys');
-controllers.bob = require('./mock-documents/ed25519-bob-keys');
-controllers.carol = require('./mock-documents/ed25519-carol-keys');
-controllers.diana = require('./mock-documents/ed25519-diana-keys');
+import controllers_alice from './mock-documents/ed25519-alice-keys.js';
+controllers.alice = controllers_alice;
+import controllers_bob from './mock-documents/ed25519-bob-keys.js';
+controllers.bob = controllers_bob;
+import controllers_carol from './mock-documents/ed25519-carol-keys.js';
+controllers.carol = controllers_carol;
+import controllers_diana from './mock-documents/ed25519-diana-keys.js';
+controllers.diana = controllers_diana;
 
-privateDidDocs.alpha = require('./mock-documents/did-doc-alpha');
-privateDidDocs.beta = require('./mock-documents/did-doc-beta');
-privateDidDocs.gamma = require('./mock-documents/did-doc-gamma');
-privateDidDocs.delta = require('./mock-documents/did-doc-delta');
+import privateDidDocs_alpha from './mock-documents/did-doc-alpha.js';
+privateDidDocs.alpha = privateDidDocs_alpha;
+import privateDidDocs_beta from './mock-documents/did-doc-beta.js';
+privateDidDocs.beta = privateDidDocs_beta;
+import privateDidDocs_gamma from './mock-documents/did-doc-gamma.js';
+privateDidDocs.gamma = privateDidDocs_gamma;
+import privateDidDocs_delta from './mock-documents/did-doc-delta.js';
+privateDidDocs.delta = privateDidDocs_delta;
 
 didDocs.alpha = _stripPrivateKeys(privateDidDocs.alpha);
 didDocs.beta = _stripPrivateKeys(privateDidDocs.beta);
@@ -75,23 +80,27 @@ capabilities.root.restful = {
 };
 
 capabilities.delegated = {};
-capabilities.delegated.alpha = require('./mock-documents/delegated-zcap-alpha');
-capabilities.delegated.beta = require('./mock-documents/delegated-zcap-beta');
+import capabilities_delegated_alpha from
+  './mock-documents/delegated-zcap-alpha.js';
+capabilities.delegated.alpha = capabilities_delegated_alpha;
+import capabilities_delegated_beta from
+  './mock-documents/delegated-zcap-beta.js';
+capabilities.delegated.beta = capabilities_delegated_beta;
 
 // generate a flattened list of all keys
 const keyList = [].concat(
   ...Object.values(controllers).map(_getKeysWithContext),
   ...Object.values(privateDidDocs).map(_getKeysWithContext));
 
-mock.addToLoader = ({doc}) => {
+export function addToLoader({doc}) {
   if(_loaderData.has(doc.id)) {
     throw new Error(
       `ID of document has already been registered in the loader: ${doc.id}`);
   }
   _loaderData.set(doc.id, doc);
-};
+}
 
-mock.testLoader = zcap.extendDocumentLoader(async url => {
+export const testLoader = zcap.extendDocumentLoader(async url => {
   const document = _loaderData.get(url);
   if(document !== undefined) {
     return {
@@ -127,7 +136,7 @@ const docsForLoader = [
   ...keyList
 ];
 
-docsForLoader.map(doc => mock.addToLoader({doc}));
+docsForLoader.map(doc => addToLoader({doc}));
 
 function _getKeysWithContext(doc) {
   const keys = [];

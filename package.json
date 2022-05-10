@@ -19,8 +19,7 @@
   "type": "module",
   "exports": "./lib/index.js",
   "files": [
-    "lib/*.js",
-    "lib/**/*.js"
+    "lib"
   ],
   "dependencies": {
     "@digitalbazaar/zcap-context": "^2.0.0",

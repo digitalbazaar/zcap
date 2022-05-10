@@ -18,6 +18,9 @@
   "license": "BSD-3-Clause",
   "type": "module",
   "exports": "./lib/index.js",
+  "browser": {
+    "crypto": false
+  },
   "files": [
     "lib"
   ],
@@ -59,9 +62,6 @@
     "exclude": [
       "tests"
     ]
-  },
-  "browser": {
-    "crypto": false
   },
   "engines": {
     "node": ">=14"

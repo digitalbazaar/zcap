@@ -18,9 +18,6 @@
   "license": "BSD-3-Clause",
   "type": "module",
   "exports": "./lib/index.js",
-  "browser": {
-    "crypto": false
-  },
   "files": [
     "lib/**/*.js"
   ],

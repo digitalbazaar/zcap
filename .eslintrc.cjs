@@ -10,5 +10,10 @@ module.exports = {
     'digitalbazaar/jsdoc',
     'digitalbazaar/module'
   ],
-  ignorePatterns: ['dist/', 'mock-documents/']
+  ignorePatterns: [
+    'mock-documents/'
+  ],
+  rules: {
+    'unicorn/prefer-node-protocol': 'error'
+  }
 };

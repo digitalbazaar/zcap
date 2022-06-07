@@ -22,7 +22,7 @@
     "crypto": false
   },
   "files": [
-    "lib"
+    "lib/**/*.js"
   ],
   "dependencies": {
     "@digitalbazaar/zcap-context": "^2.0.0",

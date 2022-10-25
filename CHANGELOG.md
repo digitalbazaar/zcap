@@ -1,5 +1,11 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 9.0.0 - 2022-10-xx
+
+### Changed
+- **BREAKING**: Use `jsonld-signatures@11` to get better safe mode
+  protections when canonizing.
+
 ## 8.0.0 - 2022-06-06
 
 ### Changed

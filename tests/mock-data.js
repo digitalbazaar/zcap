@@ -112,20 +112,33 @@ export const testLoader = zcap.extendDocumentLoader(async url => {
   throw new Error(`Document "${url}" not found.`);
 });
 
-function _stripPrivateKeys(privateDidDocument) {
+function _stripPrivateKeys(privateControllerDoc) {
   // clone the doc
-  const didDocument = JSON.parse(JSON.stringify(privateDidDocument));
-  delete didDocument.authentication[0].privateKeyMultibase;
-  delete didDocument.capabilityDelegation[0].privateKeyMultibase;
-  delete didDocument.capabilityInvocation[0].privateKeyMultibase;
-  return didDocument;
+  const publicControllerDoc = JSON.parse(JSON.stringify(privateControllerDoc));
+  const verificationRelationships = [
+    'verificationMethod',
+    'authentication',
+    'capabilityDelegation',
+    'capabilityInvocation'
+  ];
+  for(const vr of verificationRelationships) {
+    if(Array.isArray(publicControllerDoc[vr])) {
+      for(const vm of publicControllerDoc[vr]) {
+        if(typeof vm === 'string') {
+          continue;
+        }
+        delete vm.privateKeyMultibase;
+      }
+    }
+  }
+  return publicControllerDoc;
 }
 
 const docsForLoader = [
-  controllers.alice,
-  controllers.bob,
-  controllers.carol,
-  controllers.diana,
+  _stripPrivateKeys(controllers.alice),
+  _stripPrivateKeys(controllers.bob),
+  _stripPrivateKeys(controllers.carol),
+  _stripPrivateKeys(controllers.diana),
   didDocs.alpha,
   didDocs.beta,
   didDocs.gamma,

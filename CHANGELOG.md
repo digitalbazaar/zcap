@@ -1,5 +1,12 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 9.0.1 - 2024-mm-dd
+
+### Fixed
+- Ensure that when invoking a capability with a chain depth of 2, i.e.,
+  it is delegated directly from the root capability, that `expires`
+  is properly checked against the current date or other `date` param.
+
 ## 9.0.0 - 2022-10-25
 
 ### Changed

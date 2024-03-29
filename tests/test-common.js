@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2018-2022 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2018-2024 Digital Bazaar, Inc. All rights reserved.
  */
 
 import chai from 'chai';
@@ -2115,8 +2115,243 @@ describe('zcap', () => {
         expect(result.verified).to.be.true;
       });
 
-      it('should fail invoking a capability with `expires` ' +
+      it('should fail invoking a chain depth 2 capability with `expires` ' +
         'and `date` parameter in the past', async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:uuid:dada0e4d-bc52-4530-ac7f-4973eb8013e9';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob a capability is already expired
+        let expires = new Date();
+        expires.setHours(expires.getHours() - 50);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // bob invokes
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: bob, capability: bobZcap, capabilityAction: 'read'
+        });
+        // pass current time as 20 hours ago
+        const date = new Date();
+        date.setHours(date.getHours() - 20);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            date
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The invoked capability has expired.');
+      });
+
+      it('should fail invoking a chain depth 2 capability with `expires` ' +
+        'and `date` parameter in the future', async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:1d0cd622-2e0a-4686-b0d7-bd71cc27db04';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob a capability that is presently valid
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 50);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // bob invokes
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: bob, capability: bobZcap, capabilityAction: 'read'
+        });
+        // the capability will have expired in 100 hours, so pass that future
+        // time in as the verification date to trigger an error
+        const date = new Date();
+        date.setHours(date.getHours() + 100);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            suite: new Ed25519Signature2020(),
+            date,
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The invoked capability has expired.');
+      });
+
+      it('should fail invoking a chain depth 3 capability with `expires` ' +
+        'and `date` parameter in the past', async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:59bcb98b-a7ee-4ba7-8629-8b52329bc506';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob a capability has not yet expired
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 50);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // bob delegates to carol a capability that has already expired
+        expires = new Date();
+        expires.setHours(expires.getHours() - 50);
+        expires = expires.toISOString();
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires
+          },
+          purposeOptions: {
+            // do not validate locally to allow expired zcap to be delegated
+            _skipLocalValidationForTesting: true
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
+        });
+        // pass current time as 20 hours ago
+        const date = new Date();
+        date.setHours(date.getHours() - 20);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            date
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The invoked capability has expired.');
+      });
+
+      it('should fail invoking a chain depth 3 capability with `expires` ' +
+        'and `date` parameter in the future', async () => {
+        const rootCapability = {...capabilities.root.beta};
+        rootCapability.id = 'urn:zcap:80a8de39-df68-4fd8-ba78-4d65a27b2009';
+        addToLoader({doc: rootCapability});
+
+        // alice delegates to bob a capability that is presently valid
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 50);
+        expires = expires.toISOString();
+        const bobZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: rootCapability.id,
+            invocationTarget: rootCapability.invocationTarget,
+            expires
+          },
+          parentCapability: rootCapability,
+          delegator: alice
+        });
+
+        // bob delegates to carol with an attenuated (shorter) expiration date
+        expires = new Date();
+        expires.setHours(expires.getHours() + 25);
+        expires = expires.toISOString();
+        const carolZcap = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: carol.id(),
+            parentCapability: bobZcap.id,
+            invocationTarget: bobZcap.invocationTarget,
+            expires
+          },
+          parentCapability: bobZcap,
+          delegator: bob
+        });
+
+        // carol invokes
+        const doc = clone(mock.exampleDoc);
+        const invocation = await _invoke({
+          doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
+        });
+        // the capability will have expired in 30 hours, which is before
+        // bob's zcap's expiry but after carol's -- so pass that future
+        // time in as the verification date to trigger an error
+        const date = new Date();
+        date.setHours(date.getHours() + 30);
+        const result = await _verifyInvocation({
+          invocation, purposeOptions: {
+            expectedAction: 'read',
+            expectedRootCapability: rootCapability.id,
+            expectedTarget: rootCapability.invocationTarget,
+            suite: new Ed25519Signature2020(),
+            date,
+          }
+        });
+        expect(result).to.exist;
+        expect(result.verified).to.be.false;
+        should.exist(result.error);
+        result.error.name.should.equal('VerificationError');
+        const [error] = result.error.errors;
+        error.message.should.equal('The invoked capability has expired.');
+      });
+
+      it('should fail invoking a chain depth 3 capability with `expires` ' +
+        'and `date` parameter in the chain in the past', async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:142b0b4a-c664-4288-84e6-be0a59b6efa4';
         addToLoader({doc: rootCapability});
@@ -2165,7 +2400,7 @@ describe('zcap', () => {
         const invocation = await _invoke({
           doc, invoker: carol, capability: carolZcap, capabilityAction: 'read'
         });
-        // the capability was also expired 20 hours ago
+        // pass current time as 20 hours ago
         const date = new Date();
         date.setHours(date.getHours() - 20);
         const result = await _verifyInvocation({
@@ -2185,8 +2420,8 @@ describe('zcap', () => {
           'A capability in the delegation chain has expired.');
       });
 
-      it('should fail invoking a capability with `expires` ' +
-        'and `date` parameter in the future', async () => {
+      it('should fail invoking a chain depth 3 capability with `expires` ' +
+        'and `date` parameter in the chain in the future', async () => {
         const rootCapability = {...capabilities.root.beta};
         rootCapability.id = 'urn:zcap:bcbcde5e-d64a-4f46-a76e-daf52f63f702';
         addToLoader({doc: rootCapability});
@@ -2636,8 +2871,7 @@ describe('zcap', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.equal(
-          'A capability in the delegation chain has expired.');
+        error.message.should.equal('The invoked capability has expired.');
       });
 
       it('should fail invoking a capability with second delegated ' +
@@ -2700,8 +2934,7 @@ describe('zcap', () => {
         should.exist(result.error);
         result.error.errors.should.have.length(1);
         const [error] = result.error.errors;
-        error.message.should.contain(
-          'capability in the delegation chain has expired');
+        error.message.should.equal('The invoked capability has expired.');
       });
 
       it('should fail invoking a capability with ' +
@@ -2895,8 +3128,7 @@ describe('zcap', () => {
         should.exist(result.error);
         result.error.name.should.equal('VerificationError');
         const [error] = result.error.errors;
-        error.message.should.equal(
-          'A capability in the delegation chain has expired.');
+        error.message.should.equal('The invoked capability has expired.');
       });
     }); // end Expiration date
 

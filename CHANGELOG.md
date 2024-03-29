@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 9.0.1 - 2024-mm-dd
+## 9.0.1 - 2024-03-29
 
 ### Fixed
 - Ensure that when invoking a capability with a chain depth of 2, i.e.,

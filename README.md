@@ -5,7 +5,7 @@
 [![NPM Version](https://img.shields.io/npm/v/@digitalbazaar/zcap.svg)](https://npm.im/@digitalbazaar/zcap)
 
 > JavaScript reference implementation for
-[Authorization Capabilities](https://w3c-ccg.github.io/zcap-ld/).
+[Authorization Capabilities](https://w3c-ccg.github.io/zcap-spec/).
 
 ## Table of Contents
 
@@ -31,13 +31,13 @@ TBD
 
 To install from NPM:
 
-```
+```sh
 npm install @digitalbazaar/zcap
 ```
 
 To install locally (for development):
 
-```
+```sh
 git clone https://github.com/digitalbazaar/zcap.git
 cd zcap
 npm install

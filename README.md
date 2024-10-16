@@ -1,6 +1,6 @@
 # zcap _(@digitalbazaar/zcap)_
 
-[![Build status](https://img.shields.io/github/workflow/status/digitalbazaar/zcap/Node.js%20CI)](https://github.com/digitalbazaar/zcap/actions?query=workflow%3A%22Node.js+CI%22)
+[![Build status](https://img.shields.io/github/actions/workflow/status/digitalbazaar/zcap/main.yml?branch=main)](https://github.com/digitalbazaar/zcap/actions?query=workflow%3A%22Node.js+CI%22)
 [![Coverage status](https://img.shields.io/codecov/c/github/digitalbazaar/zcap)](https://codecov.io/gh/digitalbazaar/zcap)
 [![NPM Version](https://img.shields.io/npm/v/@digitalbazaar/zcap.svg)](https://npm.im/@digitalbazaar/zcap)
 

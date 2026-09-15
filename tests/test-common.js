@@ -840,6 +840,108 @@ describe('zcap', () => {
       expect(result.verified).to.be.true;
     });
 
+    it('should fail to verify a capability chain of depth 2 when an ' +
+      '"allowedAction" is not allowed by the root', async () => {
+      // alice delegates to bob...
+      // first check to ensure that delegation fails "client side"
+      let delegatedCapability;
+      let localError;
+      try {
+        // alice attempts to allow an action the root does not
+        delegatedCapability = await _delegate({
+          newCapability: {
+            '@context': ZCAP_CONTEXT_URL,
+            id: uuid(),
+            controller: bob.id(),
+            parentCapability: capabilities.root.gamma.id,
+            invocationTarget: capabilities.root.gamma.invocationTarget,
+            expires: EXPIRES_3000_DATE,
+            allowedAction: ['read', 'write']
+          },
+          parentCapability: capabilities.root.gamma,
+          delegator: alice
+        });
+      } catch(e) {
+        localError = e;
+      }
+      expect(localError).to.exist;
+      localError.name.should.equal('Error');
+      localError.message.should.equal(
+        'The "allowedAction" in a delegated capability ' +
+        'must not be less restrictive than its parent.');
+
+      // alice delegates to bob w/an allowed action rule the root forbids
+      delegatedCapability = await _delegate({
+        newCapability: {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          controller: bob.id(),
+          parentCapability: capabilities.root.gamma.id,
+          invocationTarget: capabilities.root.gamma.invocationTarget,
+          expires: EXPIRES_3000_DATE,
+          allowedAction: ['read', 'write']
+        },
+        purposeOptions: {
+          // skip local validation to allow the zcap to be delegated so it
+          // can be checked by the verifier
+          _skipLocalValidationForTesting: true
+        },
+        parentCapability: capabilities.root.gamma,
+        delegator: alice
+      });
+
+      const result = await _verifyDelegation({
+        delegation: delegatedCapability,
+        expectedRootCapability: capabilities.root.gamma.id
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain(
+        'delegated capability must not be less restrictive');
+    });
+
+    it('should fail to verify a capability chain of depth 2 when a ' +
+      '"capabilityAction" is not allowed by the root', async () => {
+      // alice delegates to bob w/an allowed action rule the root forbids
+      const delegatedCapability = await _delegate({
+        newCapability: {
+          '@context': ZCAP_CONTEXT_URL,
+          id: uuid(),
+          controller: bob.id(),
+          parentCapability: capabilities.root.gamma.id,
+          invocationTarget: capabilities.root.gamma.invocationTarget,
+          expires: EXPIRES_3000_DATE,
+          allowedAction: ['read', 'write']
+        },
+        purposeOptions: {
+          // skip local validation to allow the zcap to be delegated so it
+          // can be checked by the verifier
+          _skipLocalValidationForTesting: true
+        },
+        parentCapability: capabilities.root.gamma,
+        delegator: alice
+      });
+
+      // bob invokes using 'read', an action only his own zcap allows
+      const doc = clone(mock.exampleDoc);
+      const invocation = await _invoke({
+        doc, invoker: bob, capability: delegatedCapability,
+        capabilityAction: 'read'
+      });
+      const result = await _verifyInvocation({
+        invocation, rootCapability: capabilities.root.gamma,
+        expectedAction: 'read'
+      });
+      expect(result).to.exist;
+      expect(result.verified).to.be.false;
+      result.error.name.should.equal('VerificationError');
+      const [error] = result.error.errors;
+      error.message.should.contain(
+        'delegated capability must not be less restrictive');
+    });
+
     describe('Chain depth of 3', () => {
       it('should verify chain', async () => {
         // alice delegates to bob

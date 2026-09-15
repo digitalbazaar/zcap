@@ -1,13 +1,18 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 9.0.3 - 2026-09-dd
+## 10.0.0 - 2026-09-dd
+
+### Changed
+- **BREAKING**: Enforce a root capability's `allowedAction` when verifying a
+  capability chain, not only when generating a delegation proof. Chains whose
+  delegated capabilities omit an `allowedAction` set by their root previously
+  verified and now fail; they must be redelegated with an explicit
+  `allowedAction`.
 
 ### Fixed
 - Compare `allowedAction` sets, not JSON types, when checking that a delegated
-  capability is not less restrictive than its parent, as `allowedAction` may
-  be expressed as either a string or an array.
-- Ensure a root capability's `allowedAction` is enforced when verifying a
-  capability chain, not only when generating a delegation proof.
+  capability is not less restrictive than its parent; `allowedAction` may be
+  expressed as either a string or an array.
 
 ## 9.0.2 - 2026-09-16
 

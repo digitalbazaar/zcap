@@ -72,6 +72,15 @@ capabilities.root.beta = {
   invocationTarget: 'https://example.org/alice/targets/beta'
 };
 
+// `allowedAction` expressed as a string
+capabilities.root.gamma = {
+  '@context': ZCAP_CONTEXT_URL,
+  id: 'https://example.org/alice/caps#2',
+  controller: controllers.alice.id,
+  invocationTarget: 'https://example.org/alice/targets/gamma',
+  allowedAction: 'write'
+};
+
 capabilities.root.restful = {
   '@context': ZCAP_CONTEXT_URL,
   id: `urn:zcap:root:${encodeURIComponent('https://zcap.example')}`,
@@ -145,6 +154,7 @@ const docsForLoader = [
   didDocs.delta,
   capabilities.root.alpha,
   capabilities.root.beta,
+  capabilities.root.gamma,
   capabilities.root.restful,
   ...keyList
 ];

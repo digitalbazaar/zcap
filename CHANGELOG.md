@@ -6,6 +6,8 @@
 - Compare `allowedAction` sets, not JSON types, when checking that a delegated
   capability is not less restrictive than its parent, as `allowedAction` may
   be expressed as either a string or an array.
+- Ensure a root capability's `allowedAction` is enforced when verifying a
+  capability chain, not only when generating a delegation proof.
 
 ## 9.0.2 - 2026-09-16
 

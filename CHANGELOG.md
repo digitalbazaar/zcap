@@ -1,5 +1,12 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 9.0.3 - 2026-09-dd
+
+### Fixed
+- Compare `allowedAction` sets, not JSON types, when checking that a delegated
+  capability is not less restrictive than its parent, as `allowedAction` may
+  be expressed as either a string or an array.
+
 ## 9.0.2 - 2026-09-16
 
 ### Fixed

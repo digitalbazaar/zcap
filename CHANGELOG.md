@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 9.0.2 - 2026-09-dd
+## 9.0.2 - 2026-09-16
 
 ### Fixed
 - Validate that a delegated zcap's `capabilityChain` has at least one entry,

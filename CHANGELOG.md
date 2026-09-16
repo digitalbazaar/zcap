@@ -1,5 +1,11 @@
 # @digitalbazaar/zcap ChangeLog
 
+## 9.0.2 - 2026-09-dd
+
+### Fixed
+- Validate that a delegated zcap's `capabilityChain` has at least one entry,
+  which identifies the root zcap that anchors the chain.
+
 ## 9.0.1 - 2024-03-29
 
 ### Fixed

@@ -1,6 +1,6 @@
 # @digitalbazaar/zcap ChangeLog
 
-## 9.0.3 - 2026-09-dd
+## 9.0.3 - 2026-09-17
 
 ### Fixed
 - Compare `allowedAction` sets, not JSON types, when checking that a delegated
